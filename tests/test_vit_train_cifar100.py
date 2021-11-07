@@ -20,7 +20,7 @@ parser.add_argument("--data_filepath", type=str, default="data/sample_dataset")
 parser.add_argument("--seed", type=int, default=0)
 
 parser.add_argument("--exclude_modalities", nargs="+")
-# 'video, audio, test, image'
+# 'video, audio, text, image'
 parser.add_argument("--num_data_provider_workers", type=int, default=8)
 parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--eval_batch_size", type=int, default=32)

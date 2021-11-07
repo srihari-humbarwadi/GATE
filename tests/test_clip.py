@@ -7,7 +7,7 @@ from rich import print
 from models.clip import clip
 
 
-# write your own version of this and have a test that confirms that it predicts the
+# write your own version of this and have a tests that confirms that it predicts the
 # same stuff
 # perhaps write your own version and then train it and compare the results
 

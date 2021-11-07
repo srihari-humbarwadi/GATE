@@ -7,11 +7,11 @@ from models.auto_builder_models import (EasyPeasyConvNet,
 from models.auto_builder_transformers import (AutoViTFlatten,
                                               AutoViTLastTimeStep)
 
-RUN_CUDA_TESTS = False
+RUN_CUDA_test = False
 
 
 def apply_to_test_device(model, input_tensor):
-    if torch.cuda.is_available() and RUN_CUDA_TESTS:
+    if torch.cuda.is_available() and RUN_CUDA_test:
         model = model.to(torch.cuda.current_device())
 
         input_tensor = input_tensor.to(torch.cuda.current_device())
