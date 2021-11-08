@@ -18,11 +18,11 @@ log = logging.getLogger("rich")
 
 class CrossModalMatchingNetwork(nn.Module):
     def __init__(
-            self,
-            embed_dim: int,
-            modality_embeddings: dict,
-            logit_scale: float = 1.0
-            # = 1 / 0.07
+        self,
+        embed_dim: int,
+        modality_embeddings: dict,
+        logit_scale: float = 1.0
+        # = 1 / 0.07
     ):
         super(CrossModalMatchingNetwork, self).__init__()
 
@@ -34,12 +34,12 @@ class CrossModalMatchingNetwork(nn.Module):
         self.is_built = False
 
     def build(
-            self,
-            text_input_shape=None,
-            image_shape=None,
-            video_shape=None,
-            audio_shape=None,
-            **kwargs,
+        self,
+        text_input_shape=None,
+        image_shape=None,
+        video_shape=None,
+        audio_shape=None,
+        **kwargs,
     ):
         log.info(f"{text_input_shape}, {image_shape}, {video_shape}, {audio_shape}")
         if image_shape is not None:
@@ -81,7 +81,7 @@ class CrossModalMatchingNetwork(nn.Module):
             return None
 
     def _compute_cross_modal_cosine_similarities(
-            self, image_embeddings, text_embeddings, video_embeddings, audio_embeddings
+        self, image_embeddings, text_embeddings, video_embeddings, audio_embeddings
     ):
         logit_scale = self.logit_scale.exp()
         embedding_dict = {
@@ -95,9 +95,9 @@ class CrossModalMatchingNetwork(nn.Module):
         for source_key, source_value in embedding_dict.items():
             for target_key, target_value in embedding_dict.items():
                 if (
-                        source_key != target_key
-                        and source_value is not None
-                        and target_value is not None
+                    source_key != target_key
+                    and source_value is not None
+                    and target_value is not None
                 ):
                     logit_dict[
                         f"{source_key}_to_{target_key}_similarity"
@@ -106,7 +106,7 @@ class CrossModalMatchingNetwork(nn.Module):
         return logit_dict
 
     def forward(
-            self, image_input=None, text_input=None, video_input=None, audio_input=None
+        self, image_input=None, text_input=None, video_input=None, audio_input=None
     ):
         # log.debug(
         #     f"{image_input.shape}, {text_input.shape}, "
@@ -131,14 +131,14 @@ class CrossModalMatchingNetwork(nn.Module):
         (image_embeddings, text_embeddings, video_embeddings, audio_embeddings) = (
             self._get_normalized_features(inputs, embedding_name)
             for inputs, embedding_name in zip(
-            [image_input, text_input, video_input, audio_input],
-            [
-                "image_embedding",
-                "text_embedding",
-                "video_embedding",
-                "audio_embedding",
-            ],
-        )
+                [image_input, text_input, video_input, audio_input],
+                [
+                    "image_embedding",
+                    "text_embedding",
+                    "video_embedding",
+                    "audio_embedding",
+                ],
+            )
         )
 
         return (
@@ -160,8 +160,8 @@ class CrossModalMatchingNetwork(nn.Module):
 def contrastive_logits_labels(logits):
     labels = (
         torch.arange(logits.shape[1])
-            .unsqueeze(0)
-            .repeat([logits.shape[0], 1])
-            .to(logits.device)
+        .unsqueeze(0)
+        .repeat([logits.shape[0], 1])
+        .to(logits.device)
     )
     return logits, labels

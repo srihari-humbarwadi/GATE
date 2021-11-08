@@ -9,6 +9,6 @@ setup(
     author="Antreas Antoniou",
     author_email="a.antoniou@ed.ac.uk",
     description="Generalization After Transfer Evaluation - A codebase enabling"
-                " evaluation of models after transfer to a number of novel "
-                "data domains, tasks and modalities",
+    " evaluation of models after transfer to a number of novel "
+    "data domains, tasks and modalities",
 )

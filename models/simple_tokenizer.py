@@ -28,9 +28,9 @@ def bytes_to_unicode():
     And avoids mapping to whitespace/control characters the bpe code barfs on.
     """
     bs = (
-            list(range(ord("!"), ord("~") + 1))
-            + list(range(ord("¡"), ord("¬") + 1))
-            + list(range(ord("®"), ord("ÿ") + 1))
+        list(range(ord("!"), ord("~") + 1))
+        + list(range(ord("¡"), ord("¬") + 1))
+        + list(range(ord("®"), ord("ÿ") + 1))
     )
     cs = bs[:]
     n = 0
@@ -72,7 +72,7 @@ class SimpleTokenizer(object):
         self.byte_encoder = bytes_to_unicode()
         self.byte_decoder = {v: k for k, v in self.byte_encoder.items()}
         merges = gzip.open(bpe_path).read().decode("utf-8").split("\n")
-        merges = merges[1: 49152 - 256 - 2 + 1]
+        merges = merges[1 : 49152 - 256 - 2 + 1]
         merges = [tuple(merge.split()) for merge in merges]
         vocab = list(bytes_to_unicode().values())
         vocab += [v + "</w>" for v in vocab]
@@ -147,7 +147,7 @@ class SimpleTokenizer(object):
         text = "".join(self.decoder[token] for token in tokens)
         text = (
             bytearray([self.byte_decoder[c] for c in text])
-                .decode("utf-8", errors="replace")
-                .replace("</w>", " ")
+            .decode("utf-8", errors="replace")
+            .replace("</w>", " ")
         )
         return text

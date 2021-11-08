@@ -29,11 +29,11 @@ log = logging.getLogger("rich")
 
 class FCCNetwork(nn.Module):
     def __init__(
-            self,
-            num_hidden_features,
-            num_output_features,
-            num_hidden_layers,
-            activation_fn=F.leaky_relu,
+        self,
+        num_hidden_features,
+        num_output_features,
+        num_hidden_layers,
+        activation_fn=F.leaky_relu,
     ):
         super(FCCNetwork, self).__init__()
         self.layer_dict = nn.ModuleDict()
@@ -95,13 +95,13 @@ class ChooseSpecificTimeStepFromVector(nn.Module):
 
 class Conv2DTransformer(nn.Module):
     def __init__(
-            self,
-            grid_patch_size: int,
-            transformer_num_filters: int,
-            transformer_num_layers: int,
-            transformer_num_heads: int,
-            transformer_dim_feedforward: int,
-            stem_conv_bias: False,
+        self,
+        grid_patch_size: int,
+        transformer_num_filters: int,
+        transformer_num_layers: int,
+        transformer_num_heads: int,
+        transformer_dim_feedforward: int,
+        stem_conv_bias: False,
     ):
         super(Conv2DTransformer, self).__init__()
         self.layer_dict = nn.ModuleDict()
@@ -160,7 +160,7 @@ class Conv2DTransformer(nn.Module):
         logging.info(f"{out.shape}")
 
         self.enumerate_patches_idx = (
-                torch.arange(start=0, end=num_patches) / num_patches
+            torch.arange(start=0, end=num_patches) / num_patches
         )
 
         position_inputs = repeat(
@@ -273,13 +273,13 @@ class Conv2DTransformer(nn.Module):
 
 class Conv1DTransformer(nn.Module):
     def __init__(
-            self,
-            grid_patch_size: int,
-            transformer_num_filters: int,
-            transformer_num_layers: int,
-            transformer_num_heads: int,
-            transformer_dim_feedforward: int,
-            stem_conv_bias: False,
+        self,
+        grid_patch_size: int,
+        transformer_num_filters: int,
+        transformer_num_layers: int,
+        transformer_num_heads: int,
+        transformer_dim_feedforward: int,
+        stem_conv_bias: False,
     ):
         super(Conv1DTransformer, self).__init__()
         self.grid_patch_size = grid_patch_size
@@ -328,7 +328,7 @@ class Conv1DTransformer(nn.Module):
         out = rearrange(out, "(b s) (f) -> b s f", s=int(num_patches))
 
         self.enumerate_patches_idx = (
-                torch.arange(start=0, end=num_patches) / num_patches
+            torch.arange(start=0, end=num_patches) / num_patches
         )
 
         position_inputs = repeat(
@@ -431,13 +431,13 @@ class Conv1DTransformer(nn.Module):
 
 class TexTransformer(nn.Module):
     def __init__(
-            self,
-            transformer_num_filters: int,
-            transformer_num_layers: int,
-            transformer_num_heads: int,
-            transformer_dim_feedforward: int,
-            vocab_size: int,
-            context_length: int,
+        self,
+        transformer_num_filters: int,
+        transformer_num_layers: int,
+        transformer_num_heads: int,
+        transformer_dim_feedforward: int,
+        vocab_size: int,
+        context_length: int,
     ):
         super(TexTransformer, self).__init__()
         self.transformer_num_filters = transformer_num_filters
@@ -464,7 +464,7 @@ class TexTransformer(nn.Module):
         # b, l, c
 
         self.enumerate_patches_idx = (
-                torch.arange(start=0, end=out.shape[1]) / out.shape[1]
+            torch.arange(start=0, end=out.shape[1]) / out.shape[1]
         )
 
         position_inputs = repeat(
@@ -546,12 +546,12 @@ class TexTransformer(nn.Module):
 
 class VideoTransformer(nn.Module):
     def __init__(
-            self,
-            transformer_num_filters: int,
-            transformer_num_layers: int,
-            transformer_num_heads: int,
-            transformer_dim_feedforward: int,
-            image_embedding: nn.Module,
+        self,
+        transformer_num_filters: int,
+        transformer_num_layers: int,
+        transformer_num_heads: int,
+        transformer_dim_feedforward: int,
+        image_embedding: nn.Module,
     ):
         super(VideoTransformer, self).__init__()
         self.transformer_num_filters = transformer_num_filters
@@ -574,7 +574,7 @@ class VideoTransformer(nn.Module):
         out = out.view(dummy_x.shape[0], dummy_x.shape[1], -1)
 
         self.enumerate_patches_idx = (
-                torch.arange(start=0, end=out.shape[1]) / out.shape[1]
+            torch.arange(start=0, end=out.shape[1]) / out.shape[1]
         )
 
         position_inputs = repeat(
@@ -657,7 +657,7 @@ class VideoTransformer(nn.Module):
 
 class VisionTransformer(nn.Module):
     def __init__(
-            self, patch_size: int, width: int, layers: int, heads: int, output_dim: int
+        self, patch_size: int, width: int, layers: int, heads: int, output_dim: int
     ):
         super().__init__()
         self.output_dim = output_dim
@@ -720,15 +720,15 @@ class VisionTransformer(nn.Module):
 
 class AutoConv2DTransformersFlatten(ClassificationModel):
     def __init__(
-            self,
-            num_classes,
-            grid_patch_size: int,
-            transformer_num_filters: int,
-            transformer_num_layers: int,
-            transformer_num_heads: int,
-            transformer_dim_feedforward: int,
-            stem_conv_bias=False,
-            **kwargs,
+        self,
+        num_classes,
+        grid_patch_size: int,
+        transformer_num_filters: int,
+        transformer_num_layers: int,
+        transformer_num_heads: int,
+        transformer_dim_feedforward: int,
+        stem_conv_bias=False,
+        **kwargs,
     ):
         feature_embedding_modules = [
             nn.InstanceNorm2d,
@@ -771,15 +771,15 @@ class AutoConv2DTransformersFlatten(ClassificationModel):
 
 class AutoConv1DTransformersFlatten(ClassificationModel):
     def __init__(
-            self,
-            num_classes,
-            grid_patch_size: int,
-            transformer_num_filters: int,
-            transformer_num_layers: int,
-            transformer_num_heads: int,
-            transformer_dim_feedforward: int,
-            stem_conv_bias=False,
-            **kwargs,
+        self,
+        num_classes,
+        grid_patch_size: int,
+        transformer_num_filters: int,
+        transformer_num_layers: int,
+        transformer_num_heads: int,
+        transformer_dim_feedforward: int,
+        stem_conv_bias=False,
+        **kwargs,
     ):
         feature_embedding_modules = [
             nn.InstanceNorm1d,
@@ -807,15 +807,15 @@ class AutoConv1DTransformersFlatten(ClassificationModel):
 
 class AutoTextTransformersFlatten(ClassificationModel):
     def __init__(
-            self,
-            transformer_num_filters: int,
-            transformer_num_layers: int,
-            transformer_num_heads: int,
-            transformer_dim_feedforward: int,
-            vocab_size: int,
-            context_length: int,
-            num_classes: int,
-            **kwargs,
+        self,
+        transformer_num_filters: int,
+        transformer_num_layers: int,
+        transformer_num_heads: int,
+        transformer_dim_feedforward: int,
+        vocab_size: int,
+        context_length: int,
+        num_classes: int,
+        **kwargs,
     ):
         feature_embedding_modules = [
             TexTransformer,
@@ -851,14 +851,14 @@ class AutoTextTransformersFlatten(ClassificationModel):
 
 class AutoVideoTransformersFlatten(ClassificationModel):
     def __init__(
-            self,
-            transformer_num_filters: int,
-            transformer_num_layers: int,
-            transformer_num_heads: int,
-            transformer_dim_feedforward: int,
-            num_classes: int,
-            image_embedding: nn.Module,
-            **kwargs,
+        self,
+        transformer_num_filters: int,
+        transformer_num_layers: int,
+        transformer_num_heads: int,
+        transformer_dim_feedforward: int,
+        num_classes: int,
+        image_embedding: nn.Module,
+        **kwargs,
     ):
         feature_embedding_modules = [
             VideoTransformer,

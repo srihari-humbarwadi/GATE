@@ -25,13 +25,13 @@ from models.auto_builder_models import (ClassificationModel, Conv1dBNLeakyReLU,
 
 class DenseBlock(nn.Module):
     def __init__(
-            self,
-            num_filters,
-            dilation_factor,
-            kernel_size,
-            stride,
-            downsample_output_size=None,
-            processing_block_type=Conv2dBNLeakyReLU,
+        self,
+        num_filters,
+        dilation_factor,
+        kernel_size,
+        stride,
+        downsample_output_size=None,
+        processing_block_type=Conv2dBNLeakyReLU,
     ):
         super(DenseBlock, self).__init__()
         self.num_filters = num_filters
@@ -114,8 +114,7 @@ class DenseBlock(nn.Module):
 
 class DenseNetEmbedding(nn.Module):
     def __init__(
-            self, num_filters, num_stages, num_blocks, processing_block_type,
-            dilated=False
+        self, num_filters, num_stages, num_blocks, processing_block_type, dilated=False
     ):
         super(DenseNetEmbedding, self).__init__()
         self.layer_dict = nn.ModuleDict()
@@ -209,14 +208,14 @@ class DenseNetEmbedding(nn.Module):
 
 class AutoConv2DDenseNet(ClassificationModel):
     def __init__(
-            self,
-            num_classes,
-            num_filters,
-            num_stages,
-            num_blocks,
-            use_squeeze_excite_attention,
-            dilated=False,
-            **kwargs,
+        self,
+        num_classes,
+        num_filters,
+        num_stages,
+        num_blocks,
+        use_squeeze_excite_attention,
+        dilated=False,
+        **kwargs,
     ):
         feature_embedding_modules = [nn.InstanceNorm2d, DenseNetEmbedding, nn.Flatten]
 
@@ -243,14 +242,14 @@ class AutoConv2DDenseNet(ClassificationModel):
 
 class AutoConv1DDenseNet(ClassificationModel):
     def __init__(
-            self,
-            num_classes,
-            num_filters,
-            num_stages,
-            num_blocks,
-            use_squeeze_excite_attention,
-            dilated=False,
-            **kwargs,
+        self,
+        num_classes,
+        num_filters,
+        num_stages,
+        num_blocks,
+        use_squeeze_excite_attention,
+        dilated=False,
+        **kwargs,
     ):
         feature_embedding_modules = [nn.InstanceNorm1d, DenseNetEmbedding, nn.Flatten]
 
@@ -286,14 +285,14 @@ class Permute(nn.Module):
 
 class AutoConv1DDenseNetVideo(ClassificationModel):
     def __init__(
-            self,
-            num_classes,
-            num_filters,
-            num_stages,
-            num_blocks,
-            use_squeeze_excite_attention,
-            dilated=False,
-            **kwargs,
+        self,
+        num_classes,
+        num_filters,
+        num_stages,
+        num_blocks,
+        use_squeeze_excite_attention,
+        dilated=False,
+        **kwargs,
     ):
         feature_embedding_modules = [Permute, DenseNetEmbedding, nn.Flatten]
 
@@ -320,15 +319,15 @@ class AutoConv1DDenseNetVideo(ClassificationModel):
 
 class AutoTextNet(ClassificationModel):
     def __init__(
-            self,
-            vocab_size: int,
-            num_filters: int,
-            num_stages: int,
-            num_blocks: int,
-            use_squeeze_excite_attention: bool,
-            dilated: bool,
-            num_classes: int,
-            **kwargs,
+        self,
+        vocab_size: int,
+        num_filters: int,
+        num_stages: int,
+        num_blocks: int,
+        use_squeeze_excite_attention: bool,
+        dilated: bool,
+        num_classes: int,
+        **kwargs,
     ):
         feature_embedding_modules = [nn.Embedding, DenseNetEmbedding, nn.Flatten]
 

@@ -18,8 +18,8 @@ def test_get_arguments_passed_on_command_line():
 
     assert len(arguments_passed_to_command_line) == 2
     assert [
-               s.replace("--", "") for s in args_via_cmd_line[1:]
-           ] == arguments_passed_to_command_line
+        s.replace("--", "") for s in args_via_cmd_line[1:]
+    ] == arguments_passed_to_command_line
 
 
 def test_merge_json_with_mutable_arguments():

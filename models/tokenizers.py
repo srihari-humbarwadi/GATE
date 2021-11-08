@@ -11,9 +11,9 @@ from .simple_tokenizer import SimpleTokenizer
 
 
 def tokenize(
-        sequence_of_text: Union[str, List[str]],
-        tokenizer=SimpleTokenizer(),
-        context_length: int = 77,
+    sequence_of_text: Union[str, List[str]],
+    tokenizer=SimpleTokenizer(),
+    context_length: int = 77,
 ) -> torch.LongTensor:
     """
     Returns the tokenized representation of given input string(s)

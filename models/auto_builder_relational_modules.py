@@ -59,15 +59,15 @@ def generate_spatial_coordinate_tensor(x, spatial_length):
     """
     coord_tensor_x = (
         torch.arange(start=0, end=np.sqrt(spatial_length))
-            .unsqueeze(0)
-            .repeat([int(np.sqrt(spatial_length)), 1])
-            .unsqueeze(2)
+        .unsqueeze(0)
+        .repeat([int(np.sqrt(spatial_length)), 1])
+        .unsqueeze(2)
     )  # n, n
     coord_tensor_y = (
         torch.arange(start=0, end=np.sqrt(spatial_length))
-            .unsqueeze(1)
-            .repeat([1, int(np.sqrt(spatial_length))])
-            .unsqueeze(2)
+        .unsqueeze(1)
+        .repeat([1, int(np.sqrt(spatial_length))])
+        .unsqueeze(2)
     )  # n, n
 
     coord_tensor = torch.cat([coord_tensor_x, coord_tensor_y], dim=2).view(-1, 2)
@@ -90,11 +90,11 @@ def generate_pair_tensor(x, spatial_length):
 
 
 def collect_new_indices_for_given_dimensionality(
-        x_img,
-        relational_patch_size,
-        avg_pool_patch_size,
-        coord_tensor,
-        patch_coordinate_tensor,
+    x_img,
+    relational_patch_size,
+    avg_pool_patch_size,
+    coord_tensor,
+    patch_coordinate_tensor,
 ):
     out_img = check_spatial_size_maybe_avg_pool(x_img, avg_pool_patch_size)
     out_img = out_img.permute([0, 2, 1])  # b, h*w, c
@@ -132,8 +132,8 @@ def image_to_patch_coordinates(input_image, patch_size, stride, dilation):
             x_range = patch_size + ((patch_size - 1) * (dilation - 1))
             y_range = patch_size + ((patch_size - 1) * (dilation - 1))
             if (
-                    i + x_range <= input_image.shape[2]
-                    and j + y_range <= input_image.shape[3]
+                i + x_range <= input_image.shape[2]
+                and j + y_range <= input_image.shape[3]
             ):
                 coord = torch.Tensor(
                     [
@@ -173,15 +173,15 @@ def image_to_vectors(input_image, indexes_of_patches):
 
 class PatchBatchRelationalModule(nn.Module):
     def __init__(
-            self,
-            num_layers,
-            num_hidden_filters,
-            num_output_channels,
-            avg_pool_output_size,
-            patch_size,
-            use_coordinates=True,
-            bias=True,
-            **kwargs,
+        self,
+        num_layers,
+        num_hidden_filters,
+        num_output_channels,
+        avg_pool_output_size,
+        patch_size,
+        use_coordinates=True,
+        bias=True,
+        **kwargs,
     ):
         super(PatchBatchRelationalModule, self).__init__()
 
@@ -281,8 +281,8 @@ class PatchBatchRelationalModule(nn.Module):
             self.is_built = True
 
         if not (
-                x_img.shape[0] == self.build_dimensionality[0]
-                and x_img.shape[-1] == self.build_dimensionality[-1]
+            x_img.shape[0] == self.build_dimensionality[0]
+            and x_img.shape[-1] == self.build_dimensionality[-1]
         ):
             self.build_dimensionality = x_img.shape
             (

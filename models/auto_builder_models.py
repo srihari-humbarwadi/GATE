@@ -21,11 +21,11 @@ logging = logging.getLogger("rich")
 
 class ClassificationModel(nn.Module):
     def __init__(
-            self,
-            feature_embedding_module_list,
-            feature_embedding_args,
-            num_classes,
-            input_type=torch.float32,
+        self,
+        feature_embedding_module_list,
+        feature_embedding_args,
+        num_classes,
+        input_type=torch.float32,
     ):
         self.feature_embedding_module_list = feature_embedding_module_list
         self.feature_embedding_args = feature_embedding_args
@@ -49,11 +49,11 @@ class ClassificationModel(nn.Module):
                     [
                         (str(idx), item(**item_args))
                         for idx, (item, item_args) in enumerate(
-                        zip(
-                            self.feature_embedding_module_list,
-                            self.feature_embedding_args,
+                            zip(
+                                self.feature_embedding_module_list,
+                                self.feature_embedding_args,
+                            )
                         )
-                    )
                     ]
                 )
             )
@@ -191,14 +191,14 @@ class ResNet(nn.Module):
 
 class BatchRelationalModule(nn.Module):
     def __init__(
-            self,
-            num_filters,
-            num_layers,
-            num_outputs,
-            bias,
-            num_post_processing_filters,
-            num_post_processing_layers,
-            avg_pool_input_shape=None,
+        self,
+        num_filters,
+        num_layers,
+        num_outputs,
+        bias,
+        num_post_processing_filters,
+        num_post_processing_layers,
+        avg_pool_input_shape=None,
     ):
         super(BatchRelationalModule, self).__init__()
 
@@ -480,7 +480,7 @@ class FullyConnectedLayer(nn.Module):
 
     def forward(self, x):
         assert (
-                len(x.shape) == 2
+            len(x.shape) == 2
         ), "input tensor should have a length of 2 but its instead {}".format(x.shape)
 
         if not self.is_layer_built:
@@ -494,7 +494,7 @@ class FullyConnectedLayer(nn.Module):
 
 class Conv2dBNLeakyReLU(nn.Module):
     def __init__(
-            self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
+        self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
     ):
         super(Conv2dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -555,7 +555,7 @@ class Conv2dBNLeakyReLU(nn.Module):
 
 class Conv1dBNLeakyReLU(nn.Module):
     def __init__(
-            self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
+        self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
     ):
         super(Conv1dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -616,7 +616,7 @@ class Conv1dBNLeakyReLU(nn.Module):
 
 class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
     def __init__(
-            self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
+        self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
     ):
         super(SqueezeExciteConv2dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -715,7 +715,7 @@ class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
 
 class SqueezeExciteConv1dBNLeakyReLU(nn.Module):
     def __init__(
-            self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
+        self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
     ):
         super(SqueezeExciteConv1dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -810,15 +810,15 @@ class SqueezeExciteConv1dBNLeakyReLU(nn.Module):
 
 class Conv2dEmbedding(nn.Module):
     def __init__(
-            self,
-            layer_filter_list,
-            kernel_size,
-            stride,
-            padding,
-            avg_pool_kernel_size=2,
-            avg_pool_stride=2,
-            dilation=1,
-            bias=False,
+        self,
+        layer_filter_list,
+        kernel_size,
+        stride,
+        padding,
+        avg_pool_kernel_size=2,
+        avg_pool_stride=2,
+        dilation=1,
+        bias=False,
     ):
         """
         General method details
@@ -1026,15 +1026,15 @@ class EasyPeasyConvNet(ClassificationModel):
 
 class EasyPeasyConvRelationalNet(ClassificationModel):
     def __init__(
-            self,
-            num_classes,
-            kernel_size,
-            filter_list,
-            stride,
-            padding,
-            relational_num_filters,
-            relational_num_layers,
-            relational_num_outputs,
+        self,
+        num_classes,
+        kernel_size,
+        filter_list,
+        stride,
+        padding,
+        relational_num_filters,
+        relational_num_layers,
+        relational_num_outputs,
     ):
         feature_embedding_modules = [Conv2dEmbedding, BatchRelationalModule]
         feature_embeddings_args = [

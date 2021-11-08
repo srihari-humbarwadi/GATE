@@ -10,7 +10,6 @@ from utils.script_generation_utils.config_utils import (
     generate_hyperparameter_search_experiment_configs)
 from utils.storage import save_dict_in_json
 
-
 # 4. TODO Antreas: implement:
 #  a. grid search (done)
 #  b. random search (not done)
@@ -61,9 +60,9 @@ for config_dict, hyperparameter_dict in configs_list:
                 ]
             ),
         )
-            .replace('"', "")
-            .replace("'", "")
-            .replace(" ", "")
+        .replace('"', "")
+        .replace("'", "")
+        .replace(" ", "")
     )
 
     cluster_script_name = "{}/{}.json".format(

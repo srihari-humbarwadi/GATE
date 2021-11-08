@@ -184,7 +184,7 @@ def build_experiment_folder(experiment_name, log_path, save_images=True):
 
 
 def get_best_performing_epoch_on_target_metric(
-        metrics_dict, target_metric, ranking_method=np.argmax
+    metrics_dict, target_metric, ranking_method=np.argmax
 ):
     """
     utility for finding best epoch thus far
@@ -235,11 +235,11 @@ def download_file(url, filename=None, verbose=False):
 
     with open(local_filename, "wb") as fp:
         for chunk in tqdm.tqdm(
-                r.iter_content(chunk_size=chunk_size),
-                total=num_bars,
-                unit="KB",
-                desc=local_filename,
-                leave=True,  # progressbar stays
+            r.iter_content(chunk_size=chunk_size),
+            total=num_bars,
+            unit="KB",
+            desc=local_filename,
+            leave=True,  # progressbar stays
         ):
             fp.write(chunk)
     return local_filename

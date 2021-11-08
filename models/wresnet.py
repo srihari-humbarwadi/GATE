@@ -26,16 +26,16 @@ class BasicBlock(nn.Module):
         self.droprate = dropRate
         self.equalInOut = in_planes == out_planes
         self.convShortcut = (
-                (not self.equalInOut)
-                and nn.Conv2d(
-            in_planes,
-            out_planes,
-            kernel_size=1,
-            stride=stride,
-            padding=0,
-            bias=False,
-        )
-                or None
+            (not self.equalInOut)
+            and nn.Conv2d(
+                in_planes,
+                out_planes,
+                kernel_size=1,
+                stride=stride,
+                padding=0,
+                bias=False,
+            )
+            or None
         )
 
     def forward(self, x):
@@ -75,7 +75,7 @@ class NetworkBlock(nn.Module):
 
 class WideResNet(nn.Module):
     def __init__(
-            self, depth, num_classes=10, widen_factor=1, dropRate=0.0, in_channels=3
+        self, depth, num_classes=10, widen_factor=1, dropRate=0.0, in_channels=3
     ):
         super(WideResNet, self).__init__()
         nChannels = [16, 16 * widen_factor, 32 * widen_factor, 64 * widen_factor]

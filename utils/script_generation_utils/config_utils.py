@@ -23,15 +23,15 @@ def generate_hyperparameter_combination_dicts(hyperparameter_config):
         {
             key.replace("dot", "."): value
             for key, value in zip(
-            list(dataclasses.asdict(hyperparameter_config).keys()), values
-        )
+                list(dataclasses.asdict(hyperparameter_config).keys()), values
+            )
         }
         for values in combinations
     ]
 
 
 def generate_hyperparameter_search_experiment_configs(
-        hyperparameter_combinations_dicts, default_variable_dict
+    hyperparameter_combinations_dicts, default_variable_dict
 ):
     configs_list = []
 

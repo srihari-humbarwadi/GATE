@@ -160,7 +160,7 @@ class LightningExperiment(pl.LightningModule):
 
         for metric_key, metric_function in metrics_to_track.items():
             for measurement_key, measurement_value, target_value in zip(
-                    logits.keys(), logits.values(), targets
+                logits.keys(), logits.values(), targets
             ):
                 self.log(
                     name=f"{phase_name}/{metric_key}_{measurement_key}",
@@ -334,7 +334,7 @@ if __name__ == "__main__":
     # argparse option
     environment_data_filepath = os.environ.get("PYTORCH_DATA_LOC")
     if environment_data_filepath is not None and os.path.exists(
-            environment_data_filepath
+        environment_data_filepath
     ):
         logging.warning(
             f"You have a data filepath set in your environment: "
@@ -390,7 +390,7 @@ if __name__ == "__main__":
         project="TALI",
         save_dir=f"{args.logs_path}/{args.experiment_name}/",
         offline=args.offline_mode,
-        log_model=args.upload_model_weights
+        log_model=args.upload_model_weights,
     )  # your credentials
 
     trainer_args = pl.Trainer.parse_argparser(arg_parser=argument_parser)

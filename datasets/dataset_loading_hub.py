@@ -38,14 +38,14 @@ class BPETokenizer(nn.Module):
 
 class MultiModalLoader:
     def __init__(
-            self,
-            image_width,
-            image_height,
-            num_video_frames_per_datapoint,
-            num_audio_frames_per_datapoint=44000,
-            text_context_length=77,
-            rescan_paths=False,
-            restrict_train_set_size=None,
+        self,
+        image_width,
+        image_height,
+        num_video_frames_per_datapoint,
+        num_audio_frames_per_datapoint=44000,
+        text_context_length=77,
+        rescan_paths=False,
+        restrict_train_set_size=None,
     ):
         self.rescan_paths = rescan_paths
         self.image_shape = ImageShape(3, image_height, image_width)
@@ -160,7 +160,7 @@ class CIFAR100Loader:
         )
 
     def get_data(
-            self, data_filepath, val_set_percentage, random_split_seed, download=False
+        self, data_filepath, val_set_percentage, random_split_seed, download=False
     ):
         train_set = datasets.CIFAR100(
             root=data_filepath,
@@ -212,7 +212,7 @@ class CIFAR10Loader:
         )
 
     def get_data(
-            self, data_filepath, val_set_percentage, random_split_seed, download=False
+        self, data_filepath, val_set_percentage, random_split_seed, download=False
     ):
         train_set = datasets.CIFAR10(
             root=data_filepath,
@@ -248,21 +248,21 @@ def collate_fn(batch):
 
 
 def load_dataset(
-        dataset,
-        data_filepath,
-        image_height,
-        image_width,
-        exclude_modalities,
-        batch_size=128,
-        test_batch_size=128,
-        num_workers=0,
-        num_video_frames_per_datapoint=30,
-        num_audio_frames_per_datapoint=44000,
-        text_context_length=77,
-        download=False,
-        prefetch_factor=2,
-        rescan_dataset_files=False,
-        restrict_train_set_size=None,
+    dataset,
+    data_filepath,
+    image_height,
+    image_width,
+    exclude_modalities,
+    batch_size=128,
+    test_batch_size=128,
+    num_workers=0,
+    num_video_frames_per_datapoint=30,
+    num_audio_frames_per_datapoint=44000,
+    text_context_length=77,
+    download=False,
+    prefetch_factor=2,
+    rescan_dataset_files=False,
+    restrict_train_set_size=None,
 ):
     datasets = {
         "tali": MultiModalLoader(
