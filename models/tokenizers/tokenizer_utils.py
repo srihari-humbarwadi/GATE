@@ -1,13 +1,8 @@
-import hashlib
-import os
-import urllib
-import warnings
 from typing import List, Union
 
 import torch
-from PIL import Image
 
-from .simple_tokenizer import SimpleTokenizer
+from models.tokenizers.simple_tokenizer import SimpleTokenizer
 
 
 def tokenize(

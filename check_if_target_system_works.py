@@ -4,26 +4,22 @@ import logging
 import os
 import tarfile
 
-import numpy as np
 import pytorch_lightning as pl
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning import seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.core.memory import ModelSummary
 from pytorch_lightning.loggers import WandbLogger
-from rich import print
 from rich.logging import RichHandler
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
 
 from datasets.dataset_loading_hub import load_dataset
 from models import model_zoo
-from models.system_models import contrastive_logits_labels
+from systems.system_models import contrastive_logits_labels
 from utils.arg_parsing import add_extra_option_args, process_args
-from utils.storage import (build_experiment_folder, restore_model,
-                           save_checkpoint)
+from utils.storage import build_experiment_folder
 
 FORMAT = "%(message)s"
 logging.basicConfig(

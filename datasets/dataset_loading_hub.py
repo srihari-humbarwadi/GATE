@@ -1,20 +1,19 @@
 import logging
-import os
 from collections import namedtuple
 
 import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-from rich import print
 from rich.logging import RichHandler
 from torch import nn
 from torch.utils.data import Subset
 
-from datasets.custom_transforms import SimCLRTransform
-from datasets.TALI_dataset import (MultiModalDataset, SubSampleAudioFrames,
-                                   SubSampleVideoFrames)
-from models.tokenizers import SimpleTokenizer, tokenize
-from utils.cinic_utils import download_cinic, extend_cinic_10
+from datasets.TALI_dataset import (
+    MultiModalDataset,
+    SubSampleAudioFrames,
+    SubSampleVideoFrames,
+)
+from models.tokenizers.tokenizer_utils import SimpleTokenizer, tokenize
 
 ImageShape = namedtuple("ImageShape", ["channels", "width", "height"])
 

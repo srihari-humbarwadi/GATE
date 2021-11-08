@@ -1,18 +1,22 @@
 import torch
 
 from models.auto_builder_densenet import AutoDenseNet
-from models.auto_builder_models import (EasyPeasyConvNet,
-                                        EasyPeasyConvRelationalNet,
-                                        EasyPeasyResNet)
-from models.auto_builder_transformers import (AutoConv1DTransformersFlatten,
-                                              AutoConv2DTransformersFlatten,
-                                              AutoTextTransformersFlatten,
-                                              AutoVideoTransformersFlatten,
-                                              AutoViTFlatten,
-                                              AutoViTLastTimeStep,
-                                              Conv1DTransformer,
-                                              Conv2DTransformer,
-                                              TexTransformer)
+from models.auto_builder_models import (
+    EasyPeasyConvNet,
+    EasyPeasyConvRelationalNet,
+    EasyPeasyResNet,
+)
+from models.auto_builder_transformers import (
+    AutoConv1DTransformersFlatten,
+    AutoConv2DTransformersFlatten,
+    AutoTextTransformersFlatten,
+    AutoVideoTransformersFlatten,
+    AutoViTFlatten,
+    AutoViTLastTimeStep,
+    Conv1DTransformer,
+    Conv2DTransformer,
+    TexTransformer,
+)
 
 RUN_CUDA_test = False
 

@@ -17,10 +17,13 @@ logging.basicConfig(
 
 logging = logging.getLogger("rich")
 
-from models.auto_builder_models import (ClassificationModel, Conv1dBNLeakyReLU,
-                                        Conv2dBNLeakyReLU,
-                                        SqueezeExciteConv1dBNLeakyReLU,
-                                        SqueezeExciteConv2dBNLeakyReLU)
+from models.auto_builder_models import (
+    ClassificationModel,
+    Conv1dBNLeakyReLU,
+    Conv2dBNLeakyReLU,
+    SqueezeExciteConv1dBNLeakyReLU,
+    SqueezeExciteConv2dBNLeakyReLU,
+)
 
 
 class DenseBlock(nn.Module):

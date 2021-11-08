@@ -15,8 +15,10 @@ from rich import print
 from rich.logging import RichHandler
 
 from models.auto_builder_densenet import Permute
-from models.auto_builder_models import (ClassificationModel,
-                                        SqueezeExciteConv1dBNLeakyReLU)
+from models.auto_builder_models import (
+    ClassificationModel,
+    SqueezeExciteConv1dBNLeakyReLU,
+)
 from utils.storage import download_file
 
 FORMAT = "%(message)s"

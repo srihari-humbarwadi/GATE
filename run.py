@@ -4,30 +4,23 @@ import logging
 import os
 import tarfile
 
-import numpy as np
 import pytorch_lightning as pl
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning import seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.core.memory import ModelSummary
 from pytorch_lightning.loggers import WandbLogger
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
 
 from datasets.dataset_loading_hub import load_dataset
-from models import model_zoo
-from models.system_models import contrastive_logits_labels
+from systems.system_models import contrastive_logits_labels
+from systems import learning_systems_dict
 from utils.arg_parsing import add_extra_option_args, process_args
+from utils.general_utils import compute_accuracy
 from utils.logging_helpers import get_logging
-from utils.storage import (build_experiment_folder, restore_model,
-                           save_checkpoint)
-
-
-def compute_accuracy(logits, targets):
-    acc = targets == logits.argmax(-1)
-    return torch.mean(acc.type(torch.float32)) * 100
+from utils.storage import build_experiment_folder
 
 
 def get_base_argument_parser():
@@ -39,9 +32,12 @@ def get_base_argument_parser():
     parser.add_argument("--upload_model_weights", default=False, action="store_true")
     parser.add_argument("--data_filepath", type=str, default="data/sample_dataset")
 
-    parser.add_argument("--logger_level", type=str, default="NOSET",
-                        choices=["NOSET", "WARN", "INFO", "ERROR", "CRITICAL", "DEBUG"])
-
+    parser.add_argument(
+        "--logger_level",
+        type=str,
+        default="NOSET",
+        choices=["NOSET", "WARN", "INFO", "ERROR", "CRITICAL", "DEBUG"],
+    )
 
     parser.add_argument("--seed", type=int, default=0)
 
@@ -106,32 +102,13 @@ class LightningExperiment(pl.LightningModule):
         # (**args.model)
         self.save_hyperparameters()
 
-        dummy_batch = next(iter(dummy_set_loader))
-
-        self.model = model_zoo[args.model.type](**args.model)
-
-        self.exclude_modalities = self.hparams.args.exclude_modalities
         self.args = self.hparams.args
 
-        if self.exclude_modalities:
-            if "video" in self.exclude_modalities:
-                dummy_batch["video"] = None
+        dummy_batch = next(iter(dummy_set_loader))
 
-            if "audio" in self.exclude_modalities:
-                dummy_batch["audio"] = None
+        self.learning_system = learning_systems_dict[args.system.type](**args.system)
 
-            if "image" in self.exclude_modalities:
-                dummy_batch["image"] = None
-
-            if "text" in self.exclude_modalities:
-                dummy_batch["text"] = None
-
-        _, _ = self.model.forward(
-            image_input=dummy_batch["image"],
-            audio_input=dummy_batch["audio"],
-            text_input=dummy_batch["text"],
-            video_input=dummy_batch["video"],
-        )
+        self.model.build(dummy_batch)
 
     @staticmethod
     def add_model_specific_args(args):
@@ -419,8 +396,7 @@ if __name__ == "__main__":
     experiment = LightningExperiment(dummy_set_loader=dummy_set_loader, args=args)
 
     logging.info(
-        f"max-epochs: {args.max_epochs}," 
-        f"current-epoch: {experiment.current_epoch}",
+        f"max-epochs: {args.max_epochs}," f"current-epoch: {experiment.current_epoch}",
     )
 
     summary_callback = ModelSummary(model=experiment, max_depth=1)
@@ -431,8 +407,7 @@ if __name__ == "__main__":
 
     if args.resume_from_checkpoint == "scratch":
         args.resume_from_checkpoint = (
-            f"{args.logs_path}/{args.experiment_name}"
-            f"/checkpoints/ "
+            f"{args.logs_path}/{args.experiment_name}/checkpoints/"
         )
 
     trainer = pl.Trainer.from_argparse_args(

@@ -70,7 +70,7 @@ def add_extra_option_args(parser):
     """
     # model
 
-    parser.add_argument("--model.type", type=str, default="CMMTransformerNetwork")
+    parser.add_argument("--system.type", type=str)
 
     parser.add_argument("--model.embedding_output_size", type=int, default=64)
 
