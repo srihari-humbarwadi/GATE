@@ -3,10 +3,10 @@ import logging
 from rich.logging import RichHandler
 
 
-def get_logging():
+def get_logging(level):
     FORMAT = "%(message)s"
     logging.basicConfig(
-        level="NOTSET", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
+        level=level, format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
     )
 
     log = logging.getLogger("rich")

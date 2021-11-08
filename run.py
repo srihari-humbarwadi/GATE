@@ -14,23 +14,15 @@ from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.core.memory import ModelSummary
 from pytorch_lightning.loggers import WandbLogger
-from rich import print
-from rich.logging import RichHandler
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
 
 from datasets.dataset_loading_hub import load_dataset
 from models import model_zoo
 from models.system_models import contrastive_logits_labels
 from utils.arg_parsing import add_extra_option_args, process_args
+from utils.logging_helpers import get_logging
 from utils.storage import (build_experiment_folder, restore_model,
                            save_checkpoint)
-
-FORMAT = "%(message)s"
-logging.basicConfig(
-    level=logging.INFO, format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
-)
-
-logging = logging.getLogger("rich")
 
 
 def compute_accuracy(logits, targets):
@@ -46,6 +38,10 @@ def get_base_argument_parser():
     parser.add_argument("--offline_mode", default=False, action="store_true")
     parser.add_argument("--upload_model_weights", default=False, action="store_true")
     parser.add_argument("--data_filepath", type=str, default="data/sample_dataset")
+
+    parser.add_argument("--logger_level", type=str, default="NOSET",
+                        choices=["NOSET", "WARN", "INFO", "ERROR", "CRITICAL", "DEBUG"])
+
 
     parser.add_argument("--seed", type=int, default=0)
 
@@ -311,6 +307,7 @@ if __name__ == "__main__":
     argument_parser = pl.Trainer.add_argparse_args(argument_parser)
     argument_parser = LightningExperiment.add_model_specific_args(argument_parser)
     args = process_args(argument_parser)
+    logging = get_logging(level=args.level)
 
     # save_dir: Optional[str] = None,
     # offline: Optional[bool] = False,
@@ -422,7 +419,8 @@ if __name__ == "__main__":
     experiment = LightningExperiment(dummy_set_loader=dummy_set_loader, args=args)
 
     logging.info(
-        f"max-epochs: {args.max_epochs}," f"current-epoch: {experiment.current_epoch}",
+        f"max-epochs: {args.max_epochs}," 
+        f"current-epoch: {experiment.current_epoch}",
     )
 
     summary_callback = ModelSummary(model=experiment, max_depth=1)
@@ -433,7 +431,8 @@ if __name__ == "__main__":
 
     if args.resume_from_checkpoint == "scratch":
         args.resume_from_checkpoint = (
-            f"{args.logs_path}/{args.experiment_name}" f"/checkpoints/ "
+            f"{args.logs_path}/{args.experiment_name}"
+            f"/checkpoints/ "
         )
 
     trainer = pl.Trainer.from_argparse_args(
