@@ -151,7 +151,7 @@ def build_experiment_folder(experiment_name, log_path, save_images=True):
     An experiment logging folder goes along with each experiment. This builds that
     folder
     :param args: dictionary of arguments
-    :return: filepaths for saved models, logs, and images
+    :return: filepaths for saved architectures, logs, and images
     """
     saved_models_filepath = os.path.join(
         log_path, experiment_name.replace("%.%", "/"), "saved_models"

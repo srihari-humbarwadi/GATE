@@ -14,25 +14,18 @@ from einops import rearrange, reduce, repeat
 from rich import print
 from rich.logging import RichHandler
 
-from models.auto_builder_densenet import Permute
-from models.auto_builder_models import (
+from architectures.auto_builder_densenet import Permute
+from architectures.auto_builder_models import (
     ClassificationModel,
     SqueezeExciteConv1dBNLeakyReLU,
 )
 from utils.storage import download_file
 
-FORMAT = "%(message)s"
-logging.basicConfig(
-    level=logging.INFO, format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
-)
-
-log = logging.getLogger("rich")
-
 
 class FCCNetwork(nn.Module):
     def __init__(
-        self,
-        num_hidden_features,
+            self,
+            num_hidden_features,
         num_output_features,
         num_hidden_layers,
         activation_fn=F.leaky_relu,

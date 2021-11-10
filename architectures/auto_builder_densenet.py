@@ -7,17 +7,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from rich import print
-from rich.logging import RichHandler
+import logging
 
-FORMAT = "%(message)s"
-logging.basicConfig(
-    level=logging.INFO, format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
-)
-
-logging = logging.getLogger("rich")
-
-from models.auto_builder_models import (
+from architectures.auto_builder_models import (
     ClassificationModel,
     Conv1dBNLeakyReLU,
     Conv2dBNLeakyReLU,

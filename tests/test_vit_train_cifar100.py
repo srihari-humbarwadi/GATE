@@ -8,7 +8,7 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
 from datasets import CIFAR10Loader, CIFAR100Loader, load_dataset
-from models import AutoConv2DTransformersFlatten
+from architectures import AutoConv2DTransformersFlatten
 from utils.arg_parsing import process_args
 
 parser = argparse.ArgumentParser()

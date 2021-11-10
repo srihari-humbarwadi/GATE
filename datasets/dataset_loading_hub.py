@@ -7,135 +7,10 @@ import torchvision.transforms as transforms
 from rich.logging import RichHandler
 from torch import nn
 from torch.utils.data import Subset
-
-from datasets.TALI_dataset import (
-    MultiModalDataset,
-    SubSampleAudioFrames,
-    SubSampleVideoFrames,
-)
-from models.tokenizers.tokenizer_utils import SimpleTokenizer, tokenize
+from architectures.tokenizers.tokenizer_utils import SimpleTokenizer, tokenize
 
 ImageShape = namedtuple("ImageShape", ["channels", "width", "height"])
 
-FORMAT = "%(message)s"
-logging.basicConfig(
-    level=logging.INFO, format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
-)
-
-logging = logging.getLogger("rich")
-
-
-class BPETokenizer(nn.Module):
-    def __init__(self, context_length):
-        super(BPETokenizer, self).__init__()
-        self.tokenizer = SimpleTokenizer()
-        self.context_length = context_length
-
-    def forward(self, x):
-        return tokenize(x, tokenizer=self.tokenizer, context_length=self.context_length)
-
-
-class MultiModalLoader:
-    def __init__(
-        self,
-        image_width,
-        image_height,
-        num_video_frames_per_datapoint,
-        num_audio_frames_per_datapoint=44000,
-        text_context_length=77,
-        rescan_paths=False,
-        restrict_train_set_size=None,
-    ):
-        self.rescan_paths = rescan_paths
-        self.image_shape = ImageShape(3, image_height, image_width)
-        self.restrict_train_set_size = restrict_train_set_size
-
-        # normalize = transforms.Normalize(
-        #     mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-        # )
-        self.transform_train = {
-            "image": transforms.Compose(
-                [
-                    transforms.Resize(size=(image_height, image_width)),
-                ]
-            ),
-            "audio": transforms.Compose(
-                [
-                    SubSampleAudioFrames(num_frames=num_audio_frames_per_datapoint),
-                ]
-            ),
-            "video": transforms.Compose(
-                [
-                    SubSampleVideoFrames(num_frames=num_video_frames_per_datapoint),
-                    transforms.Resize(size=(image_height, image_width)),
-                ]
-            ),
-            "text": transforms.Compose(
-                [
-                    BPETokenizer(context_length=text_context_length),
-                ]
-            ),
-        }
-
-        self.transform_validate = {
-            "image": transforms.Compose(
-                [
-                    transforms.Resize(size=(image_height, image_width)),
-                ]
-            ),
-            "audio": transforms.Compose(
-                [
-                    SubSampleAudioFrames(num_frames=num_audio_frames_per_datapoint),
-                ]
-            ),
-            "video": transforms.Compose(
-                [
-                    SubSampleVideoFrames(num_frames=num_video_frames_per_datapoint),
-                    transforms.Resize(size=(image_height, image_width)),
-                ]
-            ),
-            "text": transforms.Compose(
-                [
-                    BPETokenizer(context_length=text_context_length),
-                ]
-            ),
-        }
-
-    def get_data(self, data_filepath, set_cutoff_size, exclude_modalities, **kwargs):
-        train_set = MultiModalDataset(
-            dataset_root=data_filepath,
-            set_name="train",
-            restrict_train_set_size=self.restrict_train_set_size,
-            rescan_paths=self.rescan_paths,
-            transforms=self.transform_train,
-            download=False,
-            exclude_modalities=exclude_modalities,
-        )
-
-        val_set = MultiModalDataset(
-            dataset_root=data_filepath,
-            set_name="val",
-            restrict_train_set_size=self.restrict_train_set_size,
-            rescan_paths=self.rescan_paths,
-            transforms=self.transform_validate,
-            download=False,
-            exclude_modalities=exclude_modalities,
-        )
-
-        test_set = MultiModalDataset(
-            dataset_root=data_filepath,
-            set_name="test",
-            restrict_train_set_size=self.restrict_train_set_size,
-            rescan_paths=self.rescan_paths,
-            transforms=self.transform_validate,
-            download=False,
-            exclude_modalities=exclude_modalities,
-        )
-
-        return train_set, val_set, test_set
-
-
-# build multi view augmentations
 class CIFAR100Loader:
     def __init__(self):
         normalize = transforms.Normalize(
@@ -210,8 +85,13 @@ class CIFAR10Loader:
             ]
         )
 
+    @staticmethod
+    def add_model_specific_args():
+        download = False,
+        val_set_percentage = 0.1
+
     def get_data(
-        self, data_filepath, val_set_percentage, random_split_seed, download=False
+            self, data_filepath, val_set_percentage, random_split_seed, download=False
     ):
         train_set = datasets.CIFAR10(
             root=data_filepath,
@@ -247,40 +127,25 @@ def collate_fn(batch):
 
 
 def load_dataset(
-    dataset,
-    data_filepath,
-    image_height,
-    image_width,
-    exclude_modalities,
-    batch_size=128,
-    test_batch_size=128,
-    num_workers=0,
-    num_video_frames_per_datapoint=30,
-    num_audio_frames_per_datapoint=44000,
-    text_context_length=77,
-    download=False,
-    prefetch_factor=2,
-    rescan_dataset_files=False,
-    restrict_train_set_size=None,
+        dataset,
+        data_filepath,
+        seed,
+        batch_size=128,
+        test_batch_size=128,
+        num_workers=0,
+        prefetch_factor=2,
 ):
     datasets = {
-        "tali": MultiModalLoader(
-            image_height=image_height,
-            image_width=image_width,
-            num_video_frames_per_datapoint=num_video_frames_per_datapoint,
-            num_audio_frames_per_datapoint=num_audio_frames_per_datapoint,
-            text_context_length=text_context_length,
-            rescan_paths=rescan_dataset_files,
-            restrict_train_set_size=restrict_train_set_size,
-        ),
+        'cifar10': CIFAR10Loader,
+        'cifar100': CIFAR100Loader,
     }
 
     dataloader = datasets[dataset.lower()]
 
     train_set, val_set, test_set = dataloader.get_data(
-        set_cutoff_size=0,
         data_filepath=data_filepath,
-        exclude_modalities=exclude_modalities,
+        val_set_percentage=val_set_percentage,
+        download=download, random_split_seed=seed
     )
 
     dummy_loader = torch.utils.data.DataLoader(

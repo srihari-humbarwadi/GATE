@@ -15,8 +15,8 @@ from pytorch_lightning.loggers import WandbLogger
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
 
 from datasets.dataset_loading_hub import load_dataset
-from systems.system_models import contrastive_logits_labels
-from systems import learning_systems_dict
+from models.system_models import contrastive_logits_labels
+from models import learning_systems_dict
 from utils.arg_parsing import add_extra_option_args, process_args
 from utils.general_utils import compute_accuracy
 from utils.logging_helpers import get_logging

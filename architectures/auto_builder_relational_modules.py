@@ -4,15 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from rich import print
-from rich.logging import RichHandler
 
-FORMAT = "%(message)s"
-logging.basicConfig(
-    level=logging.INFO, format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
-)
-
-logging = logging.getLogger("rich")
 
 
 def check_spatial_size_maybe_avg_pool(x, avg_pool_output_size):

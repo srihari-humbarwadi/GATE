@@ -4,7 +4,7 @@ import torch
 from PIL import Image
 from rich import print
 
-from models.clip import clip
+from architectures.clip import clip
 
 # write your own version of this and have a tests that confirms that it predicts the
 # same stuff

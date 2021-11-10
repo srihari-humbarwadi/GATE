@@ -2,7 +2,7 @@ from typing import List, Union
 
 import torch
 
-from models.tokenizers.simple_tokenizer import SimpleTokenizer
+from architectures.tokenizers.simple_tokenizer import SimpleTokenizer
 
 
 def tokenize(
@@ -19,12 +19,15 @@ def tokenize(
         An input string or a list of input strings to tokenize
 
     context_length : int
-        The context length to use; all CLIP models use 77 as the context length
+        The context length to use; all CLIP architectures use 77 as the context length
 
     Returns
     -------
     A two-dimensional tensor containing the resulting tokens, shape = [number of input
     strings, context_length]
+    :param context_length:
+    :param sequence_of_text:
+    :param tokenizer:
     """
     if isinstance(sequence_of_text, str):
         sequence_of_text = [sequence_of_text]

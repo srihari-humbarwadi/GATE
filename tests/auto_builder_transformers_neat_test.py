@@ -1,12 +1,12 @@
 import torch
 
-from models.auto_builder_densenet import AutoDenseNet
-from models.auto_builder_models import (
+from architectures.auto_builder_densenet import AutoDenseNet
+from architectures.auto_builder_models import (
     EasyPeasyConvNet,
     EasyPeasyConvRelationalNet,
     EasyPeasyResNet,
 )
-from models.auto_builder_transformers import (
+from architectures.auto_builder_transformers import (
     AutoConv1DTransformersFlatten,
     AutoConv2DTransformersFlatten,
     AutoTextTransformersFlatten,

@@ -1,11 +1,7 @@
-from .auto_builder_densenet import (
-    AutoConv1DDenseNet,
-    AutoConv1DDenseNetVideo,
-    AutoConv2DDenseNet,
-    AutoTextNet,
-)
-from .auto_builder_models import *
-from .auto_builder_transformers import *
-from .densenet import *
-from .resnet import *
-from .wresnet import *
+from pytorch_lightning import LightningModule
+
+from .base import DataTaskModalityAgnosticSystem
+
+learning_systems_dict = {
+    DataTaskModalityAgnosticSystem.__class__.__name__: DataTaskModalityAgnosticSystem
+}
