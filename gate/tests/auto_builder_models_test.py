@@ -1,12 +1,9 @@
 import torch
-
-from architectures.auto_builder_densenet import AutoDenseNet
-from architectures.auto_builder_models import (
-    EasyPeasyConvNet,
-    EasyPeasyConvRelationalNet,
-    EasyPeasyResNet,
+from gate.architectures.auto_builder_densenet import AutoConv2DDenseNet
+from gate.architectures.auto_builder_models import (
+    AutoConvNet,
+    AutoResNet,
 )
-from architectures.auto_builder_transformers import AutoViTFlatten, AutoViTLastTimeStep
 
 RUN_CUDA_test = False
 
@@ -27,7 +24,7 @@ def apply_to_test_device(model, input_tensor):
 
 
 def test_EasyPeasyConvNet_layer_output_shape():
-    model = EasyPeasyConvNet(
+    model = AutoConvNet(
         num_classes=10,
         kernel_size=3,
         filter_list=[16, 8, 64],
@@ -41,28 +38,10 @@ def test_EasyPeasyConvNet_layer_output_shape():
     assert out.shape[1] == 10
     assert len(out.shape) == 2
 
-
-def test_EasyPeasyConvRelationalNet_layer_output_shape():
-    model = EasyPeasyConvRelationalNet(
-        num_classes=10,
-        kernel_size=3,
-        filter_list=[16, 8, 64],
-        stride=1,
-        padding=1,
-        relational_num_filters=64,
-        relational_num_outputs=64,
-        relational_num_layers=3,
-    )
-    dummy_x = torch.zeros((8, 3, 128, 128))
-    model, dummy_x = apply_to_test_device(model, dummy_x)
-    out, features = model.forward(dummy_x)
-
-    assert out.shape[1] == 10
-    assert len(out.shape) == 2
 
 
 def test_EasyPeasyResNet_layer_output_shape():
-    model = EasyPeasyResNet(
+    model = AutoResNet(
         num_classes=10,
         model_name_to_download="resnet18",
         pretrained=True,
@@ -74,7 +53,7 @@ def test_EasyPeasyResNet_layer_output_shape():
     assert out.shape[1] == 10
     assert len(out.shape) == 2
 
-    model = EasyPeasyResNet(
+    model = AutoResNet(
         num_classes=10,
         model_name_to_download="resnet18",
         pretrained=False,

@@ -1,14 +1,12 @@
 import argparse
-import json
 import logging
 import pprint
 import sys
-from collections import defaultdict, namedtuple
 
 from rich import print
 from rich.logging import RichHandler
 
-from utils.storage import load_dict_from_json
+from gate.utils.storage import load_dict_from_json
 
 FORMAT = "%(message)s"
 logging.basicConfig(
@@ -61,100 +59,6 @@ def get_arguments_passed_on_command_line(arg_dict):
         for option in arg_dict.keys()
         if command_line_argument.lower().replace("--", "") == option.lower()
     ]
-
-
-def add_extra_option_args(parser):
-    """
-    Argument parser
-    :return: parsed arguments
-    """
-    # model
-
-    parser.add_argument("--system.type", type=str)
-
-    parser.add_argument("--model.embedding_output_size", type=int, default=64)
-
-    parser.add_argument("--model.image_embedding_grid_patch_size", type=int, default=16)
-
-    parser.add_argument(
-        "--model.image_embedding_transformer_num_filters", type=int, default=128
-    )
-
-    parser.add_argument(
-        "--model.image_embedding_transformer_num_layers", type=int, default=8
-    )
-
-    parser.add_argument(
-        "--model.image_embedding_transformer_num_heads", type=int, default=2
-    )
-
-    parser.add_argument(
-        "--model.image_embedding_transformer_dim_feedforward", type=int, default=128
-    )
-
-    parser.add_argument(
-        "--model.image_embedding_stem_conv_bias", default=False, action="store_true"
-    )
-
-    parser.add_argument("--model.audio_embedding_grid_patch_size", type=int, default=16)
-
-    parser.add_argument(
-        "--model.audio_embedding_transformer_num_filters", type=int, default=128
-    )
-
-    parser.add_argument(
-        "--model.audio_embedding_transformer_num_layers", type=int, default=8
-    )
-
-    parser.add_argument(
-        "--model.audio_embedding_transformer_num_heads", type=int, default=2
-    )
-
-    parser.add_argument(
-        "--model.audio_embedding_transformer_dim_feedforward", type=int, default=128
-    )
-
-    parser.add_argument(
-        "--model.audio_embedding_stem_conv_bias", default=False, action="store_true"
-    )
-
-    parser.add_argument(
-        "--model.text_embedding_transformer_num_filters", type=int, default=128
-    )
-
-    parser.add_argument(
-        "--model.text_embedding_transformer_num_layers", type=int, default=2
-    )
-
-    parser.add_argument(
-        "--model.text_embedding_transformer_num_heads", type=int, default=2
-    )
-
-    parser.add_argument(
-        "--model.text_embedding_transformer_dim_feedforward", type=int, default=128
-    )
-
-    parser.add_argument("--model.text_embedding_vocab_size", type=int, default=49408)
-
-    parser.add_argument("--model.text_embedding_context_length", type=int, default=77)
-
-    parser.add_argument(
-        "--model.video_embedding_transformer_num_filters", type=int, default=64
-    )
-
-    parser.add_argument(
-        "--model.video_embedding_transformer_num_layers", type=int, default=2
-    )
-
-    parser.add_argument(
-        "--model.video_embedding_transformer_num_heads", type=int, default=8
-    )
-
-    parser.add_argument(
-        "--model.video_embedding_transformer_dim_feedforward", type=int, default=128
-    )
-
-    return parser
 
 
 def process_args(parser):

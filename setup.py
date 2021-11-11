@@ -1,9 +1,16 @@
 from setuptools import setup
 
 setup(
-    name="GATE",
+    name="gate",
     version="0.1",
-    packages=["architectures", "datasets", "experiment_files"],
+    packages=[
+        "gate.adaptation_schemes",
+        "gate.architectures",
+        "gate.datasets",
+        "gate.models",
+        "gate.tasks",
+        "gate.utils",
+    ],
     url="",
     license="",
     author="Antreas Antoniou",

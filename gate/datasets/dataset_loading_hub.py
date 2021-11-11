@@ -1,15 +1,12 @@
-import logging
 from collections import namedtuple
 
 import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
-from rich.logging import RichHandler
-from torch import nn
 from torch.utils.data import Subset
-from architectures.tokenizers.tokenizer_utils import SimpleTokenizer, tokenize
 
 ImageShape = namedtuple("ImageShape", ["channels", "width", "height"])
+
 
 class CIFAR100Loader:
     def __init__(self):
@@ -33,8 +30,19 @@ class CIFAR100Loader:
             ]
         )
 
+    @staticmethod
+    def add_dataset_specific_args(parser):
+        parser.add_argument("--data.download", default=False, action="store_true")
+        parser.add_argument("--data.val_set_percentage", type=float, default=0.1)
+        return parser
+
     def get_data(
-        self, data_filepath, val_set_percentage, random_split_seed, download=False
+            self,
+            data_filepath,
+            val_set_percentage,
+            random_split_seed,
+            download=False,
+            **kwargs
     ):
         train_set = datasets.CIFAR100(
             root=data_filepath,
@@ -86,12 +94,18 @@ class CIFAR10Loader:
         )
 
     @staticmethod
-    def add_model_specific_args():
-        download = False,
-        val_set_percentage = 0.1
+    def add_dataset_specific_args(parser):
+        parser.add_argument("--data.download", default=False, action="store_true")
+        parser.add_argument("--data.val_set_percentage", type=float, default=0.1)
+        return parser
 
     def get_data(
-            self, data_filepath, val_set_percentage, random_split_seed, download=False
+            self,
+            data_filepath,
+            val_set_percentage,
+            random_split_seed,
+            download=False,
+            **kwargs
     ):
         train_set = datasets.CIFAR10(
             root=data_filepath,
@@ -126,26 +140,32 @@ def collate_fn(batch):
     return torch.utils.data.dataloader.default_collate(batch)
 
 
+def add_dataset_args(parser):
+    datasets = {
+        "cifar10": CIFAR10Loader,
+        "cifar100": CIFAR100Loader,
+    }
+
+    parser = datasets[parser.parse_args().dataset].add_dataset_specific_args(parser)
+
+    return parser
+
+
 def load_dataset(
         dataset,
         data_filepath,
         seed,
+        data_args,
         batch_size=128,
         test_batch_size=128,
         num_workers=0,
         prefetch_factor=2,
 ):
-    datasets = {
-        'cifar10': CIFAR10Loader,
-        'cifar100': CIFAR100Loader,
-    }
 
     dataloader = datasets[dataset.lower()]
 
     train_set, val_set, test_set = dataloader.get_data(
-        data_filepath=data_filepath,
-        val_set_percentage=val_set_percentage,
-        download=download, random_split_seed=seed
+        data_filepath=data_filepath, random_split_seed=seed, **data_args
     )
 
     dummy_loader = torch.utils.data.DataLoader(

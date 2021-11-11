@@ -6,7 +6,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-
 def check_spatial_size_maybe_avg_pool(x, avg_pool_output_size):
     """
     Receives a tensor x, and a kernel size and checks spatial dimensions, potentially avg pooling if the size is not as expected

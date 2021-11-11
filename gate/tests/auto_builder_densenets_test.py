@@ -1,12 +1,6 @@
 import torch
 
-from architectures.auto_builder_densenet import AutoDenseNet
-from architectures.auto_builder_models import (
-    EasyPeasyConvNet,
-    EasyPeasyConvRelationalNet,
-    EasyPeasyResNet,
-)
-from architectures.auto_builder_transformers import AutoViTFlatten, AutoViTLastTimeStep
+from gate.architectures import AutoConv2DDenseNet
 
 RUN_CUDA_test = False
 
@@ -27,7 +21,7 @@ def apply_to_test_device(model, input_tensor):
 
 
 def test_AutoDenseNet_layer_output_shape():
-    model = AutoDenseNet(
+    model = AutoConv2DDenseNet(
         num_classes=10,
         num_filters=16,
         num_stages=3,
@@ -44,7 +38,7 @@ def test_AutoDenseNet_layer_output_shape():
 
 
 def test_AutoDenseNetDilated_layer_output_shape():
-    model = AutoDenseNet(
+    model = AutoConv2DDenseNet(
         num_classes=10,
         num_filters=16,
         num_stages=3,
@@ -61,7 +55,7 @@ def test_AutoDenseNetDilated_layer_output_shape():
 
 
 def test_AutoDenseNetSqueezeExcite_layer_output_shape():
-    model = AutoDenseNet(
+    model = AutoConv2DDenseNet(
         num_classes=10,
         num_filters=16,
         num_stages=3,
@@ -78,7 +72,7 @@ def test_AutoDenseNetSqueezeExcite_layer_output_shape():
 
 
 def test_AutoDenseNetDilatedSqueezeExcite_layer_output_shape():
-    model = AutoDenseNet(
+    model = AutoConv2DDenseNet(
         num_classes=10,
         num_filters=16,
         num_stages=3,
@@ -95,7 +89,7 @@ def test_AutoDenseNetDilatedSqueezeExcite_layer_output_shape():
 
 
 def test_AutoDenseNetRelationalPool_layer_output_shape():
-    model = AutoDenseNet(
+    model = AutoConv2DDenseNet(
         num_classes=10,
         num_filters=16,
         num_stages=3,
@@ -113,7 +107,7 @@ def test_AutoDenseNetRelationalPool_layer_output_shape():
 
 
 def test_AutoDenseNetDilatedRelational_layer_output_shape():
-    model = AutoDenseNet(
+    model = AutoConv2DDenseNet(
         num_classes=10,
         num_filters=16,
         num_stages=3,

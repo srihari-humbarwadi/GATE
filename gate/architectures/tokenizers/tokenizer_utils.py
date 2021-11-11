@@ -1,7 +1,6 @@
 from typing import List, Union
 
 import torch
-
 from architectures.tokenizers.simple_tokenizer import SimpleTokenizer
 
 

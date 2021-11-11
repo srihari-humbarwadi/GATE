@@ -1,34 +1,26 @@
 from __future__ import print_function
 
 import logging
-import os
-import pathlib
-from collections import OrderedDict
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from clip.model import LayerNorm, Transformer
-from einops import rearrange, reduce, repeat
-from rich import print
-from rich.logging import RichHandler
-
-from architectures.auto_builder_densenet import Permute
-from architectures.auto_builder_models import (
+from gate.architectures.auto_builder_models import (
     ClassificationModel,
     SqueezeExciteConv1dBNLeakyReLU,
 )
-from utils.storage import download_file
+from clip.model import LayerNorm, Transformer
+from einops import rearrange, repeat
 
 
 class FCCNetwork(nn.Module):
     def __init__(
             self,
             num_hidden_features,
-        num_output_features,
-        num_hidden_layers,
-        activation_fn=F.leaky_relu,
+            num_output_features,
+            num_hidden_layers,
+            activation_fn=F.leaky_relu,
     ):
         super(FCCNetwork, self).__init__()
         self.layer_dict = nn.ModuleDict()

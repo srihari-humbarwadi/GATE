@@ -9,6 +9,4 @@ def get_logging(level):
         level=level, format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
     )
 
-    log = logging.getLogger("rich")
-    log.info("Hello, World!")
-    return log
+    return logging.getLogger("rich")

@@ -4,12 +4,13 @@ from dataclasses import dataclass
 
 from train import get_base_argument_parser
 
-from utils.arg_parsing import add_extra_option_args, process_args
-from utils.script_generation_utils.config_utils import (
+from gate.utils.arg_parsing import process_args
+from gate.utils.script_generation_utils.config_utils import (
     generate_hyperparameter_combination_dicts,
     generate_hyperparameter_search_experiment_configs,
 )
-from utils.storage import save_dict_in_json
+from gate.utils.storage import save_dict_in_json
+
 
 # 4. TODO Antreas: implement:
 #  a. grid search (done)

@@ -2,14 +2,11 @@ import argparse
 import logging
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from gate.architectures import AutoConv2DTransformersFlatten
+from datasets import CIFAR10Loader
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
-
-from datasets import CIFAR10Loader, CIFAR100Loader, load_dataset
-from architectures import AutoConv2DTransformersFlatten
-from utils.arg_parsing import process_args
 
 parser = argparse.ArgumentParser()
 # data and I/O

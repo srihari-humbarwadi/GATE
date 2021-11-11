@@ -216,7 +216,7 @@ def download_file(url, filename=None, verbose=False):
         download_file('http://web4host.net/5MB.zip')
     """
     if not filename:
-        local_filename = os.path.join(".", url.split("/")[-1])
+        local_filename = os.path.join("", url.split("/")[-1])
     else:
         local_filename = filename
     r = requests.get(url, stream=True)

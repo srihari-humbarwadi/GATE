@@ -8,25 +8,26 @@ import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+from datasets.dataset_loading_hub import load_dataset
 from pytorch_lightning import seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.core.memory import ModelSummary
 from pytorch_lightning.loggers import WandbLogger
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
 
-from datasets.dataset_loading_hub import load_dataset
-from models.system_models import contrastive_logits_labels
-from models import learning_systems_dict
-from utils.arg_parsing import add_extra_option_args, process_args
-from utils.general_utils import compute_accuracy
-from utils.logging_helpers import get_logging
-from utils.storage import build_experiment_folder
+from gate.datasets import add_dataset_args
+from gate.models import learning_systems_dict
+from gate.utils.arg_parsing import process_args
+from gate.utils.general_utils import compute_accuracy
+from gate.utils.logging_helpers import get_logging
+from gate.utils.storage import build_experiment_folder
 
 
 def get_base_argument_parser():
     parser = argparse.ArgumentParser()
     # data and I/O
     parser.add_argument("--dataset_name", type=str, default="tali")
+    parser.add_argument("--system.type", type=str, default="ResNet")
     parser.add_argument("--rescan_dataset_files", default=False, action="store_true")
     parser.add_argument("--offline_mode", default=False, action="store_true")
     parser.add_argument("--upload_model_weights", default=False, action="store_true")
@@ -111,8 +112,8 @@ class LightningExperiment(pl.LightningModule):
         self.model.build(dummy_batch)
 
     @staticmethod
-    def add_model_specific_args(args):
-        return args
+    def add_model_specific_args(parser):
+        return parser
 
     def forward(self, x_image, x_audio, x_text, x_video):
 
@@ -283,6 +284,8 @@ if __name__ == "__main__":
 
     argument_parser = pl.Trainer.add_argparse_args(argument_parser)
     argument_parser = LightningExperiment.add_model_specific_args(argument_parser)
+    argument_parser = add_dataset_args(parser=argument_parser)
+    argument_parser = learning_systems_dict[argument_parser.parse_args().system.type]
     args = process_args(argument_parser)
     logging = get_logging(level=args.level)
 
@@ -318,6 +321,7 @@ if __name__ == "__main__":
         data_filepath = environment_data_filepath
     else:
         data_filepath = args.data_filepath
+
     (
         dummy_set_loader,
         train_set_loader,
@@ -361,7 +365,7 @@ if __name__ == "__main__":
             tar.add(file)
 
     wandb_instance = WandbLogger(
-        project="TALI",
+        project="GATE",
         save_dir=f"{args.logs_path}/{args.experiment_name}/",
         offline=args.offline_mode,
         log_model=args.upload_model_weights,

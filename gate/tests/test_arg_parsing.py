@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 
 def test_get_arguments_passed_on_command_line():
-    from utils.arg_parsing import get_arguments_passed_on_command_line
+    from gate.utils.arg_parsing import get_arguments_passed_on_command_line
 
     # tests that the arguments on the command line are extracted properly
 
@@ -25,7 +25,7 @@ def test_get_arguments_passed_on_command_line():
 def test_merge_json_with_mutable_arguments():
     import json
 
-    from utils.arg_parsing import merge_json_with_mutable_arguments
+    from gate.utils.arg_parsing import merge_json_with_mutable_arguments
 
     # tests that the json args get overwritten
     # dummy arg dict object

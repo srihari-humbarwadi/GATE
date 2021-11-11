@@ -4,7 +4,6 @@ import os
 
 import torch
 import torchvision.models as models
-
 from datasets import dataset_loading_hub as data_loaders
 
 DATA_LOC = os.environ.get("PYTORCH_DATA_LOC")

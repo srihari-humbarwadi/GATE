@@ -7,9 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import logging
-
-from architectures.auto_builder_models import (
+from gate.architectures.auto_builder_models import (
     ClassificationModel,
     Conv1dBNLeakyReLU,
     Conv2dBNLeakyReLU,
