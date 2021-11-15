@@ -10,6 +10,7 @@ from gate.adaptation_schemes import adaptation_scheme_library_dict
 from gate.datasets import load_dataset
 from gate.models import model_library_dict
 from gate.tasks import task_library_dict
+from gate.utils.general_utils import compute_accuracy
 
 
 class Task(pl.LightningModule):
@@ -25,6 +26,7 @@ class Task(pl.LightningModule):
         self.adaptation_scheme_args = adaptation_scheme_args
         self.full_args = full_args
         self.args = self.hparams.args
+        self.task_metrics = None
 
     def build(self, dummy_batch):
         return NotImplementedError
@@ -93,26 +95,24 @@ class GenericTask(Task):
 
     def training_step(self, batch, batch_idx):
         iter_metrics = self.learning_system.train_step(
-            batch=batch, metrics=self.metrics
+            batch=batch, metrics=self.task_metrics
         )
 
-        self.collect_metrics(metrics_dict=iter_metrics,
-                             phase_name="training")
+        self.collect_metrics(metrics_dict=iter_metrics, phase_name="training")
         return iter_metrics["loss"]
 
     def validation_step(self, batch, batch_idx):
-        iter_metrics = self.learning_system.evaluation_step(batch=batch,
-                                                            metrics=self.metrics)
-
-        self.collect_metrics(metrics_dict=iter_metrics,
-                             phase_name="validation")
+        iter_metrics = self.learning_system.evaluation_step(
+            batch=batch, metrics=self.task_metrics
+        )
+        self.collect_metrics(metrics_dict=iter_metrics, phase_name="validation")
 
     def test_step(self, batch, batch_idx):
-        iter_metrics = self.learning_system.evaluation_step(batch=batch,
-                                                            metrics=self.metrics)
+        iter_metrics = self.learning_system.evaluation_step(
+            batch=batch, metrics=self.task_metrics
+        )
 
-        self.collect_metrics(metrics_dict=iter_metrics,
-                             phase_name="testing")
+        self.collect_metrics(metrics_dict=iter_metrics, phase_name="testing")
 
     def predict_step(
             self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None
@@ -135,7 +135,44 @@ class ImageClassificationTask(GenericTask):
     def __init__(
             self, data_args, task_args, model_args, adaptation_scheme_args, full_args
     ):
+        self.task_metrics = {
+            "cross_entropy": lambda x, y: F.cross_entropy(input=x, target=y),
+            "accuracy": lambda x, y: compute_accuracy(x, y),
+        }
         super(ImageClassificationTask, self).__init__(
+            data_args, task_args, model_args, adaptation_scheme_args, full_args
+        )
+
+    def build(self, dummy_batch):
+        input_dict, output_dict = dummy_batch
+        self.model = model_library_dict[self.model_args.type](**self.model_args)
+        self.learning_system = adaptation_scheme_library_dict[
+            self.adaptation_args.type
+        ](
+            model=self.model,
+            input_shape_dict={"image": input_dict["image"].shape[1:]},
+            output_shape_dict={"image": output_dict["image"].shape[1:]},
+            output_layer_activation=nn.Identity(),
+            **self.adaptation_args,
+        )
+
+        self.model.build(dummy_batch)
+        self.learning_system.reset_learning()
+        self.learning_system.set_task_input_output_shapes(
+            input_shape=self.task.input_shape_dict,
+            output_shape=self.task.output_shape_dict,
+        )
+
+
+class ReconstructionTask(GenericTask):
+    def __init__(
+            self, data_args, task_args, model_args, adaptation_scheme_args, full_args
+    ):
+        self.task_metrics = {
+            "mse": lambda x, y: F.mse_loss(input=x, target=y),
+            "mae": lambda x, y: F.l1_loss(input=x, target=y),
+        }
+        super(ReconstructionTask, self).__init__(
             data_args, task_args, model_args, adaptation_scheme_args, full_args
         )
 
