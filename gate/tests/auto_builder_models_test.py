@@ -1,9 +1,7 @@
 import torch
+
 from gate.architectures.auto_builder_densenet import AutoConv2DDenseNet
-from gate.architectures.auto_builder_models import (
-    AutoConvNet,
-    AutoResNet,
-)
+from gate.architectures.auto_builder_models import AutoConvNet, AutoResNet
 
 RUN_CUDA_test = False
 
@@ -37,7 +35,6 @@ def test_EasyPeasyConvNet_layer_output_shape():
 
     assert out.shape[1] == 10
     assert len(out.shape) == 2
-
 
 
 def test_EasyPeasyResNet_layer_output_shape():

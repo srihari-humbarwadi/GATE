@@ -8,7 +8,11 @@ def test_get_arguments_passed_on_command_line():
 
     # tests that the arguments on the command line are extracted properly
 
-    arg_dict = {"thing1": "default1", "thing2": "default2", "thing3": "default3"}
+    arg_dict = {
+        "thing1": "default1",
+        "thing2": "default2",
+        "thing3": "default3",
+    }
 
     args_via_cmd_line = ["--thing1", "--thing2", "--thing3"]
     with patch.object(sys, "argv", args_via_cmd_line):
@@ -18,7 +22,7 @@ def test_get_arguments_passed_on_command_line():
 
     assert len(arguments_passed_to_command_line) == 2
     assert [
-        s.replace("--", "") for s in args_via_cmd_line[1:]
+               s.replace("--", "") for s in args_via_cmd_line[1:]
     ] == arguments_passed_to_command_line
 
 

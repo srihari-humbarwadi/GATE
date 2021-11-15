@@ -27,7 +27,6 @@ def apply_to_test_device(model, input_tensor):
     return model, input_tensor
 
 
-
 def test_Conv2DTransformer_layer_output_shape():
     model = Conv2DTransformer(
         grid_patch_size=16,

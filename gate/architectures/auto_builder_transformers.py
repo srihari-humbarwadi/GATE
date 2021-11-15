@@ -6,12 +6,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from clip.model import LayerNorm, Transformer
+from einops import rearrange, repeat
+
 from gate.architectures.auto_builder_models import (
     ClassificationModel,
     SqueezeExciteConv1dBNLeakyReLU,
 )
-from clip.model import LayerNorm, Transformer
-from einops import rearrange, repeat
 
 
 class FCCNetwork(nn.Module):
@@ -644,7 +645,12 @@ class VideoTransformer(nn.Module):
 
 class VisionTransformer(nn.Module):
     def __init__(
-        self, patch_size: int, width: int, layers: int, heads: int, output_dim: int
+            self,
+            patch_size: int,
+            width: int,
+            layers: int,
+            heads: int,
+            output_dim: int,
     ):
         super().__init__()
         self.output_dim = output_dim

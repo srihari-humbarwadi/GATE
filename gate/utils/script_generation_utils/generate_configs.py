@@ -11,7 +11,6 @@ from gate.utils.script_generation_utils.config_utils import (
 )
 from gate.utils.storage import save_dict_in_json
 
-
 # 4. TODO Antreas: implement:
 #  a. grid search (done)
 #  b. random search (not done)

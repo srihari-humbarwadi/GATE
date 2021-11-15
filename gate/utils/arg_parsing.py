@@ -23,7 +23,9 @@ def merge_json_with_mutable_arguments(json_file_path, arg_dict):
         arg_dict=arg_dict
     )
     print(
-        "arguments_passed_to_command_line", arguments_passed_to_command_line, sys.argv
+        "arguments_passed_to_command_line",
+        arguments_passed_to_command_line,
+        sys.argv,
     )
     for key in config_dict.keys():
         if key in arguments_passed_to_command_line:
@@ -66,7 +68,8 @@ def process_args(parser):
 
     if args.filepath_to_arguments_json_config is not None:
         args_dict = merge_json_with_mutable_arguments(
-            json_file_path=args.filepath_to_arguments_json_config, arg_dict=vars(args)
+            json_file_path=args.filepath_to_arguments_json_config,
+            arg_dict=vars(args),
         )
         args = DictWithDotNotation(args_dict)
 

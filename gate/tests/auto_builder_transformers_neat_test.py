@@ -1,6 +1,6 @@
 import torch
-from gate.architectures.auto_builder_densenet import AutoDenseNet
 
+from gate.architectures.auto_builder_densenet import AutoDenseNet
 from gate.architectures.auto_builder_transformers import (
     AutoConv1DTransformersFlatten,
     AutoConv2DTransformersFlatten,

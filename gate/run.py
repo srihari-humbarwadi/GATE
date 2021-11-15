@@ -1,291 +1,107 @@
 import argparse
 import glob
-import logging
 import os
-import tarfile
 
 import pytorch_lightning as pl
-import torch
-import torch.nn.functional as F
-import torch.optim as optim
-from datasets.dataset_loading_hub import load_dataset
 from pytorch_lightning import seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.core.memory import ModelSummary
 from pytorch_lightning.loggers import WandbLogger
-from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
 
-from gate.datasets import add_dataset_args
-from gate.models import learning_systems_dict
+from gate.datasets import load_dataset
+from gate.datasets.dataset_loading_hub import add_dataset_args
+from gate.models import model_library_dict
 from gate.utils.arg_parsing import process_args
-from gate.utils.general_utils import compute_accuracy
 from gate.utils.logging_helpers import get_logging
 from gate.utils.storage import build_experiment_folder
 
 
 def get_base_argument_parser():
     parser = argparse.ArgumentParser()
-    # data and I/O
-    parser.add_argument("--dataset_name", type=str, default="tali")
-    parser.add_argument("--system.type", type=str, default="ResNet")
-    parser.add_argument("--rescan_dataset_files", default=False, action="store_true")
-    parser.add_argument("--offline_mode", default=False, action="store_true")
-    parser.add_argument("--upload_model_weights", default=False, action="store_true")
-    parser.add_argument("--data_filepath", type=str, default="data/sample_dataset")
 
+    # general
+    parser.add_argument("--general.experiment_name", type=str, default="dev")
+    parser.add_argument("--general.seed", type=int, default=0)
     parser.add_argument(
-        "--logger_level",
+        "--general.logger_level",
         type=str,
         default="NOSET",
         choices=["NOSET", "WARN", "INFO", "ERROR", "CRITICAL", "DEBUG"],
     )
-
-    parser.add_argument("--seed", type=int, default=0)
-
-    parser.add_argument("--exclude_modalities", nargs="+")
-    # 'video, audio, text, image'
-    parser.add_argument("--restrict_train_set_size", type=int, default=None)
-    parser.add_argument("--num_data_provider_workers", type=int, default=8)
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--eval_batch_size", type=int, default=32)
-    parser.add_argument("--image_height", type=int, default=224)
-    parser.add_argument("--image_width", type=int, default=224)
-    parser.add_argument("--num_video_frames_per_datapoint", type=int, default=30)
-    parser.add_argument("--num_audio_frames_per_datapoint", type=int, default=44000)
-    parser.add_argument("--text_context_length", type=int, default=77)
-    parser.add_argument("--prefetch_factor", type=int, default=2)
-    # logging
-    parser.add_argument("--experiment_name", type=str, default="dev")
-    parser.add_argument("--logs_path", type=str, default="log")
-    parser.add_argument("--filepath_to_arguments_json_config", type=str, default=None)
-
-    # optimization
-    parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument(
-        "--scheduler",
+        "--general.filepath_to_arguments_json_config", type=str, default=None
+    )
+
+    # dataset
+    # add additional dataset specific arguments inside the dataset class
+    parser.add_argument("--dataset.name", type=str, default="tali")
+    parser.add_argument(
+        "--dataset.data_filepath", type=str, default="data/sample_dataset"
+    )
+    parser.add_argument("--dataset.batch_size", type=int, default=32)
+    parser.add_argument("--dataset.eval_batch_size", type=int, default=32)
+    parser.add_argument("--dataset.image_height", type=int, default=224)
+    parser.add_argument("--dataset.image_width", type=int, default=224)
+    parser.add_argument(
+        "--dataset.rescan_dataset_files", default=False, action="store_true"
+    )
+    parser.add_argument("--dataset.num_data_provider_workers", type=int, default=8)
+    parser.add_argument("--dataset.prefetch_factor", type=int, default=2)
+
+    # task
+    # add additional task specific arguments inside the task class
+    parser.add_argument("--task.name", type=str, default="tali")
+    # add task specific arguments inside the task class
+
+    # model
+    # add additional model specific arguments inside the model class
+    parser.add_argument("--model.name", type=str, default="ResNet")
+
+    # logging
+    parser.add_argument("--logger.offline_mode", default=False, action="store_true")
+    parser.add_argument(
+        "--logger.upload_model_weights", default=False, action="store_true"
+    )
+
+    parser.add_argument("--logger.logs_path", type=str, default="log")
+
+    # adaptation schcmes
+    # add additional adaptation schcmes specific arguments inside the adaptation
+    # schcmes class
+    parser.add_argument("--adaptation_scheme.learning_rate", type=float, default=0.001)
+    parser.add_argument("--adaptation_scheme.max_epochs", type=int, default=300)
+    parser.add_argument(
+        "--adaptation_scheme.scheduler",
         type=str,
         default="CosineAnnealing",
         help="Scheduler for learning rate annealing: CosineAnnealing | MultiStep",
     )
     parser.add_argument(
-        "--milestones",
-        type=int,
-        nargs="+",
-        default=[60, 120, 160],
-        help="Multi step scheduler annealing milestones",
+        "--adaptation_scheme.optimizer_name",
+        type=str,
+        default="Adam",
+        help="Optimizer?",
     )
-    parser.add_argument("--optim", type=str, default="Adam", help="Optimizer?")
     parser.add_argument(
-        "--min_learning_rate",
+        "--adaptation_scheme.min_learning_rate",
         type=float,
         default=0.0,
         help="Min learning rate the scheduler should anneal towards",
     )
 
-    parser.add_argument("--weight_decay", type=float, default=0)
-    parser.add_argument("--momentum", type=float, default=0.9)
-
-    parser = add_extra_option_args(parser)
+    parser.add_argument("----adaptation_scheme.weight_decay", type=float, default=0)
+    parser.add_argument("----adaptation_scheme.momentum", type=float, default=0.9)
 
     return parser
-
-
-############################################################################## Training
-metrics_to_track = {
-    "cross_entropy": lambda x, y: F.cross_entropy(input=x, target=y),
-    "accuracy": lambda x, y: compute_accuracy(x, y),
-}
-
-
-class LightningExperiment(pl.LightningModule):
-    def __init__(self, dummy_set_loader, args):
-        super(LightningExperiment, self).__init__()
-        # (**args.model)
-        self.save_hyperparameters()
-
-        self.args = self.hparams.args
-
-        dummy_batch = next(iter(dummy_set_loader))
-
-        self.learning_system = learning_systems_dict[args.system.type](**args.system)
-
-        self.model.build(dummy_batch)
-
-    @staticmethod
-    def add_model_specific_args(parser):
-        return parser
-
-    def forward(self, x_image, x_audio, x_text, x_video):
-
-        outputs, cosine_similarities = self.model.forward(
-            image_input=x_image,
-            audio_input=x_audio,
-            text_input=x_text,
-            video_input=x_video,
-        )
-
-        logits, _ = contrastive_logits_labels(
-            torch.stack(list(cosine_similarities.values()))
-        )
-
-        return logits
-
-    def collect_metrics(self, logits, targets, phase_name):
-
-        for metric_key, metric_function in metrics_to_track.items():
-            for measurement_key, measurement_value, target_value in zip(
-                logits.keys(), logits.values(), targets
-            ):
-                self.log(
-                    name=f"{phase_name}/{metric_key}_{measurement_key}",
-                    value=metric_function(
-                        measurement_value.detach(), target_value.detach()
-                    ),
-                    prog_bar=False,
-                    logger=True,
-                    on_step=True,
-                    on_epoch=True,
-                )
-
-            self.log(
-                name=f"{phase_name}/overall_{metric_key}",
-                value=metric_function(
-                    torch.stack(list(logits.values())).detach(), targets.detach()
-                ),
-                prog_bar=True,
-                logger=True,
-                on_step=True,
-                on_epoch=True,
-            )
-
-    def training_step(self, batch, batch_idx):
-
-        if self.exclude_modalities:
-            if "video" in self.exclude_modalities:
-                batch["video"] = None
-
-            if "audio" in self.exclude_modalities:
-                batch["audio"] = None
-
-            if "image" in self.exclude_modalities:
-                batch["image"] = None
-
-            if "text" in self.exclude_modalities:
-                batch["text"] = None
-
-        outputs, cosine_similarities = self.model.forward(
-            image_input=batch["image"],
-            audio_input=batch["audio"],
-            text_input=batch["text"],
-            video_input=batch["video"],
-        )
-
-        logits, targets = contrastive_logits_labels(
-            torch.stack(list(cosine_similarities.values()))
-        )
-        self.collect_metrics(
-            logits=cosine_similarities, targets=targets, phase_name="train"
-        )
-        return {"loss": F.cross_entropy(input=logits, target=targets)}
-
-    def validation_step(self, batch, batch_idx):
-        if self.exclude_modalities:
-            if "video" in self.exclude_modalities:
-                batch["video"] = None
-
-            if "audio" in self.exclude_modalities:
-                batch["audio"] = None
-
-            if "image" in self.exclude_modalities:
-                batch["image"] = None
-
-            if "text" in self.exclude_modalities:
-                batch["text"] = None
-
-        outputs, cosine_similarities = self.model.forward(
-            image_input=batch["image"],
-            audio_input=batch["audio"],
-            text_input=batch["text"],
-            video_input=batch["video"],
-        )
-
-        logits, targets = contrastive_logits_labels(
-            torch.stack(list(cosine_similarities.values()))
-        )
-
-        self.collect_metrics(
-            logits=cosine_similarities, targets=targets, phase_name="validation"
-        )
-
-    def test_step(self, batch, batch_idx):
-
-        if self.exclude_modalities:
-            if "video" in self.exclude_modalities:
-                batch["video"] = None
-
-            if "audio" in self.exclude_modalities:
-                batch["audio"] = None
-
-            if "image" in self.exclude_modalities:
-                batch["image"] = None
-
-            if "text" in self.exclude_modalities:
-                batch["text"] = None
-
-        outputs, cosine_similarities = self.model.forward(
-            image_input=batch["image"],
-            audio_input=batch["audio"],
-            text_input=batch["text"],
-            video_input=batch["video"],
-        )
-
-        logits, targets = contrastive_logits_labels(
-            torch.stack(list(cosine_similarities.values()))
-        )
-
-        self.collect_metrics(
-            logits=cosine_similarities, targets=targets, phase_name="test"
-        )
-
-    def configure_optimizers(self):
-        args = self.args
-        if args.optim.lower() == "sgd":
-            optimizer = optim.SGD(
-                self.model.parameters(),
-                lr=self.args.learning_rate,
-                momentum=self.args.momentum,
-                weight_decay=self.args.weight_decay,
-            )
-        else:
-            optimizer = optim.Adam(
-                self.model.parameters(),
-                lr=args.learning_rate,
-                weight_decay=args.weight_decay,
-            )
-
-        if args.scheduler == "CosineAnnealing":
-            scheduler = CosineAnnealingLR(
-                optimizer=optimizer,
-                T_max=args.max_epochs,
-                eta_min=args.min_learning_rate,
-            )
-        else:
-            scheduler = MultiStepLR(optimizer, milestones=args.milestones, gamma=0.2)
-        logging.info(
-            f"optimizer: {repr(optimizer)},"
-            f"max-epochs: {args.max_epochs},"
-            f"current-epoch: {self.current_epoch}",
-        )
-        return {"optimizer": optimizer, "lr_scheduler": scheduler}
 
 
 if __name__ == "__main__":
     argument_parser = get_base_argument_parser()
 
     argument_parser = pl.Trainer.add_argparse_args(argument_parser)
-    argument_parser = LightningExperiment.add_model_specific_args(argument_parser)
+    argument_parser = LightningExperiment.add_task_specific_args(argument_parser)
     argument_parser = add_dataset_args(parser=argument_parser)
-    argument_parser = learning_systems_dict[argument_parser.parse_args().system.type]
+    argument_parser = model_library_dict[argument_parser.parse_args().model.name]
     args = process_args(argument_parser)
     logging = get_logging(level=args.level)
 
@@ -301,7 +117,7 @@ if __name__ == "__main__":
     # sync_step: Optional[bool] = None,
 
     ############################################################################# Admin
-    saved_models_filepath, logs_filepath, images_filepath = build_experiment_folder(
+    (saved_models_filepath, logs_filepath, images_filepath,) = build_experiment_folder(
         experiment_name=args.experiment_name, log_path=args.logs_path
     )
 
@@ -322,47 +138,7 @@ if __name__ == "__main__":
     else:
         data_filepath = args.data_filepath
 
-    (
-        dummy_set_loader,
-        train_set_loader,
-        val_set_loader,
-        test_set_loader,
-        train_set,
-        val_set,
-        test_set,
-        data_shape,
-    ) = load_dataset(
-        dataset=args.dataset_name,
-        data_filepath=args.data_filepath,
-        image_height=args.image_height,
-        image_width=args.image_width,
-        exclude_modalities=args.exclude_modalities,
-        batch_size=args.batch_size,
-        test_batch_size=args.eval_batch_size,
-        num_workers=args.num_data_provider_workers,
-        download=False,
-        num_video_frames_per_datapoint=args.num_video_frames_per_datapoint,
-        num_audio_frames_per_datapoint=args.num_audio_frames_per_datapoint,
-        text_context_length=args.text_context_length,
-        prefetch_factor=args.prefetch_factor,
-        rescan_dataset_files=args.rescan_dataset_files,
-        restrict_train_set_size=args.restrict_train_set_size,
-    )
-
     seed_everything(args.seed, workers=True)
-
-    # Always save a snapshot of the current state of the code. I've found this helps
-    # immensely if you find that one of your many experiments was actually quite good
-    # but you forgot what you did
-
-    snapshot_filename = f"{saved_models_filepath}/snapshot.tar.gz"
-    filetypes_to_include = [".py"]
-    all_files = []
-    for filetype in filetypes_to_include:
-        all_files += glob.glob("**/*.py", recursive=True)
-    with tarfile.open(snapshot_filename, "w:gz") as tar:
-        for file in all_files:
-            tar.add(file)
 
     wandb_instance = WandbLogger(
         project="GATE",
@@ -370,6 +146,28 @@ if __name__ == "__main__":
         offline=args.offline_mode,
         log_model=args.upload_model_weights,
     )  # your credentials
+
+    # Always save a snapshot of the current state of the code. I've found this helps
+    # immensely if you find that one of your many experiments was actually quite good
+    # but you forgot what you did
+
+    snapshot_filename = f"{saved_models_filepath}/snapshot.tar.gz"
+    filetypes_to_include = [
+        ".py",
+        ".sh",
+        ".gitignore",
+        ".yml",
+        ".md",
+        "LICENSE",
+        ".github",
+    ]
+    all_files = []
+
+    for filetype in filetypes_to_include:
+        all_files += glob.glob("**/*.py", recursive=True)
+
+    for file in all_files:
+        wandb_instance.experiment.log_artifact(file)
 
     trainer_args = pl.Trainer.parse_argparser(arg_parser=argument_parser)
 
@@ -397,7 +195,24 @@ if __name__ == "__main__":
         mode="max",
     )
 
-    experiment = LightningExperiment(dummy_set_loader=dummy_set_loader, args=args)
+    train_set, val_set, test_set, dummy_set = load_dataset(
+        dataset_name=args.dataset.name,
+        data_filepath=args.dataset.data_filepath,
+        seed=args.general.seed,
+        data_args=args.dataset,
+        batch_size=args.batch_size,
+        eval_batch_size=args.eval_batch_size,
+        num_workers=args.num_data_provider_workers,
+        prefetch_factor=args.prefetch_factor,
+    )
+    dummy_batch = next(iter(dummy_set))
+
+    experiment = LightningExperiment(
+        task_args=args.task,
+        model_args=args.model,
+        adaptation_scheme_args=args.adaptation_scheme,
+        full_args=args.args,
+    )
 
     logging.info(
         f"max-epochs: {args.max_epochs}," f"current-epoch: {experiment.current_epoch}",
@@ -420,7 +235,11 @@ if __name__ == "__main__":
         log_every_n_steps=1,
         default_root_dir=f"{args.logs_path}/{args.experiment_name}/",
         resume_from_checkpoint=args.resume_from_checkpoint,
-        callbacks=[checkpoint_loss_callback, checkpoint_acc_callback, lr_monitor],
+        callbacks=[
+            checkpoint_loss_callback,
+            checkpoint_acc_callback,
+            lr_monitor,
+        ],
     )
 
     trainer.fit(experiment, train_set_loader, val_set_loader)

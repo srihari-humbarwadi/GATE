@@ -159,7 +159,10 @@ class ResNet(nn.Module):
         out = out.view(out.shape[0], 512, -1)
 
         out = out.view(
-            out.shape[0], 512, int(np.sqrt(out.shape[-1])), int(np.sqrt(out.shape[-1]))
+            out.shape[0],
+            512,
+            int(np.sqrt(out.shape[-1])),
+            int(np.sqrt(out.shape[-1])),
         )
 
         self.is_layer_built = True
@@ -183,7 +186,10 @@ class ResNet(nn.Module):
         out = out.view(out.shape[0], 512, -1)
 
         out = out.view(
-            out.shape[0], 512, int(np.sqrt(out.shape[-1])), int(np.sqrt(out.shape[-1]))
+            out.shape[0],
+            512,
+            int(np.sqrt(out.shape[-1])),
+            int(np.sqrt(out.shape[-1])),
         )
 
         return out
@@ -252,7 +258,13 @@ class FullyConnectedLayer(nn.Module):
 
 class Conv2dBNLeakyReLU(nn.Module):
     def __init__(
-        self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
+            self,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation=1,
+            bias=False,
     ):
         super(Conv2dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -281,7 +293,10 @@ class Conv2dBNLeakyReLU(nn.Module):
         out = self.conv.forward(out)
 
         self.bn = nn.BatchNorm2d(
-            track_running_stats=True, affine=True, num_features=out.shape[1], eps=1e-5
+            track_running_stats=True,
+            affine=True,
+            num_features=out.shape[1],
+            eps=1e-5,
         )
 
         out = self.bn.forward(out)
@@ -313,7 +328,13 @@ class Conv2dBNLeakyReLU(nn.Module):
 
 class Conv1dBNLeakyReLU(nn.Module):
     def __init__(
-        self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
+            self,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation=1,
+            bias=False,
     ):
         super(Conv1dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -342,7 +363,10 @@ class Conv1dBNLeakyReLU(nn.Module):
         out = self.conv.forward(out)
 
         self.bn = nn.BatchNorm1d(
-            track_running_stats=True, affine=True, num_features=out.shape[1], eps=1e-5
+            track_running_stats=True,
+            affine=True,
+            num_features=out.shape[1],
+            eps=1e-5,
         )
 
         out = self.bn.forward(out)
@@ -374,7 +398,13 @@ class Conv1dBNLeakyReLU(nn.Module):
 
 class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
     def __init__(
-        self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
+            self,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation=1,
+            bias=False,
     ):
         super(SqueezeExciteConv2dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -427,7 +457,10 @@ class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
         out = self.conv.forward(out)
 
         self.bn = nn.BatchNorm2d(
-            track_running_stats=True, affine=True, num_features=out.shape[1], eps=1e-5
+            track_running_stats=True,
+            affine=True,
+            num_features=out.shape[1],
+            eps=1e-5,
         )
 
         out = self.bn.forward(out)
@@ -473,7 +506,13 @@ class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
 
 class SqueezeExciteConv1dBNLeakyReLU(nn.Module):
     def __init__(
-        self, out_channels, kernel_size, stride, padding, dilation=1, bias=False
+            self,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation=1,
+            bias=False,
     ):
         super(SqueezeExciteConv1dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -524,7 +563,10 @@ class SqueezeExciteConv1dBNLeakyReLU(nn.Module):
         out = self.conv.forward(out)
 
         self.bn = nn.BatchNorm1d(
-            track_running_stats=True, affine=True, num_features=out.shape[1], eps=1e-5
+            track_running_stats=True,
+            affine=True,
+            num_features=out.shape[1],
+            eps=1e-5,
         )
 
         out = self.bn.forward(out)
@@ -753,7 +795,10 @@ class AutoResNet(ClassificationModel):
             AvgPoolFlexibleDimension,
         ]
         feature_embeddings_args = [
-            dict(model_name_to_download=model_name_to_download, pretrained=pretrained),
+            dict(
+                model_name_to_download=model_name_to_download,
+                pretrained=pretrained,
+            ),
             dict(dim=2),
             dict(dim=2),
         ]

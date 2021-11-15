@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 # assume N data domains, and T tasks, and M modalities
 # flexible skeleton
 # a forward pass for each modality
@@ -63,29 +62,28 @@ class DataTaskModalityAgnosticModel(nn.Module):
             "self.__class__.__name__} "
         )
 
-    # def optimizer(self):
-    #     return NotImplementedError(
-    #         f"Optimizer not implemented in model: " f"{self.__class__.__name__}"
-    #     )
-    #
-    # def train_step(self, x, y):
-    #     return NotImplementedError(
-    #         f"Train step not implemented in model: " f"{self.__class__.__name__}"
-    #     )
-    #
-    # def eval_step(self, x, y):
-    #     return NotImplementedError(
-    #         f"Evaluation step not implemented in model: " f"{self.__class__.__name__}"
-    #     )
+
+# perhaps in the future try a single forward pass outputing a dictionary with
+# different modalities
+
+# learning_system.reset_learning()
+# learning_system.set_task_input_output_shapes(
+#     input_shape=self.input_shape,
+#     output_shape=self.output_shape,
+# )
+# iter_metrics = learning_system.train_step(
+# inputs=x, targets=y, metrics=self.metrics
+# )
 
 
 class ResNet(DataTaskModalityAgnosticModel):
     def __init__(self, model_name_to_download, pretrained, audio_kernel_size):
-        print(
+        logging.info(
             f"Init {self.__class__.__name__} with {model_name_to_download}, "
             f"{pretrained}"
         )
         super(ResNet, self).__init__(modalities_supported={"image", "audio"})
+
         self.model_name_to_download = model_name_to_download
         self.pretrained = pretrained
         self.resnet_image_embedding = torch.hub.load(
@@ -99,9 +97,29 @@ class ResNet(DataTaskModalityAgnosticModel):
         self.resnet_image_embedding.avgpool = nn.Identity()  # remove global
 
         self.resnet_audio_to_image_conv = nn.Conv1d(
-            in_channels=2, out_channels=3, bias=True, kernel_size=audio_kernel_size
+            in_channels=2,
+            out_channels=3,
+            bias=True,
+            kernel_size=audio_kernel_size,
         )
+        self._input_shape = {"image": (3, 224, 224), "audio": (2, 44000)}
         # pooling layer
+
+    @property
+    def input_shape(self):
+        return self._input_shape
+
+    @input_shape.setter
+    def input_shape(self, value):
+        self.setup_input_shape(input_shape=value["image"], modality="image")
+        self.setup_input_shape(input_shape=value["audio"], modality="audio")
+        self._input_shape = value
+
+    def setup_input_shape(self, input_shape, modality):
+        if modality == "image":
+            logging.info(f"Setting input shape for image embedding to {input_shape}")
+        elif modality == "audio":
+            logging.info(f"Setting input shape for audio embedding to {input_shape}")
 
     def forward_image(self, x):
         # expects b, c, w, h input_shape
@@ -115,7 +133,7 @@ class ResNet(DataTaskModalityAgnosticModel):
 
         return self.resnet_image_embedding(x)
 
-    def forward_audio(self, x):
+    def forward_audio(self, x):  # sourcery skip: square-identity
         # expects b, c, sequence_length input_shape
 
         if len(x.shape) != 3:
