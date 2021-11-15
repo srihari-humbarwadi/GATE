@@ -150,7 +150,7 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
             for metric_key, metric_function in metrics.items()
         }
 
-    def inference_step(self, batch):
+    def predict_step(self, batch):
         input_dict, target_dict = batch
         features = self.model.forward_image(input_dict["image"])
         features_flatten = features.view((features.shape[0], -1))
