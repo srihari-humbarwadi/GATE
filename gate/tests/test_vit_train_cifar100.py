@@ -31,7 +31,7 @@ parser.add_argument("--prefetch_factor", type=int, default=2)
 args = parser.parse_args()
 
 data = CIFAR10Loader()
-train_data, val_data, test_data, num_labels = data.get_data(
+train_data, val_data, test_data, num_labels = data.__call__(
     data_filepath="../../datasets",
     val_set_percentage=0.1,
     random_split_seed=1,

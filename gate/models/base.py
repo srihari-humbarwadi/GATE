@@ -28,7 +28,7 @@ import torch.nn.functional as F
 
 
 def generic_missing_forward(object, modality_name):
-    return NotImplementedError(
+    raise NotImplementedError(
         f"forward_{modality_name} method not implemented in model: "
         f"{object.__class__.__name__} "
     )
@@ -57,9 +57,9 @@ class DataTaskModalityAgnosticModel(nn.Module):
 
     @staticmethod
     def add_model_specific_args(parser):
-        return NotImplementedError(
-            "f model specific arguments method was not implemented in "
-            "self.__class__.__name__} "
+        raise NotImplementedError(
+            'model specific arguments method was not implemented'
+            ' in {self.__class__.__name__} '
         )
 
 
@@ -76,13 +76,13 @@ class DataTaskModalityAgnosticModel(nn.Module):
 # )
 
 
-class ResNet(DataTaskModalityAgnosticModel):
+class AudioImageResNet(DataTaskModalityAgnosticModel):
     def __init__(self, model_name_to_download, pretrained, audio_kernel_size):
         logging.info(
             f"Init {self.__class__.__name__} with {model_name_to_download}, "
             f"{pretrained}"
         )
-        super(ResNet, self).__init__(modalities_supported={"image", "audio"})
+        super(AudioImageResNet, self).__init__(modalities_supported={"image", "audio"})
 
         self.model_name_to_download = model_name_to_download
         self.pretrained = pretrained
@@ -105,6 +105,16 @@ class ResNet(DataTaskModalityAgnosticModel):
         self._input_shape = {"image": (3, 224, 224), "audio": (2, 44000)}
         # pooling layer
 
+    @staticmethod
+    def add_model_specific_args(parser):
+        parser.add_argument("--model.model_name_to_download", default=False,
+                            action="store_true")
+        parser.add_argument("--model.pretrained", default=False,
+                            action="store_true")
+        parser.add_argument("--model.audio_kernel_size", type=int, default=5)
+
+        return parser
+
     @property
     def input_shape(self):
         return self._input_shape
@@ -124,12 +134,11 @@ class ResNet(DataTaskModalityAgnosticModel):
     def forward_image(self, x):
         # expects b, c, w, h input_shape
 
-        if len(x.shape) != 4:
-            return ValueError(
-                f"Input shape for class {self.__class__.__name__} in "
-                f"method forward_image must be 4, instead it is "
-                f"{len(x.shape)}, for shape {x.shape}"
-            )
+        assert len(x.shape) == 4, ValueError(
+            f"Input shape for class {self.__class__.__name__} in "
+            f"method forward_image must be 4, instead it is "
+            f"{len(x.shape)}, for shape {x.shape}"
+        )
 
         return self.resnet_image_embedding(x)
 

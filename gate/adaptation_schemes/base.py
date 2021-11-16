@@ -10,20 +10,22 @@ class BaseAdaptationScheme(nn.Module):
         super(BaseAdaptationScheme, self).__init__()
 
     def optimizers(self, **kwargs):
-        return NotImplementedError(
+        raise NotImplementedError(
             f"Optimizer not implemented in model: " f"{self.__class__.__name__}"
         )
 
     def train_step(self, **kwargs):
-        return NotImplementedError(
+        raise NotImplementedError(
             f"Train step not implemented in model: " f"{self.__class__.__name__}"
         )
 
     def eval_step(self, **kwargs):
-        return NotImplementedError(
+        raise NotImplementedError(
             f"Evaluation step not implemented in model: " f"{self.__class__.__name__}"
         )
 
+    def add_adaptation_scheme_specific_arguments(self, parser):
+        raise NotImplementedError
 
 # a. Embedding component
 # b. Adaptation_scheme component: Updates weights, provide a dictionary/set of which
@@ -52,6 +54,7 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
             input_shape_dict,
             output_shape_dict,
             output_layer_activation,
+            num_epochs,
             min_learning_rate=1e-6,
             lr=1e-3,
             betas=(0.9, 0.999),
@@ -62,6 +65,7 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
         super(ImageOnlyLinearLayerFineTuningScheme, self).__init__()
         self.model = model
 
+        self.num_epochs = num_epochs
         self.lr = lr
         self.min_learning_rate = min_learning_rate
         self.betas = betas
@@ -79,13 +83,19 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
     ):
         self.build(input_shape_dict, output_shape_dict, output_layer_activation)
 
+    def add_adaptation_scheme_specific_arguments(self, parser):
+        # parser.add_argument("--data.download", default=False, action="store_true")
+        # parser.add_argument("--data.val_set_percentage", type=float, default=0.1)
+        return parser
+
     def build(self, input_shape_dict, output_shape_dict, output_layer_activation):
-        image_dummy_x = torch.randn(input_shape_dict["image"])
+        image_dummy_x = torch.randn((2,) + input_shape_dict["image"])
         model_features = self.model.forward_image(image_dummy_x)
         model_features_flatten = model_features.view((model_features.shape[0], -1))
+        logging.info(f"Output shape of model features {model_features_flatten.shape}")
         self.linear_output_layer = nn.Linear(
             in_features=model_features_flatten.shape[1],
-            out_features=output_shape_dict["image"],
+            out_features=output_shape_dict["image"][0],
             bias=True,
         )
         logits = self.output_layer_activation(

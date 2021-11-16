@@ -8,7 +8,7 @@ datasets = {
     "cifar100": CIFAR100Loader,
 }
 
-
+import logging
 def load_dataset(
         dataset_name,
         data_filepath,
@@ -19,10 +19,11 @@ def load_dataset(
         num_workers=0,
         prefetch_factor=2,
 ):
+    logging.info(f'{dataset_name}')
     dataloader = datasets[dataset_name.lower()]
 
-    train_set, val_set, test_set = dataloader.get_data(
-        data_filepath=data_filepath, random_split_seed=seed, **data_args
+    train_set, val_set, test_set = dataloader(
+        seed=seed, **data_args
     )
 
     dummy_loader = DataLoader(
@@ -81,5 +82,6 @@ def load_dataset(
         train_set,
         val_set,
         test_set,
-        dataloader.image_shape,
+        dataloader.input_shape_dict,
+        dataloader.output_shape_dict,
     )

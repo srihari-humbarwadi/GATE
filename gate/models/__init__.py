@@ -1,5 +1,5 @@
 from pytorch_lightning import LightningModule
 
-from .base import ResNet
+from .base import AudioImageResNet
 
-model_library_dict = {ResNet.__class__.__name__: ResNet}
+model_library_dict = {AudioImageResNet.__name__: AudioImageResNet}

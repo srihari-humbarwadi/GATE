@@ -1,5 +1,6 @@
-from gate.tasks.base_pl import ImageClassificationTask
+from gate.tasks.base import ImageClassificationTask
+import logging
 
 task_library_dict = {
-    ImageClassificationTask.__class__.__name__: ImageClassificationTask
+    ImageClassificationTask.__name__: ImageClassificationTask
 }

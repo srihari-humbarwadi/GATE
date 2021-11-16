@@ -66,13 +66,6 @@ def get_arguments_passed_on_command_line(arg_dict):
 def process_args(parser):
     args = parser.parse_args()
 
-    if args.filepath_to_arguments_json_config is not None:
-        args_dict = merge_json_with_mutable_arguments(
-            json_file_path=args.filepath_to_arguments_json_config,
-            arg_dict=vars(args),
-        )
-        args = DictWithDotNotation(args_dict)
-
     if isinstance(args, argparse.Namespace):
         args = vars(args)
 
