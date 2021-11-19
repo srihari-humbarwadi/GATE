@@ -9,8 +9,8 @@ from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.core.memory import ModelSummary
 from pytorch_lightning.loggers import WandbLogger
 
-from gate.datasets import load_dataset
-from gate.datasets.dataset_loading_hub import add_dataset_args
+from gate.adaptation_schemes import adaptation_scheme_library_dict
+from gate.datasets import datasets_library_dict
 from gate.models import model_library_dict
 from gate.tasks import task_library_dict
 from gate.utils.arg_parsing import process_args
@@ -64,7 +64,7 @@ def get_base_argument_parser():
 
     parser.add_argument("--tracker.logs_path", type=str, default="log")
 
-    # adaptation schcmes
+    # adaptation schemes
     # add additional adaptation schcmes specific arguments inside the adaptation
     # schcmes class
     parser.add_argument(
@@ -99,25 +99,29 @@ def get_base_argument_parser():
     return parser
 
 
-
 if __name__ == "__main__":
 
     argument_parser = get_base_argument_parser()
     argument_parser = pl.Trainer.add_argparse_args(argument_parser)
     temp_args = process_args(argument_parser)
     logging = get_logging(logger_level=temp_args.general.logger_level)
-    logging.info(f'Logging works {temp_args.general.logger_level} {logging}')
-    logging.info(f'Task library stuff {task_library_dict}')
+    logging.info(f"Logging works {temp_args.general.logger_level} {logging}")
+    logging.info(f"Task library stuff {task_library_dict}")
+
     argument_parser = task_library_dict[temp_args.task.name].add_task_specific_args(
         argument_parser
     )
-
-    argument_parser = add_dataset_args(dataset_args=temp_args.dataset,
-                                       parser=argument_parser)
+    argument_parser = datasets_library_dict[
+        temp_args.dataset.name
+    ].add_dataset_specific_args(parser=argument_parser)
 
     argument_parser = model_library_dict[temp_args.model.name].add_model_specific_args(
         argument_parser
     )
+
+    argument_parser = adaptation_scheme_library_dict[
+        temp_args.adaptation_scheme.name
+    ].add_adaptation_scheme_specific_args(parser=argument_parser)
 
     args = process_args(argument_parser)
 
@@ -206,17 +210,10 @@ if __name__ == "__main__":
         mode="max",
     )
 
-    (
-        dummy_set_loader,
-        train_set_loader,
-        val_set_loader,
-        test_set_loader,
-        train_set,
-        val_set,
-        test_set,
-        input_shape_dict,
-        output_shape_dict,
-    ) = load_dataset(
+    data_module = datasets_library_dict[args.data.name]
+    data_module.prepare_data(args)
+    data_module.setup(stage="fit")
+    data_module.configure_dataloaders(
         dataset_name=args.dataset.name,
         data_filepath=args.dataset.data_filepath,
         seed=args.general.seed,
@@ -227,9 +224,9 @@ if __name__ == "__main__":
         prefetch_factor=args.dataset.prefetch_factor,
     )
 
-    dummy_batch = next(iter(dummy_set_loader))
+    dummy_batch = next(iter(data_module.get_dummy_data_loader()))
 
-    experiment = task_library_dict[args.task.name](
+    task_module = task_library_dict[args.task.name](
         task_args=args.task,
         model_args=args.model,
         adaptation_scheme_args=args.adaptation_scheme,
@@ -238,10 +235,10 @@ if __name__ == "__main__":
 
     logging.info(
         f"max-epochs: {args.adaptation_scheme.max_epochs},"
-        f"current-epoch: {experiment.current_epoch}",
+        f"current-epoch: {args.task.current_epoch}",
     )
 
-    summary_callback = ModelSummary(model=experiment, max_depth=1)
+    summary_callback = ModelSummary(model=task_module, max_depth=1)
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
 
@@ -265,10 +262,12 @@ if __name__ == "__main__":
         ],
     )
 
-    codebase = wandb.Artifact('codebase', type='code')
+    codebase = wandb.Artifact("codebase", type="code")
     codebase.add_dir(local_path=os.getcwd())
     wandb_instance.experiment.log_artifact(codebase)
 
-    trainer.fit(experiment, train_set_loader, val_set_loader)
+    data_module.setup(stage="fit")
+    trainer.fit(task_module, datamodule=data_module)
 
-    test_results = trainer.test(dataloaders=test_set_loader)
+    data_module.setup(stage="test")
+    test_results = trainer.test(datamodule=data_module)

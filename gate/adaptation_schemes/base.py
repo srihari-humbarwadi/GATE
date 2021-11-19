@@ -24,8 +24,10 @@ class BaseAdaptationScheme(nn.Module):
             f"Evaluation step not implemented in model: " f"{self.__class__.__name__}"
         )
 
-    def add_adaptation_scheme_specific_arguments(self, parser):
+    @staticmethod
+    def add_adaptation_scheme_specific_args(parser):
         raise NotImplementedError
+
 
 # a. Embedding component
 # b. Adaptation_scheme component: Updates weights, provide a dictionary/set of which
@@ -50,11 +52,8 @@ import logging
 class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
     def __init__(
             self,
-            model,
-            input_shape_dict,
-            output_shape_dict,
-            output_layer_activation,
-            num_epochs,
+            model_instance,
+            task_config,
             min_learning_rate=1e-6,
             lr=1e-3,
             betas=(0.9, 0.999),
@@ -63,19 +62,23 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
             amsgrad=False,
     ):
         super(ImageOnlyLinearLayerFineTuningScheme, self).__init__()
-        self.model = model
+        self.model_instance = model_instance
 
-        self.num_epochs = num_epochs
         self.lr = lr
         self.min_learning_rate = min_learning_rate
         self.betas = betas
         self.eps = eps
         self.weight_decay = weight_decay
         self.amsgrad = amsgrad
-        self.input_shape_dict = input_shape_dict
-        self.output_shape_dict = output_shape_dict
-        self.output_layer_activation = output_layer_activation
-        self.build(input_shape_dict, output_shape_dict, output_layer_activation)
+        self.input_shape_dict = task_config.input_shape_dict
+        self.output_shape_dict = task_config.output_shape_dict
+        self.build(
+            input_shape_dict=task_config.input_shape_dict,
+            output_shape_dict=task_config.output_shape_dict,
+            task_type=task_config.task_type,
+            eval_metric_dict=task_config.eval_metric_dict,
+        )
+
         self.optimizers()
 
     def setup_task_input_output_details(
@@ -83,7 +86,8 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
     ):
         self.build(input_shape_dict, output_shape_dict, output_layer_activation)
 
-    def add_adaptation_scheme_specific_arguments(self, parser):
+    @staticmethod
+    def add_adaptation_scheme_specific_args(parser):
         # parser.add_argument("--data.download", default=False, action="store_true")
         # parser.add_argument("--data.val_set_percentage", type=float, default=0.1)
         return parser
@@ -139,10 +143,22 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
 
         loss = F.cross_entropy(logits, target_dict["image"])
 
-        output_dict = {
-            metric_key: metric_function(logits, target_dict["image"])
+        sigmoid_output_dict = {
+            f"sigmoid_{metric_key}": metric_function(
+                F.sigmoid(logits), target_dict["image"]
+            )
             for metric_key, metric_function in metrics.items()
         }
+
+        softmax_output_dict = {
+            f"softmax_{metric_key}": metric_function(
+                F.softmax(logits), target_dict["image"]
+            )
+            for metric_key, metric_function in metrics.items()
+        }
+
+        output_dict = {}
+
         output_dict["loss"] = loss
 
         return output_dict

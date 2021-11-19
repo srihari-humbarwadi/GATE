@@ -11,6 +11,9 @@ from gate.models import model_library_dict
 from gate.utils.general_utils import compute_accuracy
 
 
+# TODO instead remove full args
+
+
 class Task(pl.LightningModule):
     def __init__(self, task_args, model_args, adaptation_scheme_args, full_args):
         super(Task, self).__init__()

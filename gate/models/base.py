@@ -58,8 +58,8 @@ class DataTaskModalityAgnosticModel(nn.Module):
     @staticmethod
     def add_model_specific_args(parser):
         raise NotImplementedError(
-            'model specific arguments method was not implemented'
-            ' in {self.__class__.__name__} '
+            "model specific arguments method was not implemented"
+            " in {self.__class__.__name__} "
         )
 
 
@@ -74,6 +74,8 @@ class DataTaskModalityAgnosticModel(nn.Module):
 # iter_metrics = learning_system.train_step(
 # inputs=x, targets=y, metrics=self.metrics
 # )
+
+# TODO modalities supported necessary and optional
 
 
 class AudioImageResNet(DataTaskModalityAgnosticModel):
@@ -92,7 +94,7 @@ class AudioImageResNet(DataTaskModalityAgnosticModel):
             pretrained=self.pretrained,
         )
 
-        self.resnet_image_embedding.fc = nn.Identity()  # remove logit laayer
+        self.resnet_image_embedding.fc = nn.Identity()  # remove logit layer
 
         self.resnet_image_embedding.avgpool = nn.Identity()  # remove global
 
@@ -107,10 +109,10 @@ class AudioImageResNet(DataTaskModalityAgnosticModel):
 
     @staticmethod
     def add_model_specific_args(parser):
-        parser.add_argument("--model.model_name_to_download", default=False,
-                            action="store_true")
-        parser.add_argument("--model.pretrained", default=False,
-                            action="store_true")
+        parser.add_argument(
+            "--model.model_name_to_download", default=False, action="store_true"
+        )
+        parser.add_argument("--model.pretrained", default=False, action="store_true")
         parser.add_argument("--model.audio_kernel_size", type=int, default=5)
 
         return parser
