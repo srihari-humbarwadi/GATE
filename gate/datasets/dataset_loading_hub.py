@@ -16,10 +16,10 @@ class BaseDataModule(LightningDataModule):
     def __init__(self, **kwargs):
         super(BaseDataModule, self).__init__()
 
-    def prepare_data(self):
+    def prepare_data(self, **kwargs):
         raise NotImplementedError
 
-    def configure_dataloaders(self):
+    def configure_dataloaders(self, **kwargs):
         raise NotImplementedError
 
     def setup(self, stage: Optional[str] = None):
@@ -45,18 +45,15 @@ class BaseDataModule(LightningDataModule):
 class CIFAR10DataModule(BaseDataModule):
     def __init__(
             self,
-            dataset_name,
-            data_filepath,
-            seed,
-            data_args, **kwargs
+            data_args, general_args, task_args, **kwargs
     ):
         super(CIFAR10DataModule, self).__init__()
         normalize = transforms.Normalize(
             mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010]
         )
-        self.dataset_name = dataset_name
-        self.data_filepath = data_filepath
-        self.seed = seed
+        self.dataset_name = data_args.name
+        self.data_filepath = data_args.data_filepath
+        self.seed = general_args.seed
         self.data_args = data_args
 
         self.input_shape_dict = {"image": (3, 32, 32)}
@@ -114,7 +111,7 @@ class CIFAR10DataModule(BaseDataModule):
             )
         )
 
-    def prepare_data(self):
+    def prepare_data(self, **kwargs):
         # download
         pass
 
@@ -149,7 +146,7 @@ class CIFAR10DataModule(BaseDataModule):
     def dummy_dataloader(self):
         return DataLoader(
             self.val_set,
-            batch_size=self.data_loader_config.batch_size,
+            batch_size=2,
             shuffle=self.data_loader_config.eval_shuffle,
             num_workers=self.data_loader_config.num_workers,
             pin_memory=self.data_loader_config.pin_memory,
@@ -201,20 +198,15 @@ class CIFAR10DataModule(BaseDataModule):
 
 class CIFAR100DataModule(CIFAR10DataModule):
     def __init__(
-            self, dataset_name,
-            data_filepath,
-            seed,
-            data_args, **kwargs
+            self, data_args, general_args, task_args, **kwargs
     ):
-        super(CIFAR100DataModule, self).__init__(dataset_name,
-                                                 data_filepath,
-                                                 seed,
-                                                 data_args, **kwargs)
+        super(CIFAR100DataModule, self).__init__(data_args, general_args,
+                                                 task_args, **kwargs)
 
         normalize = transforms.Normalize(
             mean=[0.5071, 0.4866, 0.4409], std=[0.2009, 0.1984, 0.2023]
         )
-        self.output_shape_dict = {"image": (10,)}
+        self.output_shape_dict = {"image": (100,)}
         self.transform_train = transforms.Compose(
             [
                 transforms.RandomCrop(self.input_shape_dict["image"][1], padding=4),

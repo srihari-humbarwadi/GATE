@@ -63,8 +63,11 @@ def get_arguments_passed_on_command_line(arg_dict):
     ]
 
 
-def process_args(parser):
-    args = parser.parse_args()
+def process_args(parser, parse_only_known_args=False):
+    if parse_only_known_args:
+        args = parser.parse_known_args()[0]
+    else:
+        args = parser.parse_args()
 
     if isinstance(args, argparse.Namespace):
         args = vars(args)

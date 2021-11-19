@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     argument_parser = get_base_argument_parser()
     argument_parser = pl.Trainer.add_argparse_args(argument_parser)
-    temp_args = process_args(argument_parser)
+    temp_args = process_args(argument_parser, parse_only_known_args=True)
     logging = get_logging(logger_level=temp_args.general.logger_level)
     logging.info(f"Logging works {temp_args.general.logger_level} {logging}")
     logging.info(f"Task library stuff {task_library_dict}")
@@ -210,21 +210,19 @@ if __name__ == "__main__":
         mode="max",
     )
 
-    data_module = datasets_library_dict[args.data.name]
-    data_module.prepare_data(args)
+    data_module = datasets_library_dict[args.dataset.name](data_args=args.dataset,
+                                                           general_args=args.general,
+                                                           task_args=args.task)
+    data_module.prepare_data(data_args=args.dataset)
     data_module.setup(stage="fit")
     data_module.configure_dataloaders(
-        dataset_name=args.dataset.name,
-        data_filepath=args.dataset.data_filepath,
-        seed=args.general.seed,
-        data_args=args.dataset,
         batch_size=args.dataset.batch_size,
         eval_batch_size=args.dataset.eval_batch_size,
         num_workers=args.dataset.num_data_provider_workers,
         prefetch_factor=args.dataset.prefetch_factor,
     )
 
-    dummy_batch = next(iter(data_module.get_dummy_data_loader()))
+    dummy_batch = next(iter(data_module.dummy_dataloader()))
 
     task_module = task_library_dict[args.task.name](
         task_args=args.task,

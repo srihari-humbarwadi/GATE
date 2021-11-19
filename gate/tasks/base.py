@@ -14,17 +14,16 @@ from gate.utils.general_utils import compute_accuracy
 # TODO instead remove full args
 
 
-class Task(pl.LightningModule):
+class TaskModule(pl.LightningModule):
     def __init__(self, task_args, model_args, adaptation_scheme_args, full_args):
-        super(Task, self).__init__()
+        super(TaskModule, self).__init__()
 
         self.save_hyperparameters()
         self.task_args = task_args
         self.model_args = model_args
         self.adaptation_scheme_args = adaptation_scheme_args
         self.full_args = full_args
-        self.args = self.hparams.args
-        self.task_metrics = None
+        self.args = self.hparams
 
     def build(self, dummy_batch):
         raise NotImplementedError
@@ -65,9 +64,9 @@ class Task(pl.LightningModule):
         raise NotImplementedError
 
 
-class GenericTask(Task):
+class BaseTask(TaskModule):
     def __init__(self, task_args, model_args, adaptation_scheme_args, full_args):
-        super(GenericTask, self).__init__(
+        super(BaseTask, self).__init__(
             task_args, model_args, adaptation_scheme_args, full_args
         )
 
@@ -131,7 +130,7 @@ class GenericTask(Task):
         }
 
 
-class ImageClassificationTask(GenericTask):
+class ImageClassificationTask(BaseTask):
     def __init__(self, task_args, model_args, adaptation_scheme_args, full_args):
         super(ImageClassificationTask, self).__init__(
             task_args, model_args, adaptation_scheme_args, full_args
@@ -165,7 +164,7 @@ class ImageClassificationTask(GenericTask):
         )
 
 
-class ReconstructionTask(GenericTask):
+class ReconstructionTask(BaseTask):
     def __init__(self, task_args, model_args, adaptation_scheme_args, full_args):
         super(ReconstructionTask, self).__init__(
             task_args, model_args, adaptation_scheme_args, full_args
