@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any, NamedTuple, Optional
 
 import pytorch_lightning as pl
 import torch
@@ -8,8 +8,8 @@ import torch.nn.functional as F
 
 from gate.adaptation_schemes import adaptation_scheme_library_dict
 from gate.models import model_library_dict
+from gate.utils.arg_parsing import DictWithDotNotation
 from gate.utils.general_utils import compute_accuracy
-
 
 # TODO instead remove full args
 
@@ -25,7 +25,7 @@ class TaskModule(pl.LightningModule):
         self.full_args = full_args
         self.args = self.hparams
 
-    def build(self, dummy_batch):
+    def build(self, input_shape_dict, output_shape_dict):
         raise NotImplementedError
 
     @staticmethod
@@ -64,9 +64,9 @@ class TaskModule(pl.LightningModule):
         raise NotImplementedError
 
 
-class BaseTask(TaskModule):
+class BaseTaskModule(TaskModule):
     def __init__(self, task_args, model_args, adaptation_scheme_args, full_args):
-        super(BaseTask, self).__init__(
+        super(BaseTaskModule, self).__init__(
             task_args, model_args, adaptation_scheme_args, full_args
         )
 
@@ -93,7 +93,7 @@ class BaseTask(TaskModule):
             )
 
     def training_step(self, batch, batch_idx):
-        iter_metrics = self.learning_system.train_step(
+        iter_metrics = self.learning_system.training_step(
             batch=batch, metrics=self.task_metrics
         )
 
@@ -130,7 +130,7 @@ class BaseTask(TaskModule):
         }
 
 
-class ImageClassificationTask(BaseTask):
+class ImageClassificationTask(BaseTaskModule):
     def __init__(self, task_args, model_args, adaptation_scheme_args, full_args):
         super(ImageClassificationTask, self).__init__(
             task_args, model_args, adaptation_scheme_args, full_args
@@ -143,55 +143,24 @@ class ImageClassificationTask(BaseTask):
             "accuracy": lambda x, y: compute_accuracy(x, y),
         }
 
-    def build(self, dummy_batch):
-        input_dict, output_dict = dummy_batch
-        self.model = model_library_dict[self.model_args.type](**self.model_args)
+    def build(self, input_shape_dict, output_shape_dict):
+        logging.info(
+            f"{input_shape_dict}, {output_shape_dict}"
+        )
+        self.model = model_library_dict[self.model_args.name](**self.model_args)
+
         self.learning_system = adaptation_scheme_library_dict[
-            self.adaptation_args.type
+            self.adaptation_scheme_args.name
         ](
             model=self.model,
-            input_shape_dict={"image": input_dict["image"].shape[1:]},
-            output_shape_dict={"image": output_dict["image"].shape[1:]},
-            output_layer_activation=nn.Identity(),
-            **self.adaptation_args,
+            task_config=DictWithDotNotation(dict(
+                input_shape_dict={"image": input_shape_dict["image"]},
+                output_shape_dict={"image": output_shape_dict["image"]},
+                type="image_classification",
+                eval_metric_dict=self.task_metrics,
+            )),
+            **self.adaptation_scheme_args,
         )
 
-        self.model.build(dummy_batch)
         self.learning_system.reset_learning()
-        self.learning_system.set_task_input_output_shapes(
-            input_shape=self.task.input_shape_dict,
-            output_shape=self.task.output_shape_dict,
-        )
 
-
-class ReconstructionTask(BaseTask):
-    def __init__(self, task_args, model_args, adaptation_scheme_args, full_args):
-        super(ReconstructionTask, self).__init__(
-            task_args, model_args, adaptation_scheme_args, full_args
-        )
-
-    def task_metrics(self):
-        return {
-            "mse": lambda x, y: F.mse_loss(input=x, target=y),
-            "mae": lambda x, y: F.l1_loss(input=x, target=y),
-        }
-
-    def build(self, dummy_batch):
-        input_dict, output_dict = dummy_batch
-        self.model = model_library_dict[self.model_args.type](**self.model_args)
-        self.learning_system = adaptation_scheme_library_dict[
-            self.adaptation_args.type
-        ](
-            model=self.model,
-            input_shape_dict={"image": input_dict["image"].shape[1:]},
-            output_shape_dict={"image": output_dict["image"].shape[1:]},
-            output_layer_activation=nn.Identity(),
-            **self.adaptation_args,
-        )
-
-        self.model.build(dummy_batch)
-        self.learning_system.reset_learning()
-        self.learning_system.set_task_input_output_shapes(
-            input_shape=self.task.input_shape_dict,
-            output_shape=self.task.output_shape_dict,
-        )

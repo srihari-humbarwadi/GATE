@@ -1,3 +1,4 @@
+import logging
 from collections import namedtuple
 from typing import Optional
 
@@ -5,11 +6,11 @@ import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from pytorch_lightning import LightningDataModule
-from torch.utils.data import Subset, DataLoader
+from torch.utils.data import DataLoader, Subset
 
 from gate.datasets.data_utils import collate_resample_none
+from gate.datasets.datasets import CIFAR10Dict, CIFAR100Dict
 from gate.utils.arg_parsing import DictWithDotNotation
-import logging
 
 
 class BaseDataModule(LightningDataModule):
@@ -43,10 +44,7 @@ class BaseDataModule(LightningDataModule):
 
 
 class CIFAR10DataModule(BaseDataModule):
-    def __init__(
-            self,
-            data_args, general_args, task_args, **kwargs
-    ):
+    def __init__(self, data_args, general_args, task_args, **kwargs):
         super(CIFAR10DataModule, self).__init__()
         normalize = transforms.Normalize(
             mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010]
@@ -81,9 +79,8 @@ class CIFAR10DataModule(BaseDataModule):
 
     @staticmethod
     def add_dataset_specific_args(parser):
-        parser.add_argument('--dataset.val_set_percentage', type=float, default=0.1)
-        parser.add_argument('--dataset.download', default=False,
-                            action='store_true')
+        parser.add_argument("--dataset.val_set_percentage", type=float, default=0.1)
+        parser.add_argument("--dataset.download", default=False, action="store_true")
 
         return parser
 
@@ -118,7 +115,7 @@ class CIFAR10DataModule(BaseDataModule):
     def setup(self, stage: Optional[str] = None):
 
         if stage == "fit" or stage is None:
-            train_set = datasets.CIFAR10(
+            train_set = CIFAR10Dict(
                 root=self.data_filepath,
                 train=True,
                 download=self.download,
@@ -136,7 +133,7 @@ class CIFAR10DataModule(BaseDataModule):
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
-            self.test_set = datasets.CIFAR10(
+            self.test_set = CIFAR10Dict(
                 root=self.data_filepath,
                 train=False,
                 download=self.download,
@@ -197,11 +194,10 @@ class CIFAR10DataModule(BaseDataModule):
 
 
 class CIFAR100DataModule(CIFAR10DataModule):
-    def __init__(
-            self, data_args, general_args, task_args, **kwargs
-    ):
-        super(CIFAR100DataModule, self).__init__(data_args, general_args,
-                                                 task_args, **kwargs)
+    def __init__(self, data_args, general_args, task_args, **kwargs):
+        super(CIFAR100DataModule, self).__init__(
+            data_args, general_args, task_args, **kwargs
+        )
 
         normalize = transforms.Normalize(
             mean=[0.5071, 0.4866, 0.4409], std=[0.2009, 0.1984, 0.2023]
@@ -229,7 +225,7 @@ class CIFAR100DataModule(CIFAR10DataModule):
     def setup(self, stage: Optional[str] = None):
 
         if stage == "fit" or stage is None:
-            train_set = datasets.CIFAR100(
+            train_set = CIFAR100Dict(
                 root=self.data_filepath,
                 train=True,
                 download=self.download,
@@ -247,7 +243,7 @@ class CIFAR100DataModule(CIFAR10DataModule):
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
-            self.test_set = datasets.CIFAR100(
+            self.test_set = CIFAR100Dict(
                 root=self.data_filepath,
                 train=False,
                 download=self.download,

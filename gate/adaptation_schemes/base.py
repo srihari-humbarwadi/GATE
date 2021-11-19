@@ -1,11 +1,15 @@
+from typing import Any
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from pytorch_lightning import LightningModule
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
+import numpy as np
 
 
-class BaseAdaptationScheme(nn.Module):
+class BaseAdaptationScheme(LightningModule):
     def __init__(self):
         super(BaseAdaptationScheme, self).__init__()
 
@@ -14,12 +18,12 @@ class BaseAdaptationScheme(nn.Module):
             f"Optimizer not implemented in model: " f"{self.__class__.__name__}"
         )
 
-    def train_step(self, **kwargs):
+    def training_step(self, **kwargs):
         raise NotImplementedError(
             f"Train step not implemented in model: " f"{self.__class__.__name__}"
         )
 
-    def eval_step(self, **kwargs):
+    def evaluation_step(self, **kwargs):
         raise NotImplementedError(
             f"Evaluation step not implemented in model: " f"{self.__class__.__name__}"
         )
@@ -52,39 +56,40 @@ import logging
 class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
     def __init__(
             self,
-            model_instance,
+            model,
             task_config,
+            max_epochs=100,
             min_learning_rate=1e-6,
             lr=1e-3,
             betas=(0.9, 0.999),
             eps=1e-8,
             weight_decay=0,
             amsgrad=False,
+            **kwargs,
     ):
         super(ImageOnlyLinearLayerFineTuningScheme, self).__init__()
-        self.model_instance = model_instance
+        self.model = model
 
         self.lr = lr
         self.min_learning_rate = min_learning_rate
+        self.max_epochs = max_epochs
         self.betas = betas
         self.eps = eps
         self.weight_decay = weight_decay
         self.amsgrad = amsgrad
         self.input_shape_dict = task_config.input_shape_dict
         self.output_shape_dict = task_config.output_shape_dict
+        self.task_type = task_config.type
+        self.eval_metric_dict = task_config.eval_metric_dict
+
         self.build(
             input_shape_dict=task_config.input_shape_dict,
             output_shape_dict=task_config.output_shape_dict,
-            task_type=task_config.task_type,
+            task_type=task_config.type,
             eval_metric_dict=task_config.eval_metric_dict,
         )
 
         self.optimizers()
-
-    def setup_task_input_output_details(
-            self, input_shape_dict, output_shape_dict, output_layer_activation
-    ):
-        self.build(input_shape_dict, output_shape_dict, output_layer_activation)
 
     @staticmethod
     def add_adaptation_scheme_specific_args(parser):
@@ -92,24 +97,29 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
         # parser.add_argument("--data.val_set_percentage", type=float, default=0.1)
         return parser
 
-    def build(self, input_shape_dict, output_shape_dict, output_layer_activation):
+    def build(self, input_shape_dict, output_shape_dict, task_type, eval_metric_dict):
         image_dummy_x = torch.randn((2,) + input_shape_dict["image"])
-        model_features = self.model.forward_image(image_dummy_x)
-        model_features_flatten = model_features.view((model_features.shape[0], -1))
-        logging.info(f"Output shape of model features {model_features_flatten.shape}")
+        model_features = self.model.forward({'image': image_dummy_x})['image']
+        model_features_flatten = model_features.view((
+            model_features.shape[0], -1))
+        logging.info(f"Output shape of model features {model_features_flatten.shape} "
+                     f"{output_shape_dict}")
+
         self.linear_output_layer = nn.Linear(
             in_features=model_features_flatten.shape[1],
             out_features=output_shape_dict["image"][0],
             bias=True,
         )
-        logits = self.output_layer_activation(
-            self.linear_output_layer(model_features_flatten)
-        )
+
+        logits = self.linear_output_layer(model_features_flatten)
+
+        output_dict = {"image_features": model_features_flatten, "image": logits}
 
         logging.info(
             f"Built {self.__class__.__name__} "
             f"with input_shape {input_shape_dict} {image_dummy_x.shape}"
-            f"with output_shape {output_shape_dict} {logits.shape}"
+            f"with output_shape {output_shape_dict} "
+            f"{[item.shape for name, item in output_dict.items()]}"
         )
 
     def reset_learning(self):
@@ -117,7 +127,7 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
 
     def optimizers(self):
         self.optimizer = Adam(
-            params=self.linear_output_layer.parameters(),
+            params=self.parameters(),
             lr=self.lr,
             betas=self.betas,
             eps=self.eps,
@@ -127,7 +137,7 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
 
         self.scheduler = CosineAnnealingLR(
             optimizer=self.optimizer,
-            T_max=self.num_epochs,
+            T_max=self.max_epochs,
             eta_min=self.min_learning_rate,
         )
 
@@ -135,29 +145,15 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
 
     def training_step(self, batch, metrics):
         input_dict, target_dict = batch
-        features = self.model.forward_image(input_dict["image"])
-        features_flatten = features.view((features.shape[0], -1))
-        logits = self.output_layer_activation(
-            self.linear_output_layer(features_flatten)
-        )
+        features = self.model.forward(input_dict)["image"]
+        features_flatten = F.leaky_relu(features.view((features.shape[0], -1)))
+        logits = self.linear_output_layer(features_flatten)
+        loss = F.cross_entropy(input=logits, target=target_dict["image"][:, 0])
 
-        loss = F.cross_entropy(logits, target_dict["image"])
-
-        sigmoid_output_dict = {
-            f"sigmoid_{metric_key}": metric_function(
-                F.sigmoid(logits), target_dict["image"]
-            )
+        output_dict = {
+            f"{metric_key}": metric_function(logits, target_dict["image"][:, 0])
             for metric_key, metric_function in metrics.items()
         }
-
-        softmax_output_dict = {
-            f"softmax_{metric_key}": metric_function(
-                F.softmax(logits), target_dict["image"]
-            )
-            for metric_key, metric_function in metrics.items()
-        }
-
-        output_dict = {}
 
         output_dict["loss"] = loss
 
@@ -165,23 +161,19 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
 
     def evaluation_step(self, batch, metrics):
         input_dict, target_dict = batch
-        features = self.model.forward_image(input_dict["image"])
-        features_flatten = features.view((features.shape[0], -1))
-        logits = self.output_layer_activation(
-            self.linear_output_layer(features_flatten)
-        )
+        features = self.model.forward(input_dict)["image"]
+        features_flatten = F.leaky_relu(features.view((features.shape[0], -1)))
+        logits = self.linear_output_layer(features_flatten)
 
         return {
-            metric_key: metric_function(logits, target_dict["image"])
+            metric_key: metric_function(logits, target_dict["image"][:, 0])
             for metric_key, metric_function in metrics.items()
         }
 
-    def predict_step(self, batch):
+    def predict_step(self, batch: Any, batch_idx: int, **kwargs):
         input_dict, target_dict = batch
-        features = self.model.forward_image(input_dict["image"])
-        features_flatten = features.view((features.shape[0], -1))
-        logits = self.output_layer_activation(
-            self.linear_output_layer(features_flatten)
-        )
+        features = self.model.forward(input_dict)["image"]
+        features_flatten = F.leaky_relu(features.view((features.shape[0], -1)))
+        logits = self.linear_output_layer(features_flatten)
 
-        return features, logits
+        return {"image_features": features, "image": logits}

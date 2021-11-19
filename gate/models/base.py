@@ -40,17 +40,22 @@ class DataTaskModalityAgnosticModel(nn.Module):
         logging.info(f"Init {self.__class__.__name__}")
         self.modalities_supported = modalities_supported
 
-        for modality_name in modalities_supported:
-            if not hasattr(self, f"forward_{modality_name}"):
-                setattr(
-                    self,
-                    f"forward_{modality_name}",
-                    generic_missing_forward(object=self, modality_name=modality_name),
-                )
-                raise NotImplementedError(
-                    f"forward_{modality_name}() method not implemented in model: "
-                    f"{self.__class__.__name__} "
-                )
+    def check_if_dict_contains_valid_modalities(self, target_dict):
+        for modality in self.modalities_supported:
+            if isinstance(modality, str) and modality in target_dict:
+                return True
+            elif isinstance(modality, tuple):
+                if all(sub_modality in target_dict for sub_modality in modality):
+                    return True
+                else:
+                    continue
+
+        raise ValueError(
+            f"Invalid modalities provided in provided "
+            f"dictionary. Expected"
+            f" modalities were {self.modalities_supported}, "
+            f"but received {list(target_dict.keys())}"
+        )
 
     def is_modality_supported(self, modality_name):
         return modality_name in self.modalities_supported
@@ -79,15 +84,31 @@ class DataTaskModalityAgnosticModel(nn.Module):
 
 
 class AudioImageResNet(DataTaskModalityAgnosticModel):
-    def __init__(self, model_name_to_download, pretrained, audio_kernel_size):
+    def __init__(self, model_name_to_download, pretrained, audio_kernel_size, **kwargs):
         logging.info(
             f"Init {self.__class__.__name__} with {model_name_to_download}, "
             f"{pretrained}"
         )
         super(AudioImageResNet, self).__init__(modalities_supported={"image", "audio"})
-
+        self.is_built = False
         self.model_name_to_download = model_name_to_download
         self.pretrained = pretrained
+        self.audio_kernel_size = audio_kernel_size
+        self._input_shape = {"image": (3, 224, 224), "audio": (2, 44000)}
+        # pooling layer
+
+    @staticmethod
+    def add_model_specific_args(parser):
+        parser.add_argument(
+            "--model.model_name_to_download", type=str, default="resnet18"
+        )
+        parser.add_argument("--model.pretrained", default=False, action="store_true")
+        parser.add_argument("--model.audio_kernel_size", type=int, default=5)
+
+        return parser
+
+    def build(self, input_dict):
+
         self.resnet_image_embedding = torch.hub.load(
             "pytorch/vision",
             self.model_name_to_download,
@@ -102,20 +123,10 @@ class AudioImageResNet(DataTaskModalityAgnosticModel):
             in_channels=2,
             out_channels=3,
             bias=True,
-            kernel_size=audio_kernel_size,
+            kernel_size=self.audio_kernel_size,
         )
-        self._input_shape = {"image": (3, 224, 224), "audio": (2, 44000)}
-        # pooling layer
 
-    @staticmethod
-    def add_model_specific_args(parser):
-        parser.add_argument(
-            "--model.model_name_to_download", default=False, action="store_true"
-        )
-        parser.add_argument("--model.pretrained", default=False, action="store_true")
-        parser.add_argument("--model.audio_kernel_size", type=int, default=5)
-
-        return parser
+        self.is_built = True
 
     @property
     def input_shape(self):
@@ -123,15 +134,24 @@ class AudioImageResNet(DataTaskModalityAgnosticModel):
 
     @input_shape.setter
     def input_shape(self, value):
-        self.setup_input_shape(input_shape=value["image"], modality="image")
-        self.setup_input_shape(input_shape=value["audio"], modality="audio")
+
         self._input_shape = value
 
-    def setup_input_shape(self, input_shape, modality):
-        if modality == "image":
-            logging.info(f"Setting input shape for image embedding to {input_shape}")
-        elif modality == "audio":
-            logging.info(f"Setting input shape for audio embedding to {input_shape}")
+    def forward(self, x):
+        assert self.check_if_dict_contains_valid_modalities(target_dict=x)
+
+        if not self.is_built:
+            self.build(x)
+
+        output_dict = {}
+
+        if "image" in x:
+            output_dict["image"] = self.forward_image(x["image"])
+
+        if "audio" in x:
+            output_dict["audio"] = self.forward_audio(x["audio"])
+
+        return output_dict
 
     def forward_image(self, x):
         # expects b, c, w, h input_shape

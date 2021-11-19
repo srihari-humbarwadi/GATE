@@ -147,7 +147,7 @@ if __name__ == "__main__":
     # argparse option
     environment_data_filepath = os.environ.get("PYTORCH_DATA_LOC")
     if environment_data_filepath is not None and os.path.exists(
-            environment_data_filepath
+        environment_data_filepath
     ):
         logging.warning(
             f"You have a data filepath set in your environment: "
@@ -210,9 +210,9 @@ if __name__ == "__main__":
         mode="max",
     )
 
-    data_module = datasets_library_dict[args.dataset.name](data_args=args.dataset,
-                                                           general_args=args.general,
-                                                           task_args=args.task)
+    data_module = datasets_library_dict[args.dataset.name](
+        data_args=args.dataset, general_args=args.general, task_args=args.task
+    )
     data_module.prepare_data(data_args=args.dataset)
     data_module.setup(stage="fit")
     data_module.configure_dataloaders(
@@ -231,16 +231,14 @@ if __name__ == "__main__":
         full_args=args,
     )
 
-    logging.info(
-        f"max-epochs: {args.adaptation_scheme.max_epochs},"
-        f"current-epoch: {args.task.current_epoch}",
-    )
+    task_module.build(input_shape_dict=data_module.input_shape_dict,
+                      output_shape_dict=data_module.output_shape_dict)
 
-    summary_callback = ModelSummary(model=task_module, max_depth=1)
+    summary_callback = ModelSummary(model=task_module, max_depth=-1)
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
 
-    logging.info(summary_callback)
+    logging.info(f'{summary_callback}')
 
     if args.resume_from_checkpoint == "scratch":
         args.resume_from_checkpoint = (
