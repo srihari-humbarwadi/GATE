@@ -58,6 +58,7 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
             self,
             model,
             task_config,
+            fine_tune_all_layers=False,
             max_epochs=100,
             min_learning_rate=1e-6,
             lr=1e-3,
@@ -68,6 +69,7 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
             **kwargs,
     ):
         super(ImageOnlyLinearLayerFineTuningScheme, self).__init__()
+        self.save_hyperparameters()
         self.model = model
 
         self.lr = lr
@@ -75,6 +77,7 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
         self.max_epochs = max_epochs
         self.betas = betas
         self.eps = eps
+        self.fine_tune_all_layers = fine_tune_all_layers
         self.weight_decay = weight_decay
         self.amsgrad = amsgrad
         self.input_shape_dict = task_config.input_shape_dict
@@ -93,7 +96,8 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
 
     @staticmethod
     def add_adaptation_scheme_specific_args(parser):
-        # parser.add_argument("--data.download", default=False, action="store_true")
+        parser.add_argument("--adaptation_scheme.fine_tune_all_layers",
+                            default=False, action="store_true")
         # parser.add_argument("--data.val_set_percentage", type=float, default=0.1)
         return parser
 
@@ -126,8 +130,13 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
         self.linear_output_layer.reset_parameters()
 
     def optimizers(self):
+        if self.fine_tune_all_layers:
+            params = self.parameters()
+        else:
+            params = self.linear_output_layer.parameters()
+
         self.optimizer = Adam(
-            params=self.parameters(),
+            params=params,
             lr=self.lr,
             betas=self.betas,
             eps=self.eps,

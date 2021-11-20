@@ -25,6 +25,7 @@ import torch.nn.functional as F
 # Then gate should be able to evaluate the learning process on previously unseen tasks
 # some will allow some training, and some will not (zero-shot)
 #
+from pytorch_lightning import LightningModule
 
 
 def generic_missing_forward(object, modality_name):
@@ -34,7 +35,7 @@ def generic_missing_forward(object, modality_name):
     )
 
 
-class DataTaskModalityAgnosticModel(nn.Module):
+class DataTaskModalityAgnosticModel(LightningModule):
     def __init__(self, modalities_supported: set):
         super(DataTaskModalityAgnosticModel, self).__init__()
         logging.info(f"Init {self.__class__.__name__}")
@@ -95,6 +96,7 @@ class AudioImageResNet(DataTaskModalityAgnosticModel):
         self.pretrained = pretrained
         self.audio_kernel_size = audio_kernel_size
         self._input_shape = {"image": (3, 224, 224), "audio": (2, 44000)}
+        self.save_hyperparameters()
         # pooling layer
 
     @staticmethod
@@ -108,7 +110,6 @@ class AudioImageResNet(DataTaskModalityAgnosticModel):
         return parser
 
     def build(self, input_dict):
-
         self.resnet_image_embedding = torch.hub.load(
             "pytorch/vision",
             self.model_name_to_download,
