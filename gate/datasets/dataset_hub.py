@@ -9,7 +9,8 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Subset
 
 from gate.datasets.data_utils import collate_resample_none
-from gate.datasets.datasets import CIFAR10Dict, CIFAR100Dict
+from gate.datasets.datasets import CIFAR10ClassificationsDict, \
+    CIFAR100ClassificationDict
 from gate.utils.arg_parsing import DictWithDotNotation
 
 
@@ -115,7 +116,7 @@ class CIFAR10DataModule(BaseDataModule):
     def setup(self, stage: Optional[str] = None):
 
         if stage == "fit" or stage is None:
-            train_set = CIFAR10Dict(
+            train_set = CIFAR10ClassificationsDict(
                 root=self.data_filepath,
                 train=True,
                 download=self.download,
@@ -133,7 +134,7 @@ class CIFAR10DataModule(BaseDataModule):
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
-            self.test_set = CIFAR10Dict(
+            self.test_set = CIFAR10ClassificationsDict(
                 root=self.data_filepath,
                 train=False,
                 download=self.download,
@@ -225,7 +226,7 @@ class CIFAR100DataModule(CIFAR10DataModule):
     def setup(self, stage: Optional[str] = None):
 
         if stage == "fit" or stage is None:
-            train_set = CIFAR100Dict(
+            train_set = CIFAR100ClassificationDict(
                 root=self.data_filepath,
                 train=True,
                 download=self.download,
@@ -243,7 +244,7 @@ class CIFAR100DataModule(CIFAR10DataModule):
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
-            self.test_set = CIFAR100Dict(
+            self.test_set = CIFAR100ClassificationDict(
                 root=self.data_filepath,
                 train=False,
                 download=self.download,
