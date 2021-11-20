@@ -2,9 +2,9 @@ import torch
 from torchvision.datasets import CIFAR10, CIFAR100
 
 
-class CIFAR10ClassificationsDict(CIFAR10):
+class CIFAR10ClassificationDict(CIFAR10):
     def __init__(self, root, train, download, transform):
-        super(CIFAR10ClassificationsDict, self).__init__(
+        super(CIFAR10ClassificationDict, self).__init__(
             root=root, train=train, download=download, transform=transform
         )
 
