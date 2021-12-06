@@ -1,12 +1,11 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from rich import print
-
 from gate.adaptation_schemes.base import ImageOnlyLinearLayerFineTuningScheme
 from gate.models import AudioImageResNet
 from gate.utils.general_utils import compute_accuracy
 from gate.utils.logging_helpers import get_logging
+from rich import print
 
 logging = get_logging("NOTSET")
 

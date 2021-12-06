@@ -7,14 +7,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from gate.architectures.auto_builder_models import (
-    ClassificationModel,
-    Conv1dBNLeakyReLU,
-    Conv2dBNLeakyReLU,
-    SqueezeExciteConv1dBNLeakyReLU,
-    SqueezeExciteConv2dBNLeakyReLU,
-)
+    ClassificationModel, Conv1dBNLeakyReLU, Conv2dBNLeakyReLU,
+    SqueezeExciteConv1dBNLeakyReLU, SqueezeExciteConv2dBNLeakyReLU)
 
 
 class DenseBlock(nn.Module):
@@ -108,12 +103,12 @@ class DenseBlock(nn.Module):
 
 class DenseNetEmbedding(nn.Module):
     def __init__(
-            self,
-            num_filters,
-            num_stages,
-            num_blocks,
-            processing_block_type,
-            dilated=False,
+        self,
+        num_filters,
+        num_stages,
+        num_blocks,
+        processing_block_type,
+        dilated=False,
     ):
         super(DenseNetEmbedding, self).__init__()
         self.layer_dict = nn.ModuleDict()
@@ -207,14 +202,14 @@ class DenseNetEmbedding(nn.Module):
 
 class AutoConv2DDenseNet(ClassificationModel):
     def __init__(
-            self,
-            num_classes,
-            num_filters,
-            num_stages,
-            num_blocks,
-            use_squeeze_excite_attention,
-            dilated=False,
-            **kwargs,
+        self,
+        num_classes,
+        num_filters,
+        num_stages,
+        num_blocks,
+        use_squeeze_excite_attention,
+        dilated=False,
+        **kwargs,
     ):
         feature_embedding_modules = [
             nn.InstanceNorm2d,
@@ -245,14 +240,14 @@ class AutoConv2DDenseNet(ClassificationModel):
 
 class AutoConv1DDenseNet(ClassificationModel):
     def __init__(
-            self,
-            num_classes,
-            num_filters,
-            num_stages,
-            num_blocks,
-            use_squeeze_excite_attention,
-            dilated=False,
-            **kwargs,
+        self,
+        num_classes,
+        num_filters,
+        num_stages,
+        num_blocks,
+        use_squeeze_excite_attention,
+        dilated=False,
+        **kwargs,
     ):
         feature_embedding_modules = [
             nn.InstanceNorm1d,
@@ -326,15 +321,15 @@ class AutoConv1DDenseNetVideo(ClassificationModel):
 
 class AutoTextNet(ClassificationModel):
     def __init__(
-            self,
-            vocab_size: int,
-            num_filters: int,
-            num_stages: int,
-            num_blocks: int,
-            use_squeeze_excite_attention: bool,
-            dilated: bool,
-            num_classes: int,
-            **kwargs,
+        self,
+        vocab_size: int,
+        num_filters: int,
+        num_stages: int,
+        num_blocks: int,
+        use_squeeze_excite_attention: bool,
+        dilated: bool,
+        num_classes: int,
+        **kwargs,
     ):
         feature_embedding_modules = [
             nn.Embedding,

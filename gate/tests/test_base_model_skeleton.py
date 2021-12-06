@@ -1,5 +1,4 @@
 import torch
-
 from gate.models import ResNet
 from gate.utils.logging_helpers import get_logging
 

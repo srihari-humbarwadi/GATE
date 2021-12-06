@@ -3,6 +3,13 @@ import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+# Modalities:
+# A learning system (e.g. pretrained imagenet model that can be fine tuned,
+# or a meta-learned MAML etc).
+# Then gate should be able to evaluate the learning process on previously unseen tasks
+# some will allow some training, and some will not (zero-shot)
+#
+from pytorch_lightning import LightningModule
 
 # assume N data domains, and T tasks, and M modalities
 # flexible skeleton
@@ -18,14 +25,6 @@ import torch.nn.functional as F
 
 # Data domains:
 # modalities, different distributions
-
-# Modalities:
-# A learning system (e.g. pretrained imagenet model that can be fine tuned,
-# or a meta-learned MAML etc).
-# Then gate should be able to evaluate the learning process on previously unseen tasks
-# some will allow some training, and some will not (zero-shot)
-#
-from pytorch_lightning import LightningModule
 
 
 def generic_missing_forward(object, modality_name):

@@ -4,11 +4,6 @@ import os
 
 import pytorch_lightning as pl
 import wandb
-from pytorch_lightning import seed_everything
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-from pytorch_lightning.core.memory import ModelSummary
-from pytorch_lightning.loggers import WandbLogger
-
 from gate.adaptation_schemes import adaptation_scheme_library_dict
 from gate.datasets import datasets_library_dict
 from gate.models import model_library_dict
@@ -16,6 +11,10 @@ from gate.tasks import task_library_dict
 from gate.utils.arg_parsing import process_args
 from gate.utils.logging_helpers import get_logging
 from gate.utils.storage import build_experiment_folder
+from pytorch_lightning import seed_everything
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.core.memory import ModelSummary
+from pytorch_lightning.loggers import WandbLogger
 
 
 def get_base_argument_parser():
@@ -231,14 +230,16 @@ if __name__ == "__main__":
         full_args=args,
     )
 
-    task_module.build(input_shape_dict=data_module.input_shape_dict,
-                      output_shape_dict=data_module.output_shape_dict)
+    task_module.build(
+        input_shape_dict=data_module.input_shape_dict,
+        output_shape_dict=data_module.output_shape_dict,
+    )
 
     summary_callback = ModelSummary(model=task_module, max_depth=-1)
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
 
-    logging.info(f'{summary_callback}')
+    logging.info(f"{summary_callback}")
 
     if args.resume_from_checkpoint == "scratch":
         args.resume_from_checkpoint = (

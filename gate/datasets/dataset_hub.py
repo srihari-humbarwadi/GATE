@@ -5,13 +5,12 @@ from typing import Optional
 import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
+from gate.datasets.data_utils import collate_resample_none
+from gate.datasets.datasets import (CIFAR10ClassificationsDict,
+                                    CIFAR100ClassificationDict)
+from gate.utils.arg_parsing import DictWithDotNotation
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Subset
-
-from gate.datasets.data_utils import collate_resample_none
-from gate.datasets.datasets import CIFAR10ClassificationsDict, \
-    CIFAR100ClassificationDict
-from gate.utils.arg_parsing import DictWithDotNotation
 
 
 class BaseDataModule(LightningDataModule):
@@ -86,12 +85,12 @@ class CIFAR10DataModule(BaseDataModule):
         return parser
 
     def configure_dataloaders(
-            self,
-            batch_size=128,
-            eval_batch_size=128,
-            num_workers=0,
-            prefetch_factor=2,
-            collate_fn=collate_resample_none,
+        self,
+        batch_size=128,
+        eval_batch_size=128,
+        num_workers=0,
+        prefetch_factor=2,
+        collate_fn=collate_resample_none,
     ):
 
         self.data_loader_config = DictWithDotNotation(

@@ -1,12 +1,12 @@
 from typing import Any
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
-import numpy as np
 
 
 class BaseAdaptationScheme(LightningModule):
@@ -55,18 +55,18 @@ import logging
 
 class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
     def __init__(
-            self,
-            model,
-            task_config,
-            fine_tune_all_layers=False,
-            max_epochs=100,
-            min_learning_rate=1e-6,
-            lr=1e-3,
-            betas=(0.9, 0.999),
-            eps=1e-8,
-            weight_decay=0,
-            amsgrad=False,
-            **kwargs,
+        self,
+        model,
+        task_config,
+        fine_tune_all_layers=False,
+        max_epochs=100,
+        min_learning_rate=1e-6,
+        lr=1e-3,
+        betas=(0.9, 0.999),
+        eps=1e-8,
+        weight_decay=0,
+        amsgrad=False,
+        **kwargs,
     ):
         super(ImageOnlyLinearLayerFineTuningScheme, self).__init__()
         self.save_hyperparameters()
@@ -96,18 +96,22 @@ class ImageOnlyLinearLayerFineTuningScheme(BaseAdaptationScheme):
 
     @staticmethod
     def add_adaptation_scheme_specific_args(parser):
-        parser.add_argument("--adaptation_scheme.fine_tune_all_layers",
-                            default=False, action="store_true")
+        parser.add_argument(
+            "--adaptation_scheme.fine_tune_all_layers",
+            default=False,
+            action="store_true",
+        )
         # parser.add_argument("--data.val_set_percentage", type=float, default=0.1)
         return parser
 
     def build(self, input_shape_dict, output_shape_dict, task_type, eval_metric_dict):
         image_dummy_x = torch.randn((2,) + input_shape_dict["image"])
-        model_features = self.model.forward({'image': image_dummy_x})['image']
-        model_features_flatten = model_features.view((
-            model_features.shape[0], -1))
-        logging.info(f"Output shape of model features {model_features_flatten.shape} "
-                     f"{output_shape_dict}")
+        model_features = self.model.forward({"image": image_dummy_x})["image"]
+        model_features_flatten = model_features.view((model_features.shape[0], -1))
+        logging.info(
+            f"Output shape of model features {model_features_flatten.shape} "
+            f"{output_shape_dict}"
+        )
 
         self.linear_output_layer = nn.Linear(
             in_features=model_features_flatten.shape[1],

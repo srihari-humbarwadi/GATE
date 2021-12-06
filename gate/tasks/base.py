@@ -5,7 +5,6 @@ import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from gate.adaptation_schemes import adaptation_scheme_library_dict
 from gate.models import model_library_dict
 from gate.utils.arg_parsing import DictWithDotNotation
@@ -56,7 +55,7 @@ class TaskModule(pl.LightningModule):
         raise NotImplementedError
 
     def predict_step(
-            self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None
+        self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None
     ) -> Any:
         raise NotImplementedError
 
@@ -114,7 +113,7 @@ class BaseTaskModule(TaskModule):
         self.collect_metrics(metrics_dict=iter_metrics, phase_name="testing")
 
     def predict_step(
-            self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None
+        self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None
     ) -> Any:
         return self.learning_system.inference_step(batch)
 
@@ -144,23 +143,22 @@ class ImageClassificationTask(BaseTaskModule):
         }
 
     def build(self, input_shape_dict, output_shape_dict):
-        logging.info(
-            f"{input_shape_dict}, {output_shape_dict}"
-        )
+        logging.info(f"{input_shape_dict}, {output_shape_dict}")
         self.model = model_library_dict[self.model_args.name](**self.model_args)
 
         self.learning_system = adaptation_scheme_library_dict[
             self.adaptation_scheme_args.name
         ](
             model=self.model,
-            task_config=DictWithDotNotation(dict(
-                input_shape_dict={"image": input_shape_dict["image"]},
-                output_shape_dict={"image": output_shape_dict["image"]},
-                type="image_classification",
-                eval_metric_dict=self.task_metrics,
-            )),
+            task_config=DictWithDotNotation(
+                dict(
+                    input_shape_dict={"image": input_shape_dict["image"]},
+                    output_shape_dict={"image": output_shape_dict["image"]},
+                    type="image_classification",
+                    eval_metric_dict=self.task_metrics,
+                )
+            ),
             **self.adaptation_scheme_args,
         )
 
         self.learning_system.reset_learning()
-

@@ -1,15 +1,9 @@
 import torch
-
 from gate.architectures.auto_builder_densenet import AutoDenseNet
 from gate.architectures.auto_builder_transformers import (
-    AutoConv1DTransformersFlatten,
-    AutoConv2DTransformersFlatten,
-    AutoTextTransformersFlatten,
-    AutoVideoTransformersFlatten,
-    Conv1DTransformer,
-    Conv2DTransformer,
-    TexTransformer,
-)
+    AutoConv1DTransformersFlatten, AutoConv2DTransformersFlatten,
+    AutoTextTransformersFlatten, AutoVideoTransformersFlatten,
+    Conv1DTransformer, Conv2DTransformer, TexTransformer)
 
 RUN_CUDA_test = False
 

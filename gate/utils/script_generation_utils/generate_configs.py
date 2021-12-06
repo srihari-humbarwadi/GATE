@@ -2,14 +2,12 @@ import os
 import shutil
 from dataclasses import dataclass
 
-from train import get_base_argument_parser
-
 from gate.utils.arg_parsing import process_args
 from gate.utils.script_generation_utils.config_utils import (
     generate_hyperparameter_combination_dicts,
-    generate_hyperparameter_search_experiment_configs,
-)
+    generate_hyperparameter_search_experiment_configs)
 from gate.utils.storage import save_dict_in_json
+from train import get_base_argument_parser
 
 # 4. TODO Antreas: implement:
 #  a. grid search (done)

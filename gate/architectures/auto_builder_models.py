@@ -258,13 +258,13 @@ class FullyConnectedLayer(nn.Module):
 
 class Conv2dBNLeakyReLU(nn.Module):
     def __init__(
-            self,
-            out_channels,
-            kernel_size,
-            stride,
-            padding,
-            dilation=1,
-            bias=False,
+        self,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dilation=1,
+        bias=False,
     ):
         super(Conv2dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -328,13 +328,13 @@ class Conv2dBNLeakyReLU(nn.Module):
 
 class Conv1dBNLeakyReLU(nn.Module):
     def __init__(
-            self,
-            out_channels,
-            kernel_size,
-            stride,
-            padding,
-            dilation=1,
-            bias=False,
+        self,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dilation=1,
+        bias=False,
     ):
         super(Conv1dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -398,13 +398,13 @@ class Conv1dBNLeakyReLU(nn.Module):
 
 class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
     def __init__(
-            self,
-            out_channels,
-            kernel_size,
-            stride,
-            padding,
-            dilation=1,
-            bias=False,
+        self,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dilation=1,
+        bias=False,
     ):
         super(SqueezeExciteConv2dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -506,13 +506,13 @@ class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
 
 class SqueezeExciteConv1dBNLeakyReLU(nn.Module):
     def __init__(
-            self,
-            out_channels,
-            kernel_size,
-            stride,
-            padding,
-            dilation=1,
-            bias=False,
+        self,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dilation=1,
+        bias=False,
     ):
         super(SqueezeExciteConv1dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
