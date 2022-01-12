@@ -7,7 +7,7 @@ def get_logging(logger_level):
     logger_format = "%(message)s"
     logging.basicConfig(
         level=logger_level,
-        format=logger_format,
+        format="%(message)s",
         datefmt="[%X]",
         handlers=[RichHandler()],
     )

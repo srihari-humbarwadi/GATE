@@ -11,13 +11,6 @@ from einops import rearrange, reduce
 from rich import print
 from rich.logging import RichHandler
 
-FORMAT = "%(message)s"
-logging.basicConfig(
-    level=logging.INFO, format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
-)
-
-logging = logging.getLogger("rich")
-
 
 class ClassificationModel(nn.Module):
     def __init__(
