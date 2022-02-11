@@ -6,6 +6,8 @@ setup(
     packages=[
         "gate.adaptation_schemes",
         "gate.model_blocks",
+        "gate.model_blocks.auto_builder_modules",
+        "gate.model_blocks.tokenizers",
         "gate.datasets",
         "gate.models",
         "gate.tasks",
