@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="gate",
-    version="0.1",
+    version="0.2.0",
     packages=[
         "gate.adaptation_schemes",
         "gate.model_blocks",
