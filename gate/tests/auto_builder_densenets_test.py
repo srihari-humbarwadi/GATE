@@ -1,4 +1,5 @@
 import torch
+
 from gate.architectures import AutoConv2DDenseNet
 
 RUN_CUDA_test = False

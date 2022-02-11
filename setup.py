@@ -5,11 +5,12 @@ setup(
     version="0.1",
     packages=[
         "gate.adaptation_schemes",
-        "gate.architectures",
+        "gate.model_blocks",
         "gate.datasets",
         "gate.models",
         "gate.tasks",
         "gate.utils",
+        "gate.tests",
     ],
     url="",
     license="",

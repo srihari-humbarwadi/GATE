@@ -1,4 +1,5 @@
 import torch
+
 from gate.architectures.auto_builder_densenet import AutoConv2DDenseNet
 from gate.architectures.auto_builder_models import AutoConvNet, AutoResNet
 

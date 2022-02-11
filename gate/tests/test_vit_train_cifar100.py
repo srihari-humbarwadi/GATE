@@ -4,9 +4,10 @@ import logging
 import torch
 import torch.nn.functional as F
 from datasets import CIFAR10Loader
-from gate.architectures import AutoConv2DTransformersFlatten
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
+
+from gate.architectures import AutoConv2DTransformersFlatten
 
 parser = argparse.ArgumentParser()
 # data and I/O

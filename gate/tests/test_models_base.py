@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from gate.models import AudioImageResNet
 from rich import print
+
+from gate.models import AudioImageResNet
 
 
 def test_AudioImageResNetBase():

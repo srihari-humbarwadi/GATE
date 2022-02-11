@@ -8,8 +8,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from clip.model import LayerNorm, Transformer
 from einops import rearrange, repeat
+
 from gate.architectures.auto_builder_models import (
-    ClassificationModel, SqueezeExciteConv1dBNLeakyReLU)
+    ClassificationModel,
+    SqueezeExciteConv1dBNLeakyReLU,
+)
 
 
 class FCCNetwork(nn.Module):
@@ -49,7 +52,7 @@ class FCCNetwork(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -123,7 +126,7 @@ class Conv2DTransformer(nn.Module):
             h1=self.grid_patch_size,
             w1=self.grid_patch_size,
         )
-        logging.info(f"{out.shape}")
+        logging.debug(f"{out.shape}")
         num_patches = out.shape[0] / dummy_x.shape[0]
 
         self.layer_dict["stem_linear"] = nn.Linear(
@@ -134,15 +137,15 @@ class Conv2DTransformer(nn.Module):
 
         out = self.layer_dict["stem_linear"].forward(out)
         # b, c, h, w
-        logging.info(f"{out.shape}")
+        logging.debug(f"{out.shape}")
 
         self.layer_dict["stem_layer_normalization"] = nn.LayerNorm(out.shape[1])
 
         out = self.layer_dict["stem_layer_normalization"].forward(out)
-        logging.info(f"{out.shape}")
+        logging.debug(f"{out.shape}")
 
         out = rearrange(out, "(b s) (f) -> b s f", s=int(num_patches))
-        logging.info(f"{out.shape}")
+        logging.debug(f"{out.shape}")
 
         self.enumerate_patches_idx = (
             torch.arange(start=0, end=num_patches) / num_patches
@@ -151,10 +154,10 @@ class Conv2DTransformer(nn.Module):
         position_inputs = repeat(
             self.enumerate_patches_idx, "p -> b p", b=dummy_x.shape[0]
         )
-        logging.info(f"{position_inputs.shape}")
+        logging.debug(f"{position_inputs.shape}")
 
         position_inputs = rearrange(position_inputs, "b (p d) -> (b p) d", d=1)
-        logging.info(f"{position_inputs.shape}")
+        logging.debug(f"{position_inputs.shape}")
 
         self.layer_dict["positional_embedding_generator_network"] = FCCNetwork(
             num_hidden_features=64,
@@ -165,7 +168,7 @@ class Conv2DTransformer(nn.Module):
         positional_embeddings = self.layer_dict[
             "positional_embedding_generator_network"
         ].forward(position_inputs)
-        logging.info(f"{positional_embeddings.shape}")
+        logging.debug(f"{positional_embeddings.shape}")
 
         positional_embeddings = rearrange(
             positional_embeddings,
@@ -173,7 +176,7 @@ class Conv2DTransformer(nn.Module):
             b=dummy_x.shape[0],
             d=out.shape[2],
         )
-        logging.info(f"{positional_embeddings.shape} {out.shape}")
+        logging.debug(f"{positional_embeddings.shape} {out.shape}")
         out = torch.cat([out, positional_embeddings], dim=2)
 
         self.layer_dict["transformer_encoder_layer"] = nn.TransformerEncoderLayer(
@@ -193,7 +196,7 @@ class Conv2DTransformer(nn.Module):
         out = self.layer_dict["transformer_encoder"].forward(out)
 
         self.is_built = True
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape} {positional_embeddings.shape}"
         )
@@ -357,7 +360,7 @@ class Conv1DTransformer(nn.Module):
         out = self.layer_dict["transformer_encoder"].forward(out)
 
         self.is_built = True
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -491,7 +494,7 @@ class TexTransformer(nn.Module):
 
         self.is_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -601,7 +604,7 @@ class VideoTransformer(nn.Module):
 
         self.is_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )

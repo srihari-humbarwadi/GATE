@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import logging
 from collections import OrderedDict
+from typing import List, Tuple, Union
 
 import numpy as np
 import torch
@@ -14,11 +15,11 @@ from rich.logging import RichHandler
 
 class ClassificationModel(nn.Module):
     def __init__(
-        self,
-        feature_embedding_module_list,
-        feature_embedding_args,
-        num_classes,
-        input_type=torch.float32,
+            self,
+            feature_embedding_module_list: Union[List[nn.Module], nn.Module],
+            feature_embedding_args: Union[List[dict], dict],
+            num_classes: int,
+            input_type: torch.float32,
     ):
         self.feature_embedding_module_list = feature_embedding_module_list
         self.feature_embedding_args = feature_embedding_args
@@ -32,9 +33,10 @@ class ClassificationModel(nn.Module):
         Builds network whilst automatically inferring shapes of layers.
         """
         out = torch.zeros(input_shape, dtype=self.input_type)
-        logging.info("Building basic block of a classification model using input shape")
+        logging.debug(
+            "Building basic block of a classification model using input shape")
         # assumes that input shape is b, c, h, w
-        logging.info(f"build input {out.shape}")
+        logging.debug(f"build input {out.shape}")
 
         if isinstance(self.feature_embedding_module_list, list):
             self.feature_embedding_module = nn.Sequential(
@@ -60,19 +62,19 @@ class ClassificationModel(nn.Module):
             out = out[-1]
 
         out = out.view(out.shape[0], -1)
-        logging.info(f"build input {out.shape}")
+        logging.debug(f"build input {out.shape}")
 
         # classification head
-        logging.info(f"{out.shape[1]} {self.num_classes}")
+        logging.debug(f"{out.shape[1]} {self.num_classes}")
         self.output_layer = nn.Linear(
             in_features=out.shape[1], out_features=self.num_classes, bias=True
         )
         out = self.output_layer.forward(out)
-        logging.info(f"build input {out.shape}")
+        logging.debug(f"build input {out.shape}")
 
         self.is_layer_built = True
-        logging.info("Summary:")
-        logging.info(
+        logging.debug("Summary:")
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -113,7 +115,7 @@ class ResNet(nn.Module):
 
     """
 
-    def __init__(self, model_name_to_download, pretrained=True):
+    def __init__(self, model_name_to_download: str, pretrained: bool = True):
         super(ResNet, self).__init__()
         self.pretrained = pretrained
         self.model_name_to_download = model_name_to_download
@@ -126,10 +128,10 @@ class ResNet(nn.Module):
         self.linear_transform = nn.Conv2d(
             in_channels=out.shape[1],
             out_channels=3,
-            kernel_size=3,
-            stride=1,
+            kernel_size=(3, 3),
+            stride=(1, 1),
             padding=1,
-            dilation=1,
+            dilation=(1, 1),
             groups=1,
             bias=False,
             padding_mode="zeros",
@@ -160,7 +162,7 @@ class ResNet(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -198,7 +200,7 @@ class BaseStyleLayer(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -230,7 +232,7 @@ class FullyConnectedLayer(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -251,13 +253,13 @@ class FullyConnectedLayer(nn.Module):
 
 class Conv2dBNLeakyReLU(nn.Module):
     def __init__(
-        self,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dilation=1,
-        bias=False,
+            self,
+            out_channels: int,
+            kernel_size: Tuple[int],
+            stride: Tuple[int],
+            padding: int,
+            dilation: Tuple[int] = (1, 1),
+            bias: bool = False,
     ):
         super(Conv2dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -298,7 +300,7 @@ class Conv2dBNLeakyReLU(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -321,13 +323,13 @@ class Conv2dBNLeakyReLU(nn.Module):
 
 class Conv1dBNLeakyReLU(nn.Module):
     def __init__(
-        self,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dilation=1,
-        bias=False,
+            self,
+            out_channels: int,
+            kernel_size: Tuple[int],
+            stride: Tuple[int],
+            padding: int,
+            dilation: Tuple[int] = (1,),
+            bias: bool = False,
     ):
         super(Conv1dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -368,7 +370,7 @@ class Conv1dBNLeakyReLU(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -391,13 +393,13 @@ class Conv1dBNLeakyReLU(nn.Module):
 
 class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
     def __init__(
-        self,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dilation=1,
-        bias=False,
+            self,
+            out_channels: int,
+            kernel_size: Tuple[int],
+            stride: Tuple[int],
+            padding: int,
+            dilation: Tuple[int] = (1, 1),
+            bias: bool = False,
     ):
         super(SqueezeExciteConv2dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -462,7 +464,7 @@ class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -499,13 +501,13 @@ class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
 
 class SqueezeExciteConv1dBNLeakyReLU(nn.Module):
     def __init__(
-        self,
-        out_channels,
-        kernel_size,
-        stride,
-        padding,
-        dilation=1,
-        bias=False,
+            self,
+            out_channels: int,
+            kernel_size: Tuple[int],
+            stride: Tuple[int],
+            padding: int,
+            dilation: Tuple[int] = (1,),
+            bias: bool = False,
     ):
         super(SqueezeExciteConv1dBNLeakyReLU, self).__init__()
         self.is_layer_built = False
@@ -568,7 +570,7 @@ class SqueezeExciteConv1dBNLeakyReLU(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -603,25 +605,16 @@ class SqueezeExciteConv1dBNLeakyReLU(nn.Module):
 
 class Conv2dEmbedding(nn.Module):
     def __init__(
-        self,
-        layer_filter_list,
-        kernel_size,
-        stride,
-        padding,
-        avg_pool_kernel_size=2,
-        avg_pool_stride=2,
-        dilation=1,
-        bias=False,
+            self,
+            layer_filter_list: List[int],
+            kernel_size: Tuple[int],
+            stride: Tuple[int],
+            padding: int,
+            avg_pool_kernel_size: Tuple[int],
+            avg_pool_stride: Tuple[int],
+            dilation: Tuple[int] = (1,),
+            bias: bool = False,
     ):
-        """
-        General method details
-        :param num_layers_list:
-        :param kernel_size:
-        :param stride:
-        :param padding:
-        :param dilation:
-        :param bias:
-        """
         super(Conv2dEmbedding, self).__init__()
         self.is_layer_built = False
         self.kernel_size = kernel_size
@@ -656,13 +649,13 @@ class Conv2dEmbedding(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
 
         for layer_idx, layer_params in self.named_parameters():
-            logging.info(f"{layer_idx} layer_params.shape")
+            logging.debug(f"{layer_idx} layer_params.shape")
 
     def forward(self, x):
 
@@ -684,11 +677,12 @@ class Conv2dEmbedding(nn.Module):
 
 
 class ConcatenateLayer(nn.Module):
-    def __init__(self):
+    def __init__(self, dim: int):
         super(ConcatenateLayer, self).__init__()
+        self.dim = dim
 
-    def forward(self, x: list, dim: int):
-        x = torch.cat(tensors=x, dim=dim)
+    def forward(self, x: list):
+        x = torch.cat(tensors=x, dim=self.dim)
         return x
 
 
@@ -709,7 +703,7 @@ class AvgPoolSpatialAndSliceIntegrator(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -732,7 +726,7 @@ class AvgPoolSpatialAndSliceIntegrator(nn.Module):
 
 
 class AvgPoolFlexibleDimension(nn.Module):
-    def __init__(self, dim):
+    def __init__(self, dim: int):
         super(AvgPoolFlexibleDimension, self).__init__()
         self.is_layer_built = False
         self.dim = dim
@@ -749,7 +743,7 @@ class AvgPoolFlexibleDimension(nn.Module):
 
         self.is_layer_built = True
 
-        logging.info(
+        logging.debug(
             f"Build {self.__class__.__name__} with input shape {input_shape} with "
             f"output shape {out.shape}"
         )
@@ -772,7 +766,7 @@ class AvgPoolFlexibleDimension(nn.Module):
 
 
 class Unsqueeze(nn.Module):
-    def __init__(self, dim):
+    def __init__(self, dim: int):
         self.dim = dim
         super(Unsqueeze, self).__init__()
 
@@ -781,7 +775,9 @@ class Unsqueeze(nn.Module):
 
 
 class AutoResNet(ClassificationModel):
-    def __init__(self, num_classes, model_name_to_download, pretrained=True, **kwargs):
+    def __init__(
+            self, num_classes: int, model_name_to_download: str, pretrained: bool = True
+    ):
         feature_embedding_modules = [
             ResNet,
             AvgPoolFlexibleDimension,
@@ -803,7 +799,14 @@ class AutoResNet(ClassificationModel):
 
 
 class AutoConvNet(ClassificationModel):
-    def __init__(self, num_classes, kernel_size, filter_list, stride, padding):
+    def __init__(
+            self,
+            num_classes: int,
+            kernel_size: Tuple[int],
+            filter_list: List[int],
+            stride: Tuple[int],
+            padding: int,
+    ):
         feature_embedding_modules = [Conv2dEmbedding]
         feature_embeddings_args = [
             dict(

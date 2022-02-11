@@ -1,4 +1,5 @@
 import logging
+from typing import Dict
 
 import numpy as np
 import torch
@@ -6,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def check_spatial_size_maybe_avg_pool(x, avg_pool_output_size):
+def check_spatial_size_maybe_avg_pool(x: torch.Tensor, avg_pool_output_size: int):
     """
     Receives a tensor x, and a kernel size and checks spatial dimensions, potentially avg pooling if the size is not as expected
     :param x: A tensor
@@ -41,7 +42,7 @@ def check_spatial_size_maybe_avg_pool(x, avg_pool_output_size):
     return out
 
 
-def generate_spatial_coordinate_tensor(x, spatial_length):
+def generate_spatial_coordinate_tensor(x: torch.Tensor, spatial_length: int):
     """
     Given
     :param x:
@@ -50,8 +51,8 @@ def generate_spatial_coordinate_tensor(x, spatial_length):
     """
     coord_tensor_x = (
         torch.arange(start=0, end=np.sqrt(spatial_length))
-        .unsqueeze(0)
-        .repeat([int(np.sqrt(spatial_length)), 1])
+            .unsqueeze(0)
+            .repeat([int(np.sqrt(spatial_length)), 1])
         .unsqueeze(2)
     )  # n, n
     coord_tensor_y = (
@@ -71,7 +72,7 @@ def generate_spatial_coordinate_tensor(x, spatial_length):
     return coord_tensor
 
 
-def generate_pair_tensor(x, spatial_length):
+def generate_pair_tensor(x: torch.Tensor, spatial_length: int):
     x_i = torch.unsqueeze(x, 1)  # (1xh*wxc)
     x_i = x_i.repeat(1, spatial_length, 1, 1)  # (h*wxh*wxc)
     x_j = torch.unsqueeze(x, 2)  # (h*wx1xc)
@@ -81,13 +82,13 @@ def generate_pair_tensor(x, spatial_length):
 
 
 def collect_new_indices_for_given_dimensionality(
-    x_img,
-    relational_patch_size,
-    avg_pool_patch_size,
-    coord_tensor,
-    patch_coordinate_tensor,
+        x: torch.Tensor,
+        relational_patch_size: int,
+        avg_pool_patch_size: int,
+        coord_tensor_dict: Dict[torch.Tensor],
+        patch_coordinate_tensor: Dict[torch.Tensor],
 ):
-    out_img = check_spatial_size_maybe_avg_pool(x_img, avg_pool_patch_size)
+    out_img = check_spatial_size_maybe_avg_pool(x, avg_pool_patch_size)
     out_img = out_img.permute([0, 2, 1])  # b, h*w, c
     b, spatial_length, c = out_img.shape
 
@@ -105,30 +106,31 @@ def collect_new_indices_for_given_dimensionality(
     out_img = out_img.permute([0, 2, 1])
     b, spatial_length, c = out_img.shape
 
-    coord_tensor[x_img.shape] = generate_spatial_coordinate_tensor(
+    coord_tensor_dict[x.shape] = generate_spatial_coordinate_tensor(
         x=out_img, spatial_length=spatial_length
     ).float()
 
-    coord_tensor[x_img.shape] = coord_tensor[x_img.shape].to(out_img.device)
-    patch_coordinate_tensor[x_img.shape] = patch_coordinates.to(out_img.device)
+    coord_tensor_dict[x.shape] = coord_tensor_dict[x.shape].to(out_img.device)
+    patch_coordinate_tensor[x.shape] = patch_coordinates.to(out_img.device)
 
-    return coord_tensor, patch_coordinate_tensor
+    return coord_tensor_dict, patch_coordinate_tensor
 
 
-def image_to_patch_coordinates(input_image, patch_size, stride, dilation):
+def image_to_patch_coordinates(x: torch.Tensor, patch_size: int,
+                               stride: int, dilation: int):
     patches = []
 
-    for i in range(0, input_image.shape[2] - (patch_size - 1), stride):
-        for j in range(0, input_image.shape[3] - (patch_size - 1), stride):
-            x_range = patch_size + ((patch_size - 1) * (dilation - 1))
-            y_range = patch_size + ((patch_size - 1) * (dilation - 1))
+    x_range = patch_size + ((patch_size - 1) * (dilation - 1))
+    y_range = patch_size + ((patch_size - 1) * (dilation - 1))
+    for i in range(0, x.shape[2] - (patch_size - 1), stride):
+        for j in range(0, x.shape[3] - (patch_size - 1), stride):
             if (
-                i + x_range <= input_image.shape[2]
-                and j + y_range <= input_image.shape[3]
+                    i + x_range <= x.shape[2]
+                    and j + y_range <= x.shape[3]
             ):
                 coord = torch.Tensor(
                     [
-                        x * input_image.shape[2] + y
+                        x * x.shape[2] + y
                         for x in range(i, i + x_range, dilation)
                         for y in range(j, j + y_range, dilation)
                     ]
@@ -136,22 +138,24 @@ def image_to_patch_coordinates(input_image, patch_size, stride, dilation):
 
                 patches.append(coord)
 
-    if patch_size > input_image.shape[2]:
+    if patch_size > x.shape[2]:
         raise ValueError(
-            f"Patch size {patch_size} is larger than the spatial dimension of the input tensor {input_image.shape}, and as a result there are 0 patches to be processed, please increase input spatial dimensions or reduce patch size"
+            f"Patch size {patch_size} is larger than the spatial dimension of the"
+            f"input tensor {x.shape}, and as a result there are 0 patches to be "
+            f"processed, please increase input spatial dimensions or reduce patch size"
         )
 
     return torch.stack(patches, dim=0).long()
 
 
-def image_to_vectors(input_image, indexes_of_patches):
+def image_to_vectors(x: torch.Tensor, indexes_of_patches: torch.Tensor):
     p, num_pixels = indexes_of_patches.shape
     indexes_of_patches = indexes_of_patches.view(p * num_pixels)
 
-    out = input_image.view(input_image.shape[0], input_image.shape[1], -1)
+    out = x.view(x.shape[0], x.shape[1], -1)
 
     out = torch.index_select(
-        out, dim=2, index=indexes_of_patches.to(input_image.device)
+        out, dim=2, index=indexes_of_patches.to(x.device)
     )
     out = out.view(out.shape[0], out.shape[1], p, num_pixels)
 
@@ -164,15 +168,14 @@ def image_to_vectors(input_image, indexes_of_patches):
 
 class PatchBatchRelationalModule(nn.Module):
     def __init__(
-        self,
-        num_layers,
-        num_hidden_filters,
-        num_output_channels,
-        avg_pool_output_size,
-        patch_size,
-        use_coordinates=True,
-        bias=True,
-        **kwargs,
+            self,
+            num_layers: int,
+            num_hidden_filters: int,
+            num_output_channels: int,
+            avg_pool_output_size: int,
+            patch_size: int,
+            use_coordinates: bool = True,
+            bias: bool = True
     ):
         super(PatchBatchRelationalModule, self).__init__()
 
@@ -186,11 +189,8 @@ class PatchBatchRelationalModule(nn.Module):
         self.patch_size = patch_size
         self.bias = bias
         self.coordinate_sets = {}
-        self.coord_tensor = {}
+        self.coord_tensor_dict = {}
         self.patch_coordinates = {}
-
-        for key, value in kwargs.items():
-            setattr(self, key, value)
 
     def build_block(self, x):
         out_img = x
@@ -219,13 +219,14 @@ class PatchBatchRelationalModule(nn.Module):
         b, spatial_length, c = out_img.shape
 
         if self.use_coordinates:
-            self.coord_tensor[x.shape] = generate_spatial_coordinate_tensor(
+            self.coord_tensor_dict[x.shape] = generate_spatial_coordinate_tensor(
                 x=out_img, spatial_length=spatial_length
             ).float()
 
-            self.coord_tensor[x.shape] = self.coord_tensor[x.shape].to(x.device)
+            self.coord_tensor_dict[x.shape] = self.coord_tensor_dict[x.shape].to(
+                x.device)
 
-            out_img = torch.cat([out_img, self.coord_tensor[x.shape]], dim=2)
+            out_img = torch.cat([out_img, self.coord_tensor_dict[x.shape]], dim=2)
 
         pair_features = generate_pair_tensor(x=out_img, spatial_length=spatial_length)
 
@@ -262,7 +263,7 @@ class PatchBatchRelationalModule(nn.Module):
         self.output_layer.to(out.device)
         out = self.output_layer.forward(out)
 
-        logging.info(
+        logging.debug(
             f"Built {self.__class__.__name__} with output volume shape " f"{out.shape}"
         )
 
@@ -279,13 +280,13 @@ class PatchBatchRelationalModule(nn.Module):
         ):
             self.build_dimensionality = x_img.shape
             (
-                self.coord_tensor,
+                self.coord_tensor_dict,
                 self.patch_coordinates,
             ) = collect_new_indices_for_given_dimensionality(
                 x_img,
                 relational_patch_size=self.patch_size,
                 avg_pool_patch_size=self.avg_pool_output_size,
-                coord_tensor=self.coord_tensor,
+                coord_tensor_dict=self.coord_tensor_dict,
                 patch_coordinate_tensor=self.patch_coordinates,
             )
 
@@ -310,11 +311,12 @@ class PatchBatchRelationalModule(nn.Module):
         b, spatial_length, c = out_img.shape
 
         if self.use_coordinates:
-            self.coord_tensor[x_img.shape] = self.coord_tensor[x_img.shape].to(
+            self.coord_tensor_dict[x_img.shape] = self.coord_tensor_dict[
+                x_img.shape].to(
                 out_img.device
             )
 
-            out_img = torch.cat([out_img, self.coord_tensor[x_img.shape]], dim=2)
+            out_img = torch.cat([out_img, self.coord_tensor_dict[x_img.shape]], dim=2)
 
         pair_features = generate_pair_tensor(x=out_img, spatial_length=spatial_length)
 
@@ -357,7 +359,7 @@ def test_patch_relational_module():
     for input_shape in input_shape_list:
         for use_coord in use_coord_list:
             for patch_size in patch_size_list:
-                logging.info(f"Testing {input_shape, use_coord, patch_size}")
+                logging.debug(f"Testing {input_shape, use_coord, patch_size}")
                 x_dummy = torch.zeros(input_shape)
                 model = PatchBatchRelationalModule(
                     num_layers=3,
@@ -368,3 +370,7 @@ def test_patch_relational_module():
                     use_coordinates=use_coord,
                 )
                 out = model.forward(x_dummy)
+
+
+if __name__ == '__main__':
+    test_patch_relational_module()

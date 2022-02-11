@@ -3,9 +3,10 @@ import logging
 import pprint
 import sys
 
-from gate.utils.storage import load_dict_from_json
 from rich import print
 from rich.logging import RichHandler
+
+from gate.utils.storage import load_dict_from_json
 
 FORMAT = "%(message)s"
 logging.basicConfig(

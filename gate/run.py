@@ -4,6 +4,11 @@ import os
 
 import pytorch_lightning as pl
 import wandb
+from pytorch_lightning import seed_everything
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.core.memory import ModelSummary
+from pytorch_lightning.loggers import WandbLogger
+
 from gate.adaptation_schemes import adaptation_scheme_library_dict
 from gate.datasets import datasets_library_dict
 from gate.models import model_library_dict
@@ -11,10 +16,6 @@ from gate.tasks import task_library_dict
 from gate.utils.arg_parsing import process_args
 from gate.utils.logging_helpers import get_logging
 from gate.utils.storage import build_experiment_folder
-from pytorch_lightning import seed_everything
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-from pytorch_lightning.core.memory import ModelSummary
-from pytorch_lightning.loggers import WandbLogger
 
 
 def get_base_argument_parser():
