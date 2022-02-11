@@ -10,7 +10,7 @@ setup(
         "gate.models",
         "gate.tasks",
         "gate.utils",
-        "gate.tests",
+        "gate",
     ],
     url="",
     license="",
