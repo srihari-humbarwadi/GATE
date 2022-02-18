@@ -100,7 +100,6 @@ def get_base_argument_parser():
 
 
 if __name__ == "__main__":
-
     argument_parser = get_base_argument_parser()
     argument_parser = pl.Trainer.add_argparse_args(argument_parser)
     temp_args = process_args(argument_parser, parse_only_known_args=True)
@@ -124,17 +123,6 @@ if __name__ == "__main__":
     ].add_adaptation_scheme_specific_args(parser=argument_parser)
 
     args = process_args(argument_parser)
-
-    # save_dir: Optional[str] = None,
-    # offline: Optional[bool] = False,
-    # id: Optional[str] = None,
-    # anonymous: Optional[bool] = None,
-    # version: Optional[str] = None,
-    # project: Optional[str] = None,
-    # log_model: Optional[bool] = False,
-    # experiment = None,
-    # prefix: Optional[str] = "",
-    # sync_step: Optional[bool] = None,
 
     ############################################################################# Admin
     (saved_models_filepath, logs_filepath, images_filepath,) = build_experiment_folder(
