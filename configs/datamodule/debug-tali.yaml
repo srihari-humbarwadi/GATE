@@ -10,4 +10,4 @@ config:
       audio: True
       video: True
       text: True
-      name: debug-v.${datamodule.config.modality_config.video}-a.${datamodule.config.modality_config.audio}-t.${datamodule.config.modality_config.text}-i.${datamodule.config.modality_config.image}
+      name: debug-v.${datamodule.dataset_config.modality_config.video}-a.${datamodule.dataset_config.modality_config.audio}-t.${datamodule.dataset_config.modality_config.text}-i.${datamodule.dataset_config.modality_config.image}
