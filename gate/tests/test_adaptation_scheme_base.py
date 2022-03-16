@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from rich import print
 
-from gate.adaptation_schemes.base import ImageOnlyLinearLayerFineTuningScheme
+from gate.adaptation_schemes.base import LinearLayerFineTuningScheme
 from gate.models import AudioImageResNet
 from gate.utils.general_utils import compute_accuracy
 from gate.utils.logging_helpers import get_logging
@@ -16,7 +15,7 @@ def test_AudioImageResNetBase():
         model_name_to_download="resnet18", pretrained=True, audio_kernel_size=5
     )
 
-    learning_system = ImageOnlyLinearLayerFineTuningScheme(
+    learning_system = LinearLayerFineTuningScheme(
         model=model,
         input_shape_dict={"image": (3, 224, 224)},
         output_shape_dict={"image": (100,)},

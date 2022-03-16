@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import torch
 from PIL import Image
-from rich import print
+
 
 # write your own version of this and have a tests that confirms that it predicts the
 # same stuff

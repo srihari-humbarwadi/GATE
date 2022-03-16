@@ -11,13 +11,13 @@ model_checkpoint_eval:
 
 model_checkpoint_train:
   _target_: pytorch_lightning.callbacks.ModelCheckpoint
-  monitor: training/overall_cross_entropy
+  monitor: training/overall_cross_entropy_step
   save_on_train_epoch_end: True
   save_top_k: 0
   save_last: true
   train_time_interval:
     _target_: datetime.timedelta
-    minutes: 30
+    minutes: 15
   mode: "min"
   verbose: False
   dirpath: "${current_experiment_dir}/checkpoints/"
@@ -29,17 +29,10 @@ model_summary:
   max_depth: 7
 
 rich_progress_bar:
-  _target_: pytorch_lightning.callbacks.RichProgressBar
+  _target_: pytorch_lightning.callbacks.TQDMProgressBar
+  refresh_rate: 1
+  process_position: 0
 
 learning_rate_monitor:
   _target_: pytorch_lightning.callbacks.LearningRateMonitor
   logging_interval: "step"
-
-gs_file_monitor:
-  _target_: tali.base.callbacks.cloud_storage_callbacks.GoogleStorageBucketRSyncClient
-  bucket_name: 'tali-experiments'
-  experiments_root_dir: ${current_experiment_dir}
-  experiment_name: ${name}
-  exclude_list: [.git/*]
-  options_list: ['r', 'd', 'u', 'e']
-  resume: ${resume}

@@ -1,6 +1,4 @@
-import argparse
 import os
-import sys
 from copy import copy
 
 from rich import print

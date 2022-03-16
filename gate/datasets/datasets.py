@@ -2,9 +2,9 @@ import torch
 from torchvision.datasets import CIFAR10, CIFAR100
 
 
-class CIFAR10ClassificationDict(CIFAR10):
+class CIFAR10ClassificationDataset(CIFAR10):
     def __init__(self, root, train, download, transform):
-        super(CIFAR10ClassificationDict, self).__init__(
+        super(CIFAR10ClassificationDataset, self).__init__(
             root=root, train=train, download=download, transform=transform
         )
 
@@ -13,9 +13,9 @@ class CIFAR10ClassificationDict(CIFAR10):
         return {"image": x}, {"image": torch.Tensor([y]).type(torch.LongTensor)}
 
 
-class CIFAR100ClassificationDict(CIFAR100):
+class CIFAR100ClassificationDataset(CIFAR100):
     def __init__(self, root, train, download, transform):
-        super(CIFAR100ClassificationDict, self).__init__(
+        super(CIFAR100ClassificationDataset, self).__init__(
             root=root, train=train, download=download, transform=transform
         )
 
@@ -24,9 +24,9 @@ class CIFAR100ClassificationDict(CIFAR100):
         return {"image": x}, {"image": torch.Tensor([y]).type(torch.LongTensor)}
 
 
-class CIFAR10ReconstructionDict(CIFAR10):
+class CIFAR10ReconstructionDataset(CIFAR10):
     def __init__(self, root, train, download, input_transform, target_transform):
-        super(CIFAR10ReconstructionDict, self).__init__(
+        super(CIFAR10ReconstructionDataset, self).__init__(
             root=root, train=train, download=download, transform=input_transform
         )
         self.target_transform = target_transform
@@ -44,9 +44,9 @@ class CIFAR10ReconstructionDict(CIFAR10):
         return {"image": input_images}, {"image": target_images}
 
 
-class CIFAR100ReconstructionDict(CIFAR100):
+class CIFAR100ReconstructionDataset(CIFAR100):
     def __init__(self, root, train, download, input_transform, target_transform):
-        super(CIFAR100ReconstructionDict, self).__init__(
+        super(CIFAR100ReconstructionDataset, self).__init__(
             root=root, train=train, download=download, transform=input_transform
         )
         self.target_transform = target_transform

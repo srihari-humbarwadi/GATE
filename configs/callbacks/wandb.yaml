@@ -1,27 +1,23 @@
 defaults:
   - default.yaml
 
-#watch_model:
-#  _target_: tali.base.callbacks.wandb_callbacks.WatchModel
-#  log: "all"
-#  log_freq: 100
-
 upload_code_as_artifact:
-  _target_: tali.base.callbacks.wandb_callbacks.UploadCodeAsArtifact
-  code_dir: ${code_dir}/
-  use_git: False
+  _target_: gate.base.callbacks.wandb_callbacks.UploadCodeAsArtifact
+  code_dir: ${code_dir}
 
-#upload_ckpts_as_artifact:
-#  _target_: tali.base.callbacks.wandb_callbacks.UploadCheckpointsAsArtifact
-#  ckpt_dir: "{current_experiment_dir}/checkpoints/"
-#  upload_best_only: True
+upload_ckpts_as_artifact:
+  _target_: gate.base.callbacks.wandb_callbacks.UploadCheckpointsAsArtifact
+  ckpt_dir: ${current_experiment_dir}/checkpoints/
+  upload_best_only: False
 
-#log_f1_precision_recall_heatmap:
-#  _target_: tali.base.callbacks.wandb_callbacks.LogF1PrecRecHeatmap
-#
-#log_confusion_matrix:
-#  _target_: tali.base.callbacks.wandb_callbacks.LogConfusionMatrix
-#
 log_multi_modal_similarity_prediction_heatmap:
-  _target_: tali.base.callbacks.wandb_callbacks.LogMultiModalPredictionHeatmaps
-  num_samples: 16
+  _target_: gate.base.callbacks.wandb_callbacks.LogMultiModalPredictionHeatmaps
+  num_samples: 8
+
+log_grads:
+  _target_: gate.base.callbacks.wandb_callbacks.LogGrads
+  refresh_rate: 100
+
+log_configs:
+  _target_: gate.base.callbacks.wandb_callbacks.LogConfigInformation
+  config: null

@@ -1,0 +1,3 @@
+defaults:
+  - optimizer_config: adam.yaml
+  - lr_scheduler_config: cosine_annealing.yaml
