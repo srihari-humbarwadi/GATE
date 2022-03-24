@@ -1,11 +1,16 @@
-_target_: gate.models.base.AudioImageResNet
+_target_: gate.models.resnet.AudioImageResNet
 model_name_to_download: resnet50
 pretrained: True
 audio_kernel_size: 3
 input_modality_shape_config:
   image:
-    shape: (3, 224, 224)
+    shape:
+      channels: 3
+      width: 224
+      height: 224
     dtype: float32
   audio:
-    shape: (2, 44100)
+    shape:
+      channels: 2
+      width: 44100
     dtype: float32

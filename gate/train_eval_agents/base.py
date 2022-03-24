@@ -1,14 +1,14 @@
 from typing import List, Any
 
 import torch
+from hydra.utils import instantiate
 from pytorch_lightning import LightningModule
 
-from gate.base.utils import get_logger
-from gate.class_configs.configs import ModelConfig, LearnerConfig, TaskConfig
+from gate.base.utils.loggers import get_logger
+from gate.class_configs.base import ModelConfig, LearnerConfig, TaskConfig
 from gate.learners.base import LearnerModule
 from gate.models.base import ModelModule
 from gate.tasks.base import TaskModule
-from hydra.utils import instantiate
 
 log = get_logger(__name__)
 
@@ -19,17 +19,13 @@ class TrainingEvaluationAgent(LightningModule):
         model_config: ModelConfig,
         learner_config: LearnerConfig,
         task_config: TaskConfig,
-        input_shape_dict: dict,
-        output_shape_dict: dict,
     ):
         super().__init__()
         self.model: ModelModule = instantiate(model_config)
-        self.learner_config = learner_config
-        self.learner_config.model = self.model
         self.learner: LearnerModule = instantiate(learner_config)
         self.task: TaskModule = instantiate(task_config)
-        self.input_shape_dict = input_shape_dict
-        self.output_shape_dict = output_shape_dict
+        self.input_shape_dict = self.model.input_modality_shape_config
+        self.output_shape_dict = self.task.output_shape_dict
 
     def build(self):
         dummy_batch_dict = self.datamodule.dummy_batch()
@@ -41,11 +37,18 @@ class TrainingEvaluationAgent(LightningModule):
         self.model.build(dummy_batch_shape_dict)
 
         self.learner.build(
-            input_shape_dict=dummy_batch_shape_dict,
-            output_shape_dict=self.task.output_shape_dict,
+            model=self.model,
+            input_shape_dict=self.input_shape_dict,
+            output_shape_dict=self.output_shape_dict,
         )
 
         self.task.build(dummy_batch_shape_dict)
+
+        output = self.learner.forward(dummy_batch_dict)
+
+        log.info(
+            f"Built {self.__class__.__name__} with {self.model.__class__.__name__} and {self.learner.__class__.__name__} and {self.task.__class__.__name__} and output shape {output.shape}"
+        )
 
     def forward(self, batch):
         self.learner.forward(batch)

@@ -1,0 +1,30 @@
+_target_: gate.datamodules.base.CIFAR100DataModule
+dataset_config:
+  _target_: gate.datasets.base.CIFAR100Classification
+  dataset_root: ${data_dir}
+  dataset_name: cifar10
+  val_set_percentage: 0.1
+  download: True
+  modality_config:
+    image: True
+    audio: False
+    video: False
+    text: False
+  image_shape_dict:
+    image:
+      channels: 3
+      width: 32
+      height: 32
+data_loader_config:
+  seed: ${seed}
+  train_batch_size: ${batch_size}
+  val_batch_size: ${batch_size}
+  test_batch_size: ${batch_size}
+  num_workers: 2
+  pin_memory: True
+  train_drop_last: True
+  eval_drop_last: True
+  train_shuffle: True
+  eval_shuffle: False
+  prefetch_factor: 2
+  persistent_workers: True

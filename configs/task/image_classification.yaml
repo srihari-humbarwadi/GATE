@@ -1,4 +1,4 @@
-_target_: gate.tasks.base.ImageClassificationTaskModule
+_target_: gate.tasks.classification.ImageClassificationTaskModule
 output_shape_dict:
   image:
     channels: 3

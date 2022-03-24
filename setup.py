@@ -2,14 +2,14 @@ from setuptools import setup
 
 setup(
     name="gate",
-    version="0.3.0",
+    version="0.3.1",
     packages=[
         "gate.learners",
         "gate.model_blocks",
         "gate.datasets",
+        "gate.datamodules",
         "gate.models",
         "gate.tasks",
-        "gate.utils",
         "gate.base",
         "gate",
     ],

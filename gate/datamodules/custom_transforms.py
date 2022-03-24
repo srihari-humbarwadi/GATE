@@ -67,3 +67,20 @@ class SimCLRTransform:
 
     def __call__(self, x):
         return [self.base_transform(x) for i in range(self.n_views)]
+
+
+class UnNormalize:
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, x):
+        return transforms.Compose(
+            [
+                transforms.Normalize(
+                    mean=[-m / s for m, s in zip(self.mean, self.std)],
+                    std=[1.0 / s for s in self.std],
+                ),
+                lambda x: x * 255,
+            ]
+        )(x)
