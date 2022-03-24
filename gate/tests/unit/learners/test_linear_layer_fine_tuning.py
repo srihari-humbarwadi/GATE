@@ -1,86 +1,123 @@
-import logging
-
 import pytest
+
 import torch
-from rich.logging import RichHandler
+import torch.nn.functional as F
+from dotted_dict import DottedDict
 
+from gate.base.utils.loggers import get_logger
 from gate.class_configs.base import (
-    CIFAR10DatasetConfig,
-    DataLoaderConfig,
-    CIFAR100DatasetConfig,
+    LearnerModalityConfig,
+    ImageClassificationTaskModuleConfig,
+    ShapeConfig,
 )
-from gate.datamodules.cifar import CIFAR10DataModule, CIFAR100DataModule
+from gate.learners.single_layer_fine_tuning import LinearLayerFineTuningScheme
+from gate.models.resnet import ImageResNet
 
-log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
-ch = RichHandler()
-ch.setLevel(logging.INFO)
-
-# create formatter
-formatter = logging.Formatter("%(levelname)s - %(message)s")
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-log.addHandler(ch)
+log = get_logger(__name__, set_default_handler=True)
 
 
 @pytest.mark.parametrize(
-    "datamodule",
+    "learner",
     [
-        CIFAR10DataModule,
-        CIFAR100DataModule,
+        LinearLayerFineTuningScheme,
     ],
 )
-@pytest.mark.parametrize("batch_size", [1, 2])  # , 4, 8, 16, 32, 64, 128, 256, 512])
-@pytest.mark.parametrize("num_workers", [1, 4])
-@pytest.mark.parametrize("pin_memory", [True, False])
-@pytest.mark.parametrize("drop_last", [True, False])
-@pytest.mark.parametrize("shuffle", [True, False])
-@pytest.mark.parametrize("prefetch_factor", [1, 2])
-@pytest.mark.parametrize("persistent_workers", [True, False])
+@pytest.mark.parametrize(
+    "fine_tune_all_layers",
+    [
+        True,
+        False,
+    ],
+)
+@pytest.mark.parametrize(
+    "max_epochs",
+    [1, 100],
+)
+@pytest.mark.parametrize(
+    "min_learning_rate",
+    [0.00001],
+)
+@pytest.mark.parametrize(
+    "lr",
+    [0.01],
+)
+@pytest.mark.parametrize(
+    "betas",
+    [(0.9, 0.999)],
+)
+@pytest.mark.parametrize(
+    "eps",
+    [0.000001],
+)
+@pytest.mark.parametrize(
+    "weight_decay",
+    [0.00001],
+)
+@pytest.mark.parametrize(
+    "amsgrad",
+    [
+        False,
+        True,
+    ],
+)
 def test_single_layer_fine_tuning(
-    datamodule,
-    batch_size,
-    num_workers,
-    pin_memory,
-    drop_last,
-    shuffle,
-    prefetch_factor,
-    persistent_workers,
+    learner,
+    fine_tune_all_layers,
+    max_epochs,
+    min_learning_rate,
+    lr,
+    betas,
+    eps,
+    weight_decay,
+    amsgrad,
 ):
-    # log.info(f"Testing datamodule: {datamodule.__name__}")
-
-    dataset_config = (
-        CIFAR10DatasetConfig()
-        if "CIFAR10" in datamodule.__name__
-        else CIFAR100DatasetConfig()
+    task_config = ImageClassificationTaskModuleConfig(
+        output_shape_dict={"image": (10,)}
     )
 
-    data_loader_config = DataLoaderConfig(
-        train_batch_size=batch_size,
-        val_batch_size=batch_size,
-        test_batch_size=batch_size,
-        pin_memory=pin_memory,
-        train_drop_last=drop_last,
-        eval_drop_last=drop_last,
-        train_shuffle=shuffle,
-        eval_shuffle=shuffle,
-        prefetch_factor=prefetch_factor,
-        persistent_workers=persistent_workers,
-        num_workers=num_workers,
+    module = learner(
+        task_config=task_config,
+        modality_config=LearnerModalityConfig(image=True),
+        optimizer_config=DottedDict(_target_="torch.optim.Adam", lr=0.001),
+        lr_scheduler_config=DottedDict(
+            _target_="torch.optim.lr_scheduler.CosineAnnealingLR",
+            T_max=max_epochs,
+            eta_min=0,
+            verbose=True,
+        ),
+        fine_tune_all_layers=fine_tune_all_layers,
+        max_epochs=max_epochs,
+        min_learning_rate=min_learning_rate,
+        lr=lr,
+        betas=betas,
+        eps=eps,
+        weight_decay=weight_decay,
+        amsgrad=amsgrad,
+    )
+    image_shape = tuple([3, 32, 32])
+    model = ImageResNet(
+        input_modality_shape_config=ShapeConfig(image=tuple(image_shape)),
+        model_name_to_download="resnet50",
+        pretrained=True,
+    )
+    dummy_x = {
+        "image": torch.randn(size=(2,) + model.input_modality_shape_config.image),
+    }
+
+    log.info(f"dummy_x.shape: {dummy_x['image'].shape}")
+
+    out = model.forward(dummy_x)
+
+    module.build(
+        model=model,
+        input_shape_dict=model.input_modality_shape_config,
+        output_shape_dict=task_config.output_shape_dict,
     )
 
-    datamodule = datamodule(
-        dataset_config=dataset_config, data_loader_config=data_loader_config
-    )
+    out = module.forward(dummy_x)
 
-    datamodule.setup(stage="fit")
+    loss = F.cross_entropy(out["image"], torch.randint(0, 10, (2,)))
 
-    for idx, item in enumerate(datamodule.train_dataloader()):
-        x, y = item
-        assert x["image"].shape == (batch_size, 3, 32, 32)
-        assert torch.is_tensor(x["image"])
-        assert torch.is_tensor(y["image"])
-        break
+    loss.backward()
+
+    module.optimizers()["optimizer"].step()

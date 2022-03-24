@@ -1,9 +1,7 @@
-import logging
-
 import pytest
 import torch
-from rich.logging import RichHandler
 
+from gate.base.utils.loggers import get_logger
 from gate.class_configs.base import (
     CIFAR10DatasetConfig,
     DataLoaderConfig,
@@ -11,19 +9,7 @@ from gate.class_configs.base import (
 )
 from gate.datamodules.cifar import CIFAR10DataModule, CIFAR100DataModule
 
-log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
-ch = RichHandler()
-ch.setLevel(logging.INFO)
-
-# create formatter
-formatter = logging.Formatter("%(levelname)s - %(message)s")
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-log.addHandler(ch)
+log = get_logger(__name__, set_default_handler=True)
 
 
 @pytest.mark.parametrize(

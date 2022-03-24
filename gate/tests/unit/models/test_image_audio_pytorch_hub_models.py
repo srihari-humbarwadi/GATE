@@ -1,16 +1,13 @@
+import pytest
 import torch
 
-import logging
-
-import pytest
-
-from gate.base.utils import loggers
+from gate.base.utils.loggers import get_logger
 from gate.class_configs.base import (
     ShapeConfig,
 )
 from gate.models.resnet import ImageResNet
 
-log = loggers.get_logger(__name__)
+log = get_logger(__name__, set_default_handler=True)
 
 
 @pytest.mark.parametrize(

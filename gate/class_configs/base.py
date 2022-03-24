@@ -30,7 +30,7 @@ class ShapeConfig:
 @dataclass
 class TaskConfig:
     output_shape_dict: Union[ShapeConfig, Dict[str, Union[tuple, List]]]
-    metric_class_dict: Dict[str, Union[str, torch.nn.Module]]
+    # metric_class_dict: Dict[str, Union[str, torch.nn.Module]]
     _target_: str = "gate.tasks.base.TaskModule"
 
 

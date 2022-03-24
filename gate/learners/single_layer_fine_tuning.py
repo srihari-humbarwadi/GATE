@@ -1,4 +1,4 @@
-from typing import Tuple, Any
+from typing import Tuple, Any, Dict, Union
 
 import hydra
 import torch
@@ -15,6 +15,8 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self,
         task_config: TaskConfig,
         modality_config: LearnerModalityConfig,
+        optimizer_config: Dict[str, Any],
+        lr_scheduler_config: Dict[str, Any],
         fine_tune_all_layers=False,
         max_epochs: int = 100,
         min_learning_rate: float = 1e-6,
@@ -28,6 +30,8 @@ class LinearLayerFineTuningScheme(LearnerModule):
             task_config=task_config, modality_config=modality_config
         )
         self.output_layer_dict = torch.nn.ModuleDict()
+        self.optimizer_config = optimizer_config
+        self.lr_scheduler_config = lr_scheduler_config
         self.lr = lr
         self.min_learning_rate = min_learning_rate
         self.max_epochs = max_epochs
@@ -44,11 +48,19 @@ class LinearLayerFineTuningScheme(LearnerModule):
     def build(
         self,
         model: torch.nn.Module,
-        input_shape_dict: ShapeConfig,
-        output_shape_dict: ShapeConfig,
+        input_shape_dict: Union[ShapeConfig, Dict],
+        output_shape_dict: Union[ShapeConfig, Dict],
     ):
-        self.input_shape_dict = input_shape_dict
-        self.output_shape_dict = output_shape_dict
+        self.input_shape_dict = (
+            input_shape_dict.__dict__
+            if isinstance(input_shape_dict, ShapeConfig)
+            else input_shape_dict
+        )
+        self.output_shape_dict = (
+            output_shape_dict.__dict__
+            if isinstance(output_shape_dict, ShapeConfig)
+            else output_shape_dict
+        )
         self.model = model
 
         output_dict = {}
@@ -56,7 +68,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
         for modality_name, is_supported in self.modality_config.__dict__.items():
             if is_supported:
 
-                image_dummy_x = torch.randn((2,) + input_shape_dict[modality_name])
+                image_dummy_x = torch.randn((2,) + self.input_shape_dict[modality_name])
                 model_features = self.model.forward({modality_name: image_dummy_x})[
                     modality_name
                 ]
@@ -65,12 +77,12 @@ class LinearLayerFineTuningScheme(LearnerModule):
                 )
                 log.info(
                     f"Output shape of model features {model_features_flatten.shape} "
-                    f"{output_shape_dict}"
+                    f"{self.output_shape_dict}"
                 )
 
                 self.output_layer_dict[modality_name] = torch.nn.Linear(
                     model_features_flatten.shape[1],
-                    output_shape_dict[modality_name][0],
+                    self.output_shape_dict[modality_name][0],
                 )
 
                 logits = self.output_layer_dict[modality_name](model_features_flatten)

@@ -1,9 +1,10 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
+import torch
 import torch.nn as nn
 
 from gate.base.utils.loggers import get_logger
-from gate.class_configs.base import TaskConfig, LearnerModalityConfig
+from gate.class_configs.base import TaskConfig, LearnerModalityConfig, ShapeConfig
 
 log = get_logger(__name__)
 
@@ -23,9 +24,10 @@ class LearnerModule(nn.Module):
         modality_config: ModelModalityConfig - the modality configuration
         """
         super(LearnerModule, self).__init__()
-        self.model = Any[nn.Module] = None
-        self.input_shape_dict: Any[Dict] = None
-        self.output_shape_dict = Any[Dict] = None
+        self.input_shape_dict = None
+        self.output_shape_dict = None
+
+        self.model = None
         self.optimizer = None
         self.scheduler = None
 
@@ -34,9 +36,9 @@ class LearnerModule(nn.Module):
 
     def build(
         self,
-        model: nn.Module,
-        input_shape_dict: Any[Dict],
-        output_shape_dict: Any[Dict],
+        model: torch.nn.Module,
+        input_shape_dict: Union[ShapeConfig, Dict],
+        output_shape_dict: Union[ShapeConfig, Dict],
     ):
         """
         Build the learner.
