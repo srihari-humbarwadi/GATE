@@ -18,10 +18,6 @@ log = get_logger(__name__, set_default_handler=True)
         "resnet50",
         "resnet101",
         "resnet152",
-        "vit_b_16",
-        "vit_b_32",
-        "vit_l_16",
-        "vit_l_32",
     ],
 )
 @pytest.mark.parametrize("pretrained", [True, False])
@@ -32,12 +28,12 @@ def test_pytorch_hub_models(
     image_shape,
 ):
     model = ImageResNet(
-        input_modality_shape_config=ShapeConfig(image=tuple(image_shape)),
+        input_modality_shape_config=ShapeConfig(image=image_shape),
         model_name_to_download=model_name,
         pretrained=pretrained,
     )
     dummy_x = {
-        "image": torch.randn(size=(2,) + model.input_modality_shape_config.image),
+        "image": torch.randn(size=[2] + model.input_modality_shape_config.image),
     }
 
     log.info(f"dummy_x.shape: {dummy_x['image'].shape}")

@@ -6,7 +6,7 @@ from dotted_dict import DottedDict
 
 from gate.base.utils.loggers import get_logger
 from gate.class_configs.base import (
-    LearnerModalityConfig,
+    ModalitiesSupportedConfig,
     ImageClassificationTaskModuleConfig,
     ShapeConfig,
 )
@@ -43,7 +43,7 @@ log = get_logger(__name__, set_default_handler=True)
 )
 @pytest.mark.parametrize(
     "betas",
-    [(0.9, 0.999)],
+    [[0.9, 0.999]],
 )
 @pytest.mark.parametrize(
     "eps",
@@ -76,8 +76,6 @@ def test_single_layer_fine_tuning(
     )
 
     module = learner(
-        task_config=task_config,
-        modality_config=LearnerModalityConfig(image=True),
         optimizer_config=DottedDict(_target_="torch.optim.Adam", lr=0.001),
         lr_scheduler_config=DottedDict(
             _target_="torch.optim.lr_scheduler.CosineAnnealingLR",
@@ -94,30 +92,31 @@ def test_single_layer_fine_tuning(
         weight_decay=weight_decay,
         amsgrad=amsgrad,
     )
-    image_shape = tuple([3, 32, 32])
     model = ImageResNet(
-        input_modality_shape_config=ShapeConfig(image=tuple(image_shape)),
+        input_modality_shape_config=ShapeConfig(image=[3, 32, 32]),
         model_name_to_download="resnet50",
         pretrained=True,
     )
     dummy_x = {
-        "image": torch.randn(size=(2,) + model.input_modality_shape_config.image),
+        "image": torch.randn(size=[2] + model.input_modality_shape_config.image),
     }
 
     log.info(f"dummy_x.shape: {dummy_x['image'].shape}")
 
-    out = model.forward(dummy_x)
+    _ = model.forward(dummy_x)
 
     module.build(
         model=model,
         input_shape_dict=model.input_modality_shape_config,
         output_shape_dict=task_config.output_shape_dict,
+        task_config=task_config,
+        modality_config=ModalitiesSupportedConfig(image=True),
     )
-
+    optimizer = module.optimizers()["optimizer"]
     out = module.forward(dummy_x)
 
     loss = F.cross_entropy(out["image"], torch.randint(0, 10, (2,)))
 
     loss.backward()
 
-    module.optimizers()["optimizer"].step()
+    optimizer.step()

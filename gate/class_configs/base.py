@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Union, List, Optional, Tuple, Any
 
 import torch
@@ -8,7 +8,35 @@ import torch
 # ------------------------------------------------------------------------------
 # General configs
 # from gate.datasets.data_utils import collate_fn_replace_corrupted
+from dotted_dict import DottedDict
+
 from gate.datasets.data_utils import collate_fn_replace_corrupted
+
+# ------------------------------------------------------------------------------
+# Config rules:
+
+# Structured Configs use Python dataclasses to describe your configuration
+# structure and types. They enable:
+#
+# - Runtime type checking as you compose or mutate your config
+# - Static type checking when using static type checkers (mypy, PyCharm, etc.)
+#
+# Structured Configs supports:
+# - Primitive types (int, bool, float, str, Enums)
+# - Nesting of Structured Configs
+# - Containers (List and Dict) containing primitives or Structured Configs
+# - Optional fields
+#
+# Structured Configs Limitations:
+# - Union types are not supported (except Optional)
+# - User methods are not supported
+#
+# There are two primary patterns for using Structured configs
+# - As a config, in place of configuration files (often a starting place)
+# - As a config schema validating configuration files (better for complex use cases)
+#
+# With both patterns, you still get everything Hydra has to offer
+# (config composition, Command line overrides etc).
 
 
 @dataclass
@@ -17,10 +45,10 @@ class ShapeConfig:
     Modality configuration for the types of processing a model can do.
     """
 
-    image: Optional[Union[Tuple, Dict]] = None
-    audio: Optional[Union[Tuple, Dict]] = None
-    text: Optional[Union[Tuple, Dict]] = None
-    video: Optional[Union[Tuple, Dict]] = None
+    image: Optional[List] = None
+    audio: Optional[List] = None
+    text: Optional[List] = None
+    video: Optional[List] = None
 
 
 # ------------------------------------------------------------------------------
@@ -29,7 +57,7 @@ class ShapeConfig:
 #
 @dataclass
 class TaskConfig:
-    output_shape_dict: Union[ShapeConfig, Dict[str, Union[tuple, List]]]
+    output_shape_dict: ShapeConfig
     # metric_class_dict: Dict[str, Union[str, torch.nn.Module]]
     _target_: str = "gate.tasks.base.TaskModule"
 
@@ -50,7 +78,14 @@ class ModelConfig:
 
 
 @dataclass
-class AudioImageResNetConfig(ModelConfig):
+class ImageResNetConfig(ModelConfig):
+    model_name_to_download: str = "resnet18"
+    pretrained: bool = False
+    _target_: str = "gate.models.resnet.ImageResNet"
+
+
+@dataclass
+class AudioImageResNetConfig(ImageResNetConfig):
     model_name_to_download: str = "resnet18"
     pretrained: bool = False
     audio_kernel_size: int = 3
@@ -62,7 +97,7 @@ class AudioImageResNetConfig(ModelConfig):
 
 
 @dataclass
-class LearnerModalityConfig:
+class ModalitiesSupportedConfig:
     """
     Modality configuration for the types of processing a model can do.
     """
@@ -86,19 +121,18 @@ class LearnerModalityConfig:
 
 @dataclass
 class LearnerConfig:
-    model: torch.nn.Module
-    task_config: TaskConfig
-    modality_config: LearnerModalityConfig
     _target_: str = "gate.learners.base.LearnerModule"
 
 
 @dataclass
 class LinearLayerFineTuningSchemeConfig(LearnerConfig):
-    fine_tune_all_layers = False
+    optimizer_config: Dict = field(default_factory=dict)
+    lr_scheduler_config: Dict = field(default_factory=dict)
+    fine_tune_all_layers: bool = False
     max_epochs: int = 100
     min_learning_rate: float = 1e-6
     lr: float = 1e-3
-    betas: Tuple[float] = (0.9, 0.999)
+    betas: List[float] = field(default_factory=lambda: [0.9, 0.999])
     eps: float = 1e-8
     weight_decay: float = 0.0
     amsgrad: bool = False
@@ -127,7 +161,7 @@ class CIFAR10DatasetConfig(DatasetConfig):
 
     dataset_name: str = "cifar10"
     dataset_root: str = f"{os.getenv('DATASET_DIR') or 'datasets'}/cifar10"
-    modality_config: LearnerModalityConfig = LearnerModalityConfig(image=True)
+    modality_config: ModalitiesSupportedConfig = ModalitiesSupportedConfig(image=True)
     val_set_percentage: float = 0.1
     download: bool = True
     _target_: str = "gate.datasets.cifar.CIFAR10ClassificationDataset"
@@ -141,7 +175,7 @@ class CIFAR100DatasetConfig(DatasetConfig):
 
     dataset_name: str = "cifar100"
     dataset_root: str = f"{os.getenv('DATASET_DIR') or 'datasets'}/cifar100"
-    modality_config: LearnerModalityConfig = LearnerModalityConfig(image=True)
+    modality_config: ModalitiesSupportedConfig = ModalitiesSupportedConfig(image=True)
     val_set_percentage: float = 0.1
     download: bool = True
     _target_: str = "gate.datasets.cifar.CIFAR100ClassificationDataset"

@@ -2,19 +2,18 @@ from typing import Tuple, Any, Dict, Union
 
 import hydra
 import torch
+from rich.pretty import pprint
 
 import gate.base.utils.loggers as loggers
-from gate.class_configs.base import TaskConfig, LearnerModalityConfig, ShapeConfig
+from gate.class_configs.base import TaskConfig, ModalitiesSupportedConfig, ShapeConfig
 from gate.learners.base import LearnerModule
 
-log = loggers.get_logger(__name__)
+log = loggers.get_logger(__name__, set_default_handler=True)
 
 
 class LinearLayerFineTuningScheme(LearnerModule):
     def __init__(
         self,
-        task_config: TaskConfig,
-        modality_config: LearnerModalityConfig,
         optimizer_config: Dict[str, Any],
         lr_scheduler_config: Dict[str, Any],
         fine_tune_all_layers=False,
@@ -26,9 +25,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
         weight_decay: float = 0.0,
         amsgrad: bool = False,
     ):
-        super(LinearLayerFineTuningScheme, self).__init__(
-            task_config=task_config, modality_config=modality_config
-        )
+        super(LinearLayerFineTuningScheme, self).__init__()
         self.output_layer_dict = torch.nn.ModuleDict()
         self.optimizer_config = optimizer_config
         self.lr_scheduler_config = lr_scheduler_config
@@ -48,6 +45,8 @@ class LinearLayerFineTuningScheme(LearnerModule):
     def build(
         self,
         model: torch.nn.Module,
+        task_config: TaskConfig,
+        modality_config: ModalitiesSupportedConfig,
         input_shape_dict: Union[ShapeConfig, Dict],
         output_shape_dict: Union[ShapeConfig, Dict],
     ):
@@ -62,13 +61,22 @@ class LinearLayerFineTuningScheme(LearnerModule):
             else output_shape_dict
         )
         self.model = model
+        self.task_config = task_config
+        self.modality_config = modality_config
 
         output_dict = {}
 
         for modality_name, is_supported in self.modality_config.__dict__.items():
             if is_supported:
-
-                image_dummy_x = torch.randn((2,) + self.input_shape_dict[modality_name])
+                # log.info(
+                #     f"\n"
+                #     f"{modality_name} \n"
+                #     f"{self.modality_config.__dict__} \n"
+                #     f"{self.output_shape_dict} {self.input_shape_dict}🔠"
+                # )
+                image_dummy_x = torch.randn(
+                    [2] + list(self.input_shape_dict[modality_name])
+                )
                 model_features = self.model.forward({modality_name: image_dummy_x})[
                     modality_name
                 ]

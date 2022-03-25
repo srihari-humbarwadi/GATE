@@ -1,4 +1,4 @@
-from typing import Dict, Any, Union, Tuple
+import timm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,7 +14,7 @@ log = get_logger()
 class ImageResNet(ModelModule):
     def __init__(
         self,
-        input_modality_shape_config: Union[Dict, ShapeConfig] = None,
+        input_modality_shape_config: ShapeConfig = None,
         model_name_to_download: str = "resnet18",
         pretrained: bool = True,
     ):
@@ -118,15 +118,13 @@ class ImageResNet(ModelModule):
 
     def build_image(self, input_shape):
         image_input_dummy = torch.zeros(input_shape)
-        self.resnet_image_embedding = torch.hub.load(
-            repo_or_dir="pytorch/vision",
-            model=self.model_name_to_download,
-            pretrained=self.pretrained,
+        self.resnet_image_embedding = timm.create_model(
+            self.model_name_to_download, pretrained=self.pretrained
         )
-
+        log.info(self.resnet_image_embedding)
         self.resnet_image_embedding.fc = nn.Identity()  # remove logit layer
 
-        self.resnet_image_embedding.avgpool = nn.Identity()  # remove global pool
+        self.resnet_image_embedding.global_pool = nn.Identity()  # remove global pool
 
         if image_input_dummy.shape[1:] != (3, 224, 224):
             image_input_dummy = F.interpolate(image_input_dummy, size=(224, 224))
@@ -167,7 +165,7 @@ class ImageResNet(ModelModule):
 class AudioImageResNet(ImageResNet):
     def __init__(
         self,
-        input_modality_shape_config: Tuple[Dict, ShapeConfig] = None,
+        input_modality_shape_config: ShapeConfig = None,
         model_name_to_download: str = "resnet18",
         pretrained: bool = True,
         audio_kernel_size: int = 3,

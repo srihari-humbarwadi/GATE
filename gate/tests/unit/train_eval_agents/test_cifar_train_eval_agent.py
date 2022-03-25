@@ -1,72 +1,103 @@
 import pytest
+
 import torch
+import torch.nn.functional as F
+from dotted_dict import DottedDict
 
 from gate.base.utils.loggers import get_logger
 from gate.class_configs.base import (
-    CIFAR10DatasetConfig,
-    DataLoaderConfig,
+    ModalitiesSupportedConfig,
+    ImageClassificationTaskModuleConfig,
+    ShapeConfig,
+    AudioImageResNetConfig,
+    ImageResNetConfig,
+    LinearLayerFineTuningSchemeConfig,
     CIFAR100DatasetConfig,
+    DataLoaderConfig,
 )
-from gate.datamodules.cifar import CIFAR10DataModule, CIFAR100DataModule
+from gate.datamodules.cifar import CIFAR100DataModule
+from gate.learners.single_layer_fine_tuning import LinearLayerFineTuningScheme
+from gate.models.resnet import ImageResNet
+from gate.train_eval_agents.base import TrainingEvaluationAgent
 
 log = get_logger(__name__, set_default_handler=True)
 
 
 @pytest.mark.parametrize(
-    "datamodule",
+    "model_config",
     [
-        CIFAR10DataModule,
-        CIFAR100DataModule,
+        ImageResNetConfig(
+            model_name_to_download="resnet18",
+            pretrained=True,
+            input_modality_shape_config=ShapeConfig(
+                image=[3, 224, 224],
+            ),
+        ),
     ],
 )
-@pytest.mark.parametrize("batch_size", [1, 2])  # , 4, 8, 16, 32, 64, 128, 256, 512])
-@pytest.mark.parametrize("num_workers", [1, 4])
-@pytest.mark.parametrize("pin_memory", [True, False])
-@pytest.mark.parametrize("drop_last", [True, False])
-@pytest.mark.parametrize("shuffle", [True, False])
-@pytest.mark.parametrize("prefetch_factor", [1, 2])
-@pytest.mark.parametrize("persistent_workers", [True, False])
-def test_cifar_datamodules(
-    datamodule,
-    batch_size,
-    num_workers,
-    pin_memory,
-    drop_last,
-    shuffle,
-    prefetch_factor,
-    persistent_workers,
+@pytest.mark.parametrize(
+    "task_config",
+    [
+        ImageClassificationTaskModuleConfig(
+            output_shape_dict=ShapeConfig(
+                image=[
+                    10,
+                ]
+            )
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "learner_config",
+    [
+        LinearLayerFineTuningSchemeConfig(
+            optimizer_config=dict(_target_="torch.optim.Adam", lr=0.001),
+            lr_scheduler_config=dict(
+                _target_="torch.optim.lr_scheduler.CosineAnnealingLR",
+                T_max=10,
+                eta_min=0,
+                verbose=True,
+            ),
+        ),
+    ],
+)
+def test_single_layer_fine_tuning(
+    learner_config,
+    model_config,
+    task_config,
 ):
-    # log.info(f"Testing datamodule: {datamodule.__name__}")
-
-    dataset_config = (
-        CIFAR10DatasetConfig()
-        if "CIFAR10" in datamodule.__name__
-        else CIFAR100DatasetConfig()
-    )
+    dataset_config = CIFAR100DatasetConfig()
 
     data_loader_config = DataLoaderConfig(
-        train_batch_size=batch_size,
-        val_batch_size=batch_size,
-        test_batch_size=batch_size,
-        pin_memory=pin_memory,
-        train_drop_last=drop_last,
-        eval_drop_last=drop_last,
-        train_shuffle=shuffle,
-        eval_shuffle=shuffle,
-        prefetch_factor=prefetch_factor,
-        persistent_workers=persistent_workers,
-        num_workers=num_workers,
+        train_batch_size=2,
+        val_batch_size=2,
+        test_batch_size=2,
+        pin_memory=False,
+        train_drop_last=False,
+        eval_drop_last=False,
+        train_shuffle=False,
+        eval_shuffle=False,
+        prefetch_factor=2,
+        persistent_workers=False,
+        num_workers=2,
     )
 
-    datamodule = datamodule(
+    datamodule = CIFAR100DataModule(
         dataset_config=dataset_config, data_loader_config=data_loader_config
     )
 
     datamodule.setup(stage="fit")
 
-    for idx, item in enumerate(datamodule.train_dataloader()):
-        x, y = item
-        assert x["image"].shape == (batch_size, 3, 32, 32)
-        assert torch.is_tensor(x["image"])
-        assert torch.is_tensor(y["image"])
-        break
+    train_eval_agent = TrainingEvaluationAgent(
+        learner_config=learner_config,
+        model_config=model_config,
+        task_config=task_config,
+        modality_config=ModalitiesSupportedConfig(image=True),
+        datamodule=datamodule,
+    )
+
+    # dummy_x = {
+    #     "image": torch.randn(size=(2,) + model.input_modality_shape_config.image),
+    # }
+    #
+    # log.info(f"dummy_x.shape: {dummy_x['image'].shape}")
