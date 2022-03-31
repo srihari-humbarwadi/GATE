@@ -23,7 +23,9 @@ nvidia-ml-py3
 # hydra-submitit-launcher
 
 # --------- loggers --------- #
+dotted-dict
 wandb
+timm
 # neptune-client
 # mlflow
 # comet-ml
