@@ -29,7 +29,7 @@ log = get_logger(__name__, set_default_handler=True)
         ImageResNetConfig(
             model_name_to_download="resnet18",
             pretrained=True,
-            input_modality_shape_config=ShapeConfig(
+            input_shape_dict=ShapeConfig(
                 image=[3, 224, 224],
             ),
         ),
@@ -97,7 +97,7 @@ def test_single_layer_fine_tuning(
     )
 
     # dummy_x = {
-    #     "image": torch.randn(size=(2,) + model.input_modality_shape_config.image),
+    #     "image": torch.randn(size=(2,) + model.input_shape_dict.image),
     # }
     #
     # log.info(f"dummy_x.shape: {dummy_x['image'].shape}")

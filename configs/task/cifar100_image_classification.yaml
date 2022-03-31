@@ -3,4 +3,4 @@ defaults:
 
 output_shape_dict:
   image:
-    num_classes: 10
+    num_classes: 100

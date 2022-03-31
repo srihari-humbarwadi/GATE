@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Generator
 
 import torchmetrics
 
@@ -12,5 +12,5 @@ class ImageClassificationTaskModule(TaskModule):
             output_shape_dict=output_shape_dict, metric_class_dict=self.task_class_dict
         )
 
-    def data_flow(self, data_dict: Dict[str, Any], batch_idx: int) -> Dict[str, Any]:
-        return data_dict
+    def data_flow(self, data_dict: Dict[str, Any], batch_idx: int) -> Generator:
+        yield data_dict

@@ -28,12 +28,12 @@ def test_pytorch_hub_models(
     image_shape,
 ):
     model = ImageResNet(
-        input_modality_shape_config=ShapeConfig(image=image_shape),
+        input_shape_dict=ShapeConfig(image=image_shape),
         model_name_to_download=model_name,
         pretrained=pretrained,
     )
     dummy_x = {
-        "image": torch.randn(size=[2] + model.input_modality_shape_config.image),
+        "image": torch.randn(size=[2] + model.input_shape_dict.image),
     }
 
     log.info(f"dummy_x.shape: {dummy_x['image'].shape}")

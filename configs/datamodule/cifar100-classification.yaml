@@ -1,8 +1,8 @@
-_target_: gate.datamodules.base.CIFAR100DataModule
+_target_: gate.datamodules.cifar.CIFAR100DataModule
 dataset_config:
-  _target_: gate.datasets.base.CIFAR100Classification
+  _target_: gate.datasets.cifar.CIFAR100Classification
   dataset_root: ${data_dir}
-  dataset_name: cifar10
+  dataset_name: cifar100
   val_set_percentage: 0.1
   download: True
   modality_config:
@@ -10,7 +10,7 @@ dataset_config:
     audio: False
     video: False
     text: False
-  image_shape_dict:
+  input_shape_dict:
     image:
       channels: 3
       width: 32

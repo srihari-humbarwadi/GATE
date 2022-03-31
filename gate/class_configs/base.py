@@ -45,10 +45,10 @@ class ShapeConfig:
     Modality configuration for the types of processing a model can do.
     """
 
-    image: Optional[List] = None
-    audio: Optional[List] = None
-    text: Optional[List] = None
-    video: Optional[List] = None
+    image: Optional[Any] = None
+    audio: Optional[Any] = None
+    text: Optional[Any] = None
+    video: Optional[Any] = None
 
 
 # ------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ class ImageClassificationTaskModuleConfig(TaskConfig):
 
 @dataclass
 class ModelConfig:
-    input_modality_shape_config: ShapeConfig
+    input_shape_dict: ShapeConfig
     _target_: str = "gate.models.base.ModelModule"
 
 
@@ -162,6 +162,9 @@ class CIFAR10DatasetConfig(DatasetConfig):
     dataset_name: str = "cifar10"
     dataset_root: str = f"{os.getenv('DATASET_DIR') or 'datasets'}/cifar10"
     modality_config: ModalitiesSupportedConfig = ModalitiesSupportedConfig(image=True)
+    input_shape_dict: ShapeConfig = ShapeConfig(
+        image=dict(channels=3, height=32, width=32)
+    )
     val_set_percentage: float = 0.1
     download: bool = True
     _target_: str = "gate.datasets.cifar.CIFAR10ClassificationDataset"
@@ -175,6 +178,9 @@ class CIFAR100DatasetConfig(DatasetConfig):
 
     dataset_name: str = "cifar100"
     dataset_root: str = f"{os.getenv('DATASET_DIR') or 'datasets'}/cifar100"
+    input_shape_dict: ShapeConfig = ShapeConfig(
+        image=dict(channels=3, height=32, width=32)
+    )
     modality_config: ModalitiesSupportedConfig = ModalitiesSupportedConfig(image=True)
     val_set_percentage: float = 0.1
     download: bool = True

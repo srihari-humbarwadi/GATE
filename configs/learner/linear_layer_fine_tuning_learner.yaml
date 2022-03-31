@@ -2,31 +2,15 @@ defaults:
   - optimizer_config: adam.yaml
   - lr_scheduler_config: cosine_annealing.yaml
 
-_target_: gate.learner.base.LinearLayerFineTuningScheme
-task_config: ${task}
-modality_config:
-  image: True
-  audio: True
-  text: False
-  video: False
-  image_text: False
-  audio_text: False
-  video_text: False
-  image_audio: True
-  image_video: False
-  audio_video: False
-  image_audio_text: False
-  image_video_text: False
-  audio_video_text: False
-  image_audio_video: False
-  image_audio_video_text: False
+_target_: gate.learners.single_layer_fine_tuning.LinearLayerFineTuningScheme
 fine_tune_all_layers: False
 max_epochs: 100
 min_learning_rate: 1e-6
-lr: 1e-3
-betas:
-  - 0.9
-  - 0.999
-eps: 1e-8
-weight_decay: 0.0
-amsgrad: False
+optimizer_config:
+  lr: 1e-3
+  betas:
+    - 0.9
+    - 0.999
+  eps: 1e-8
+  weight_decay: 0.0
+  amsgrad: False

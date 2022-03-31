@@ -28,7 +28,7 @@ class CIFAR10ClassificationDataset(CIFAR10):
 
     def __getitem__(self, index):
         x, y = super().__getitem__(index)
-        return {"image": x}, {"image": torch.Tensor([y]).type(torch.LongTensor)}
+        return {"image": x}, {"image": torch.ones(size=(1,)).type(torch.LongTensor) * y}
 
 
 class CIFAR100ClassificationDataset(CIFAR100):
@@ -50,7 +50,7 @@ class CIFAR100ClassificationDataset(CIFAR100):
 
     def __getitem__(self, index):
         x, y = super().__getitem__(index)
-        return {"image": x}, {"image": torch.Tensor([y]).type(torch.LongTensor)}
+        return {"image": x}, {"image": torch.ones(size=(1,)).type(torch.LongTensor) * y}
 
 
 class CIFAR10ReconstructionDataset(CIFAR10):

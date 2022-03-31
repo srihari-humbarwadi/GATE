@@ -61,7 +61,7 @@ class LearnerModule(nn.Module):
     def reset_parameters(self):
         raise NotImplementedError
 
-    def optimizers(self):
+    def configure_optimizers(self):
         raise NotImplementedError
 
     def forward(self, batch):

@@ -11,6 +11,7 @@ from pytorch_lightning import (
     loggers,
 )
 from pytorch_lightning.utilities import rank_zero_only
+from rich.tree import Tree
 
 
 def get_logger_rank_zero_only(name=__name__) -> logging.Logger:
@@ -74,7 +75,7 @@ def print_config(
     style = "dim"
     import rich
 
-    tree = rich.tree.Tree("CONFIG", style=style, guide_style=style)
+    tree = Tree("CONFIG", style=style, guide_style=style)
 
     for field in config.keys():
         branch = tree.add(field, style=style, guide_style=style)

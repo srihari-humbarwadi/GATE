@@ -93,12 +93,12 @@ def test_single_layer_fine_tuning(
         amsgrad=amsgrad,
     )
     model = ImageResNet(
-        input_modality_shape_config=ShapeConfig(image=[3, 32, 32]),
+        input_shape_dict=ShapeConfig(image=[3, 32, 32]),
         model_name_to_download="resnet50",
         pretrained=True,
     )
     dummy_x = {
-        "image": torch.randn(size=[2] + model.input_modality_shape_config.image),
+        "image": torch.randn(size=[2] + model.input_shape_dict.image),
     }
 
     log.info(f"dummy_x.shape: {dummy_x['image'].shape}")
@@ -107,7 +107,7 @@ def test_single_layer_fine_tuning(
 
     module.build(
         model=model,
-        input_shape_dict=model.input_modality_shape_config,
+        input_shape_dict=model.input_shape_dict,
         output_shape_dict=task_config.output_shape_dict,
         task_config=task_config,
         modality_config=ModalitiesSupportedConfig(image=True),

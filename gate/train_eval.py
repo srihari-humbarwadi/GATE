@@ -14,27 +14,14 @@ from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
 from wandb.util import generate_id
 
-from gate.base import utils
+from gate.base.utils.loggers import get_logger
 from gate.datamodules.base import DataModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 
-log = utils.get_logger(__name__)
+log = get_logger(__name__)
 
 
-def train_eval(config: DictConfig):
-    """Contains training pipeline.
-    Instantiates all PyTorch Lightning objects from config.
-
-    Args:
-        config (DictConfig): Configuration composed by Hydra.
-
-    Returns:
-        Optional[float]: Metric score for hyperparameter optimization.
-    """
-
-    if config.get("seed"):
-        seed_everything(config.seed, workers=True)
-
+def checkpoint_setup(config):
     checkpoint_path = None
 
     if config.resume:
@@ -54,41 +41,64 @@ def train_eval(config: DictConfig):
     else:
 
         log.info("Starting from scratch")
-        # shutil.rmtree(config.current_experiment_dir)
         if not pathlib.Path(f"{config.current_experiment_dir}").exists():
             os.makedirs(f"{config.current_experiment_dir}", exist_ok=True)
 
+    return checkpoint_path
+
+
+def train_eval(config: DictConfig):
+    """Contains training pipeline.
+    Instantiates all PyTorch Lightning objects from config.
+
+    Args:
+        config (DictConfig): Configuration composed by Hydra.
+
+    Returns:
+        Optional[float]: Metric score for hyperparameter optimization.
+    """
+
+    if config.get("seed"):
+        seed_everything(config.seed, workers=True)
+    # --------------------------------------------------------------------------------
+    # Create or recover checkpoint path to resume from
+    checkpoint_path = checkpoint_setup(config)
+    # --------------------------------------------------------------------------------
+    # Instantiate Lightning DataModule for task
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
     datamodule: DataModule = hydra.utils.instantiate(
         config.datamodule, _recursive_=False
     )
     datamodule.setup(stage="fit")
-
+    # --------------------------------------------------------------------------------
+    # Instantiate Lightning TrainingEvaluationAgent for task
     log.info(f"Instantiating model <{config.model._target_}>")
-    train_eval_agent: TrainingEvaluationAgent = hydra.utils.instantiate(
-        config.model, _recursive_=False
-    )
 
-    dummy_data_dict = datamodule.dummy_batch()
-    # str_data_descr_dict = {
-    #     key: value.shape if isinstance(value, torch.Tensor) else value
-    #     for key, value in dummy_data_dict.items()
-    # }
-    # log.info(f"Data description: {str_data_descr_dict}")
-    dummy_data_dict = {
+    train_eval_agent: TrainingEvaluationAgent = hydra.utils.instantiate(
+        config.train_eval_agent, datamodule=datamodule, _recursive_=False
+    )
+    # --------------------------------------------------------------------------------
+    # Instantiate Lightning Learner using a dummy data dict with the
+    # data names and shapes
+    x_dummy_data_dict, y_dummy_data_dict = datamodule.dummy_batch()
+
+    x_dummy_data_dict = {
         key: value
-        for key, value in dummy_data_dict.items()
+        for key, value in x_dummy_data_dict.items()
         if isinstance(value, torch.Tensor)
     }
+
     dummy_data_device_dict = {
         key: value.device
-        for key, value in dummy_data_dict.items()
+        for key, value in x_dummy_data_dict.items()
         if isinstance(value, torch.Tensor)
     }
-    log.info(f"Data description: {dummy_data_device_dict}")
-    _ = train_eval_agent.forward(dummy_data_dict)
-    log.info(f"Model description: {train_eval_agent.device}")
 
+    log.info(f"Data shape description: {dummy_data_device_dict}")
+    _ = train_eval_agent.forward(x_dummy_data_dict)
+    # --------------------------------------------------------------------------------
+    # Instantiate Lightning Callbacks
+    # --------------------------------------------------------------------------------
     callbacks: List[Callback] = []
     if "callbacks" in config:
         for _, cb_conf in config.callbacks.items():
@@ -108,7 +118,9 @@ def train_eval(config: DictConfig):
 
     os.environ["WANDB_RESUME"] = "allow"
     os.environ["WANDB_RUN_ID"] = generate_id()
-
+    # --------------------------------------------------------------------------------
+    # Instantiate Experiment Logger
+    # --------------------------------------------------------------------------------
     # Init lightning loggers
     logger: List[LightningLoggerBase] = []
     if "logger" in config:
@@ -117,7 +129,9 @@ def train_eval(config: DictConfig):
                 log.info(f"Instantiating logger <{lg_conf._target_}>")
                 logger.append(hydra.utils.instantiate(lg_conf))
 
-    # Init lightning trainer
+    # --------------------------------------------------------------------------------
+    # Instantiate Lightning Trainer
+    # --------------------------------------------------------------------------------
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
     trainer: Trainer = hydra.utils.instantiate(
         config.trainer,
@@ -126,6 +140,10 @@ def train_eval(config: DictConfig):
         _convert_="partial",
     )
 
+    # --------------------------------------------------------------------------------
+    # If auto_scale_batch_size is set, we need to tune the batch size using
+    # the Lightning Tuner class, starting from given batch size and increasing
+    # in powers of 2
     if config.trainer.auto_scale_batch_size:
         tuner = Tuner(trainer)
         new_batch_size = tuner.scale_batch_size(
@@ -137,6 +155,8 @@ def train_eval(config: DictConfig):
         datamodule.batch_size = new_batch_size
         config.datamodule.batch_size = new_batch_size
 
+    # --------------------------------------------------------------------------------
+    # Start training
     if config.mode.fit:
         log.info("Starting training!")
         trainer.validate(
@@ -146,6 +166,8 @@ def train_eval(config: DictConfig):
             model=train_eval_agent, datamodule=datamodule, ckpt_path=checkpoint_path
         )
 
+    # --------------------------------------------------------------------------------
+    # Start evaluation on test set
     if config.mode.test and not config.trainer.get("fast_dev_run"):
         datamodule.setup(stage="test")
         log.info("Starting testing!")
@@ -157,7 +179,7 @@ def train_eval(config: DictConfig):
         )
 
     # Make sure everything closed properly
-    log.info("Finalizing!")
+    log.info("Finalizing! 😺")
     # Print path to best checkpoint
     if not config.trainer.get("fast_dev_run"):
         log.info(f"Best model ckpt at {trainer.checkpoint_callback.best_model_path}")

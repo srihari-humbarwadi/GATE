@@ -29,6 +29,11 @@ class TrainingEvaluationAgent(LightningModule):
         datamodule: DataModule,
     ):
         super().__init__()
+        log.info(
+            f"Initializing {self.__class__.__name__}, model_config: {model_config}, "
+            f"learner_config: {learner_config}, task_config: {task_config}, "
+            f"modality_config: {modality_config} "
+        )
         self.base_model: ModelModule = instantiate(
             model_config,
             _recursive_=False,
@@ -46,8 +51,8 @@ class TrainingEvaluationAgent(LightningModule):
         )
         self.task_config = task_config
         self.modality_config = modality_config
-        self.input_shape_dict = self.base_model.input_modality_shape_config
-        self.output_shape_dict = self.task.output_shape_dict
+        self.input_shape_dict = model_config.input_shape_dict
+        self.output_shape_dict = task_config.output_shape_dict
         self.build(datamodule)
 
     def build(self, datamodule):
@@ -71,49 +76,46 @@ class TrainingEvaluationAgent(LightningModule):
         output_dict = self.learner.forward(dummy_batch_dict)
         output_shape_dict = {name: value.shape for name, value in output_dict.items()}
         log.info(
-            f"Built {self.__class__.__name__} with {self.base_model.__class__.__name__} and {self.learner.__class__.__name__} and {self.task.__class__.__name__} and output shape {output_shape_dict}"
+            f"Built {self.__class__.__name__} with {self.base_model.__class__.__name__} and {self.learner.__class__.__name__} and {self.task.__class__.__name__} and output shape {output_shape_dict} "
         )
 
     def forward(self, batch):
         self.learner.forward(batch)
 
     def training_step(self, batch, batch_idx):
-        self.learner.training_step(
+        opt_loss, computed_task_metrics_dict = self.learner.training_step(
             batch, batch_idx, task_metrics_dict=self.task.task_metrics
         )
-
-    def training_epoch_end(self, outputs: List[Any]):
-        log.info(f"\nTraining epoch {self.current_epoch} ended.\n")
-        self.collect_metrics_epoch(phase_name="training")
-        self.reset_metric_caches(phase_name="training")
+        self.collect_metrics_step(computed_task_metrics_dict)
+        return opt_loss
 
     def validation_step(self, batch, batch_idx):
-        self.learner.validation_step(
+        opt_loss, computed_task_metrics_dict = self.learner.validation_step(
             batch, batch_idx, task_metrics_dict=self.task.task_metrics
         )
-
-    def validation_epoch_end(self, outputs: List[Any]):
-        log.info(f"\nValidation epoch {self.current_epoch} ended.\n")
-        self.collect_metrics_epoch(phase_name="validation")
-        self.reset_metric_caches(phase_name="validation")
+        self.collect_metrics_step(computed_task_metrics_dict)
 
     def test_step(self, batch, batch_idx):
-        self.learner.testing_step(
+        opt_loss, computed_task_metrics_dict = self.learner.testing_step(
             batch, batch_idx, task_metrics_dict=self.task.task_metrics
         )
-
-    def test_epoch_end(self, outputs: List[Any]):
-        log.info(f"\nTest epoch {self.current_epoch} ended.\n")
-        self.collect_metrics_epoch(phase_name="test")
-        self.reset_metric_caches(phase_name="test")
+        self.collect_metrics_step(computed_task_metrics_dict)
 
     def configure_optimizers(self):
         return self.learner.configure_optimizers()
 
-    def reset_metric_caches(self, phase_name):
-        for key in self.per_modality_metrics_computed_dict[
-            f"{phase_name}-metrics"
-        ].keys():
-            self.per_modality_metrics_computed_dict[f"{phase_name}-metrics"][
-                key
-            ].reset()
+    def collect_metrics_step(self, computed_task_metrics_dict):
+        # sourcery skip: boolean-if-exp-identity
+
+        for metric_key, computed_value in computed_task_metrics_dict.items():
+
+            if computed_value is not None:
+                self.log(
+                    name=metric_key,
+                    value=computed_value.detach(),
+                    prog_bar=True if "opt_loss" in metric_key else False,
+                    logger=True,
+                    on_step=True,
+                    on_epoch=True,
+                    sync_dist=True,
+                )

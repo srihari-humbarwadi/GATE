@@ -1,1 +1,20 @@
-_target_: gate.train_eval_agents.TrainingEvaluationAgent
+_target_: gate.train_eval_agents.base.TrainingEvaluationAgent
+model_config: ${model}
+learner_config: ${learner}
+task_config: ${task}
+modality_config:
+  image: True
+  audio: False
+  text: False
+  video: False
+  image_text: False
+  audio_text: False
+  video_text: False
+  image_audio: False
+  image_video: False
+  audio_video: False
+  image_audio_text: False
+  image_video_text: False
+  audio_video_text: False
+  image_audio_video: False
+  image_audio_video_text: False

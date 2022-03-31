@@ -19,7 +19,7 @@ def generic_missing_forward(module, modality_name):
 class ModelModule(nn.Module):
     def __init__(
         self,
-        input_modality_shape_config: ShapeConfig,
+        input_shape_dict: ShapeConfig,
     ):
         super().__init__()
-        self.input_modality_shape_config = input_modality_shape_config
+        self.input_shape_dict = input_shape_dict

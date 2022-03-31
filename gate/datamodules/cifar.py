@@ -15,6 +15,7 @@ from gate.datasets.cifar import (
     CIFAR10ClassificationDataset,
     CIFAR100ClassificationDataset,
 )
+from gate.datasets.data_utils import collate_fn_replace_corrupted
 
 
 class CIFAR10DataModule(DataModule):
@@ -33,13 +34,7 @@ class CIFAR10DataModule(DataModule):
         self.dataset_config = dataset_config
         self.data_loader_config = data_loader_config
 
-        self.input_shape_dict = {
-            "image": dict(
-                channels=3,
-                width=32,
-                height=32,
-            )
-        }
+        self.input_shape_dict = dataset_config.input_shape_dict
         self.output_shape_dict = {"image": dict(num_classes=10)}
         self.val_set_percentage = self.dataset_config.val_set_percentage
         self.download = self.dataset_config.download
@@ -113,7 +108,7 @@ class CIFAR10DataModule(DataModule):
     def train_dataloader(self):
 
         collate_fn = functools.partial(
-            self.data_loader_config.collate_fn, dataset=self.train_set
+            collate_fn_replace_corrupted, dataset=self.train_set
         )
 
         return DataLoader(
@@ -131,7 +126,7 @@ class CIFAR10DataModule(DataModule):
     def val_dataloader(self):
 
         collate_fn = functools.partial(
-            self.data_loader_config.collate_fn, dataset=self.val_set
+            collate_fn_replace_corrupted, dataset=self.val_set
         )
 
         return DataLoader(
@@ -149,7 +144,7 @@ class CIFAR10DataModule(DataModule):
     def test_dataloader(self):
 
         collate_fn = functools.partial(
-            self.data_loader_config.collate_fn, dataset=self.test_set
+            collate_fn_replace_corrupted, dataset=self.test_set
         )
 
         return DataLoader(
@@ -181,7 +176,7 @@ class CIFAR100DataModule(CIFAR10DataModule):
         normalize = transforms.Normalize(
             mean=[0.5071, 0.4866, 0.4409], std=[0.2009, 0.1984, 0.2023]
         )
-        self.input_shape_dict = {"image": dict(channels=3, height=32, width=32)}
+        self.input_shape_dict = dataset_config.input_shape_dict
         self.output_shape_dict = {"image": dict(num_classes=100)}
         self.transform_train = transforms.Compose(
             [

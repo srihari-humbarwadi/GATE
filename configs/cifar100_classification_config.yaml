@@ -8,8 +8,8 @@ defaults:
 
   - model: ImageResNetCIFAR.yaml
   - learner: linear_layer_fine_tuning_learner.yaml
-  - datamodule: cifar10-classification.yaml
-  - task: cifar10_image_classification.yaml
+  - datamodule: cifar100-classification.yaml
+  - task: cifar100_image_classification.yaml
   - train_eval_agent: default.yaml
 
   - trainer: default.yaml

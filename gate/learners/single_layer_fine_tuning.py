@@ -46,7 +46,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self,
         model: torch.nn.Module,
         task_config: TaskConfig,
-        modality_config: ModalitiesSupportedConfig,
+        modality_config: Union[ModalitiesSupportedConfig, Dict],
         input_shape_dict: Union[ShapeConfig, Dict],
         output_shape_dict: Union[ShapeConfig, Dict],
     ):
@@ -60,22 +60,26 @@ class LinearLayerFineTuningScheme(LearnerModule):
             if isinstance(output_shape_dict, ShapeConfig)
             else output_shape_dict
         )
+
+        self.modality_config = (
+            modality_config.__dict__
+            if isinstance(modality_config, ModalitiesSupportedConfig)
+            else modality_config
+        )
+
         self.model = model
         self.task_config = task_config
         self.modality_config = modality_config
-
+        # log.info(
+        #     f"{self.__class__.__name__} is building ... \n using {self.input_shape_dict}, {self.output_shape_dict}, {self.modality_config}"
+        # )
         output_dict = {}
 
-        for modality_name, is_supported in self.modality_config.__dict__.items():
+        for modality_name, is_supported in self.modality_config.items():
             if is_supported:
-                # log.info(
-                #     f"\n"
-                #     f"{modality_name} \n"
-                #     f"{self.modality_config.__dict__} \n"
-                #     f"{self.output_shape_dict} {self.input_shape_dict}🔠"
-                # )
+
                 image_dummy_x = torch.randn(
-                    [2] + list(self.input_shape_dict[modality_name])
+                    [2] + list(self.input_shape_dict[modality_name]["shape"].values())
                 )
                 model_features = self.model.forward({modality_name: image_dummy_x})[
                     modality_name
@@ -83,14 +87,14 @@ class LinearLayerFineTuningScheme(LearnerModule):
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
                 )
-                log.info(
-                    f"Output shape of model features {model_features_flatten.shape} "
-                    f"{self.output_shape_dict}"
-                )
+                # log.info(
+                #     f"Output shape of model features {model_features_flatten.shape} "
+                #     f"{self.output_shape_dict}"
+                # )
 
                 self.output_layer_dict[modality_name] = torch.nn.Linear(
                     model_features_flatten.shape[1],
-                    self.output_shape_dict[modality_name][0],
+                    self.output_shape_dict[modality_name]["num_classes"],
                 )
 
                 logits = self.output_layer_dict[modality_name](model_features_flatten)
@@ -107,22 +111,22 @@ class LinearLayerFineTuningScheme(LearnerModule):
     def reset_parameters(self):
         self.linear_output_layer.reset_parameters()
 
-    def optimizers(self):
+    def configure_optimizers(self):
         if self.fine_tune_all_layers:
             params = self.parameters()
         else:
             params = self.output_layer_dict.parameters()
 
         optimizer = hydra.utils.instantiate(config=self.optimizer_config, params=params)
-
+        log.info(f"Optimizer {optimizer}, {self.lr_scheduler_config}")
         optimizer_dict = {"optimizer": optimizer}
-        if self.lr_scheduler_config._target_.split(".")[-1] == "CosineAnnealingLR":
+        if self.lr_scheduler_config["_target_"].split(".")[-1] == "CosineAnnealingLR":
             if "T_max" not in self.lr_scheduler_config:
                 self.lr_scheduler_config["T_max"] = (
                     self.num_train_samples / self.batch_size
                 )
         elif (
-            self.lr_scheduler_config._target_.split(".")[-1]
+            self.lr_scheduler_config["_target_"].split(".")[-1]
             == "CosineAnnealingWarmRestarts"
         ):
             if "T_0" not in self.lr_scheduler_config:
@@ -130,7 +134,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
                     self.num_train_samples / self.batch_size // 2
                 )
 
-        elif self.lr_scheduler_config._target_.split(".")[-1] == "ReduceLROnPlateau":
+        elif self.lr_scheduler_config["_target_"].split(".")[-1] == "ReduceLROnPlateau":
             self.lr_scheduler_config["patience"] = (
                 self.lr_scheduler_config["patience"] * torch.cuda.device_count()
                 if torch.cuda.is_available()
@@ -150,7 +154,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
             self.lr_scheduler_step_must_be_called_manually = False
             optimizer_dict["lr_scheduler"] = {
                 "scheduler": lr_scheduler,
-                "interval": "step",
+                "interval": "epoch",
             }
 
         return optimizer_dict
@@ -158,7 +162,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
     def forward(self, batch):
         output_dict = {}
 
-        for modality_name, is_supported in self.modality_config.__dict__.items():
+        for modality_name, is_supported in self.modality_config.items():
             if is_supported:
                 model_features = self.model.forward(
                     {modality_name: batch[modality_name]}
@@ -178,6 +182,8 @@ class LinearLayerFineTuningScheme(LearnerModule):
     ):
         input_dict, target_dict = batch
 
+        target_dict = {key: value.view(-1) for key, value in target_dict.items()}
+
         output_dict = self.forward(input_dict)
 
         computed_task_metrics_dict = {}
@@ -190,7 +196,8 @@ class LinearLayerFineTuningScheme(LearnerModule):
                     output_dict[output_name],
                     target_dict[output_name],
                 )
-        opt_loss = torch.tensor(0.0)
+
+        opt_loss_list = []
         for metric_key, metric_function in learner_metrics_dict.items():
             for output_name, output_value in output_dict.items():
                 computed_task_metrics_dict[
@@ -199,9 +206,16 @@ class LinearLayerFineTuningScheme(LearnerModule):
                     output_dict[output_name],
                     target_dict[output_name],
                 )
-                opt_loss += computed_task_metrics_dict[metric_key]
 
-        return output_dict, computed_task_metrics_dict, opt_loss
+                opt_loss_list.append(
+                    computed_task_metrics_dict[f"{phase_name}/{metric_key}"]
+                )
+
+        return (
+            output_dict,
+            computed_task_metrics_dict,
+            torch.mean(torch.stack(opt_loss_list)),
+        )
 
     def training_step(self, batch, batch_idx, task_metrics_dict):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
@@ -212,9 +226,10 @@ class LinearLayerFineTuningScheme(LearnerModule):
             phase_name="training",
         )
 
+        computed_task_metrics_dict["training/opt_loss"] = opt_loss
         output_dict["loss"] = opt_loss
 
-        return output_dict
+        return opt_loss, computed_task_metrics_dict
 
     def validation_step(self, batch, batch_idx, task_metrics_dict):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
@@ -225,9 +240,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
             phase_name="validation",
         )
 
-        output_dict["loss"] = opt_loss
+        computed_task_metrics_dict["validation/opt_loss"] = opt_loss
 
-        return output_dict
+        return opt_loss, computed_task_metrics_dict
 
     def test_step(self, batch, batch_idx, task_metrics_dict):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
@@ -238,9 +253,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
             phase_name="test",
         )
 
-        output_dict["loss"] = opt_loss
+        computed_task_metrics_dict["test/opt_loss"] = opt_loss
 
-        return output_dict
+        return opt_loss, computed_task_metrics_dict
 
     def predict_step(self, batch: Any, batch_idx: int, **kwargs):
         input_dict = batch
