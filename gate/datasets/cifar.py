@@ -25,6 +25,7 @@ class CIFAR10ClassificationDataset(CIFAR10):
             transform=input_transform,
             target_transform=target_transform,
         )
+        self.name = self.__class__.__name__
 
     def __getitem__(self, index):
         x, y = super().__getitem__(index)
@@ -47,6 +48,7 @@ class CIFAR100ClassificationDataset(CIFAR100):
             transform=input_transform,
             target_transform=target_transform,
         )
+        self.name = self.__class__.__name__
 
     def __getitem__(self, index):
         x, y = super().__getitem__(index)
@@ -66,6 +68,7 @@ class CIFAR10ReconstructionDataset(CIFAR10):
             root=root, train=train, download=download, transform=input_transform
         )
         self.target_transforms = target_transform
+        self.name = self.__class__.__name__
 
     def __getitem__(self, index):
         x, y = super().__getitem__(index)
@@ -95,6 +98,7 @@ class CIFAR100ReconstructionDataset(CIFAR100):
             root=root, train=train, download=download, transform=input_transform
         )
         self.target_transforms = target_transform
+        self.name = self.__class__.__name__
 
     def __getitem__(self, index):
         x, y = super().__getitem__(index)

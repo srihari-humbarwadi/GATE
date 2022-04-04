@@ -54,6 +54,7 @@ class TrainingEvaluationAgent(LightningModule):
         self.input_shape_dict = model_config.input_shape_dict
         self.output_shape_dict = task_config.output_shape_dict
         self.build(datamodule)
+        self.save_hyperparameters()
 
     def build(self, datamodule):
         input_dummy_dict, target_dummy_dict = datamodule.dummy_batch()
@@ -83,21 +84,24 @@ class TrainingEvaluationAgent(LightningModule):
         self.learner.forward(batch)
 
     def training_step(self, batch, batch_idx):
+        task_batch = self.task.data_flow(batch_dict=batch, batch_idx=batch_idx)
         opt_loss, computed_task_metrics_dict = self.learner.training_step(
-            batch, batch_idx, task_metrics_dict=self.task.task_metrics
+            task_batch, batch_idx, task_metrics_dict=self.task.task_metrics_dict
         )
         self.collect_metrics_step(computed_task_metrics_dict)
         return opt_loss
 
     def validation_step(self, batch, batch_idx):
+        task_batch = self.task.data_flow(batch_dict=batch, batch_idx=batch_idx)
         opt_loss, computed_task_metrics_dict = self.learner.validation_step(
-            batch, batch_idx, task_metrics_dict=self.task.task_metrics
+            task_batch, batch_idx, task_metrics_dict=self.task.task_metrics_dict
         )
         self.collect_metrics_step(computed_task_metrics_dict)
 
     def test_step(self, batch, batch_idx):
-        opt_loss, computed_task_metrics_dict = self.learner.testing_step(
-            batch, batch_idx, task_metrics_dict=self.task.task_metrics
+        task_batch = self.task.data_flow(batch_dict=batch, batch_idx=batch_idx)
+        opt_loss, computed_task_metrics_dict = self.learner.test_step(
+            task_batch, batch_idx, task_metrics_dict=self.task.task_metrics_dict
         )
         self.collect_metrics_step(computed_task_metrics_dict)
 

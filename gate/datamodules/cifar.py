@@ -56,7 +56,7 @@ class CIFAR10DataModule(DataModule):
                 normalize,
             ]
         )
-
+        self.name = self.__class__.__name__
         self.save_hyperparameters()
 
     def prepare_data(self, **kwargs):
@@ -195,6 +195,8 @@ class CIFAR100DataModule(CIFAR10DataModule):
                 normalize,
             ]
         )
+        self.name = self.__class__.__name__
+        self.save_hyperparameters()
 
     def setup(self, stage: Optional[str] = None):
 

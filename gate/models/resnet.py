@@ -43,6 +43,7 @@ class ImageResNet(ModelModule):
         self.is_built = False
         self.model_name_to_download = model_name_to_download
         self.pretrained = pretrained
+        self.name = self.__class__.__name__
 
     def build(self, batch_dict):
         if "image" in batch_dict:

@@ -41,6 +41,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self.learner_metrics_dict = torch.nn.ModuleDict(
             {"loss": torch.nn.CrossEntropyLoss()}
         )
+        self.name = self.__class__.__name__
 
     def build(
         self,
@@ -55,6 +56,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
             if isinstance(input_shape_dict, ShapeConfig)
             else input_shape_dict
         )
+
         self.output_shape_dict = (
             output_shape_dict.__dict__
             if isinstance(output_shape_dict, ShapeConfig)
@@ -78,10 +80,10 @@ class LinearLayerFineTuningScheme(LearnerModule):
         for modality_name, is_supported in self.modality_config.items():
             if is_supported:
 
-                image_dummy_x = torch.randn(
+                input_dummy_x = torch.randn(
                     [2] + list(self.input_shape_dict[modality_name]["shape"].values())
                 )
-                model_features = self.model.forward({modality_name: image_dummy_x})[
+                model_features = self.model.forward({modality_name: input_dummy_x})[
                     modality_name
                 ]
                 model_features_flatten = model_features.view(
@@ -178,38 +180,45 @@ class LinearLayerFineTuningScheme(LearnerModule):
         return output_dict
 
     def step(
-        self, batch, batch_idx, task_metrics_dict, learner_metrics_dict, phase_name
+        self,
+        batch_generator,
+        batch_idx,
+        task_metrics_dict,
+        learner_metrics_dict,
+        phase_name,
     ):
-        input_dict, target_dict = batch
-
-        target_dict = {key: value.view(-1) for key, value in target_dict.items()}
-
-        output_dict = self.forward(input_dict)
-
         computed_task_metrics_dict = {}
-
-        for metric_key, metric_function in task_metrics_dict.items():
-            for output_name, output_value in output_dict.items():
-                computed_task_metrics_dict[
-                    f"{phase_name}/{metric_key}"
-                ] = metric_function(
-                    output_dict[output_name],
-                    target_dict[output_name],
-                )
-
         opt_loss_list = []
-        for metric_key, metric_function in learner_metrics_dict.items():
-            for output_name, output_value in output_dict.items():
-                computed_task_metrics_dict[
-                    f"{phase_name}/{metric_key}"
-                ] = metric_function(
-                    output_dict[output_name],
-                    target_dict[output_name],
-                )
+        output_dict = {}
 
-                opt_loss_list.append(
-                    computed_task_metrics_dict[f"{phase_name}/{metric_key}"]
-                )
+        for batch in batch_generator:
+            input_dict, target_dict = batch
+
+            target_dict = {key: value.view(-1) for key, value in target_dict.items()}
+
+            output_dict = self.forward(input_dict)
+
+            for metric_key, metric_function in task_metrics_dict.items():
+                for output_name, output_value in output_dict.items():
+                    computed_task_metrics_dict[
+                        f"{phase_name}/{metric_key}"
+                    ] = metric_function(
+                        output_dict[output_name],
+                        target_dict[output_name],
+                    )
+
+            for metric_key, metric_function in learner_metrics_dict.items():
+                for output_name, output_value in output_dict.items():
+                    computed_task_metrics_dict[
+                        f"{phase_name}/{metric_key}"
+                    ] = metric_function(
+                        output_dict[output_name],
+                        target_dict[output_name],
+                    )
+
+                    opt_loss_list.append(
+                        computed_task_metrics_dict[f"{phase_name}/{metric_key}"]
+                    )
 
         return (
             output_dict,

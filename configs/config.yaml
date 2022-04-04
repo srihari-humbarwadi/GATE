@@ -8,8 +8,8 @@ defaults:
 
   - model: ImageResNetCIFAR.yaml
   - learner: linear_layer_fine_tuning_learner.yaml
-  - datamodule: cifar10-classification.yaml
-  - task: cifar10_image_classification.yaml
+  - datamodule: cifar100-classification.yaml
+  - task: cifar100_image_classification.yaml
   - train_eval_agent: default.yaml
 
   - trainer: default.yaml
@@ -46,6 +46,6 @@ name: ${datamodule.dataset_config.dataset_name}-${model.model_name_to_download}-
 # https://hydra.cc/docs/next/tutorials/basic/running_your_app/working_directory
 code_dir: ${hydra:runtime.cwd}
 root_experiment_dir: ${env:EXPERIMENTS_DIR}
-current_experiment_dir: ${root_experiment_dir}/${name}/
+current_experiment_dir: ${root_experiment_dir}/${name}
 # path to folder with data
 data_dir: ${env:DATASET_DIR}

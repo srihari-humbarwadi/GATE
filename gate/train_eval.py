@@ -12,6 +12,7 @@ from pytorch_lightning import (
 )
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
+from rich.traceback import install
 from wandb.util import generate_id
 
 from gate.base.utils.loggers import get_logger
@@ -19,6 +20,8 @@ from gate.datamodules.base import DataModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 
 log = get_logger(__name__)
+
+install(show_locals=False, extra_lines=1, word_wrap=True, width=350)
 
 
 def checkpoint_setup(config):
@@ -162,6 +165,7 @@ def train_eval(config: DictConfig):
         trainer.validate(
             model=train_eval_agent, datamodule=datamodule, ckpt_path=checkpoint_path
         )
+
         trainer.fit(
             model=train_eval_agent, datamodule=datamodule, ckpt_path=checkpoint_path
         )
@@ -170,12 +174,15 @@ def train_eval(config: DictConfig):
     # Start evaluation on test set
     if config.mode.test and not config.trainer.get("fast_dev_run"):
         datamodule.setup(stage="test")
-        log.info("Starting testing!")
+
+        if config.mode.fit is False:
+            trainer._restore_modules_and_callbacks(checkpoint_path=checkpoint_path)
+
+        log.info(f"Starting testing ! 🧪")
 
         trainer.test(
             model=train_eval_agent,
             datamodule=datamodule,
-            ckpt_path=trainer.checkpoint_callback.best_model_path,
         )
 
     # Make sure everything closed properly
