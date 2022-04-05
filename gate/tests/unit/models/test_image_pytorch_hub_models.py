@@ -1,5 +1,6 @@
 import pytest
 import torch
+from dotted_dict import DottedDict
 
 from gate.base.utils.loggers import get_logger
 from gate.class_configs.base import (
@@ -21,19 +22,36 @@ log = get_logger(__name__, set_default_handler=True)
     ],
 )
 @pytest.mark.parametrize("pretrained", [True, False])
-@pytest.mark.parametrize("image_shape", [[3, 32, 32], [3, 224, 224]])
+@pytest.mark.parametrize(
+    "image_shape",
+    [
+        DottedDict(channels=3, width=32, height=32),
+        DottedDict(channels=3, width=224, height=224),
+    ],
+)
 def test_pytorch_hub_models(
     model_name,
     pretrained,
     image_shape,
 ):
     model = ImageResNet(
-        input_shape_dict=ShapeConfig(image=image_shape),
+        input_shape_dict=ShapeConfig(
+            image=DottedDict(
+                shape=DottedDict(
+                    channels=image_shape.channels,
+                    width=image_shape.width,
+                    height=image_shape.height,
+                ),
+                dtype=torch.float32,
+            ),
+        ),
         model_name_to_download=model_name,
         pretrained=pretrained,
     )
     dummy_x = {
-        "image": torch.randn(size=[2] + model.input_shape_dict.image),
+        "image": torch.randn(
+            size=[2, image_shape.channels, image_shape.height, image_shape.width]
+        )
     }
 
     log.info(f"dummy_x.shape: {dummy_x['image'].shape}")

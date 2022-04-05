@@ -30,9 +30,12 @@ log = get_logger(__name__, set_default_handler=True)
             model_name_to_download="resnet18",
             pretrained=True,
             input_shape_dict=ShapeConfig(
-                image=[3, 224, 224],
+                image=DottedDict(
+                    shape=DottedDict(channels=3, width=224, height=224),
+                    dtype=torch.float32,
+                ),
             ),
-        ),
+        )
     ],
 )
 @pytest.mark.parametrize(
@@ -40,9 +43,9 @@ log = get_logger(__name__, set_default_handler=True)
     [
         ImageClassificationTaskModuleConfig(
             output_shape_dict=ShapeConfig(
-                image=[
-                    10,
-                ]
+                image=DottedDict(
+                    num_classes=10,
+                )
             )
         ),
     ],

@@ -162,8 +162,8 @@ class CIFAR10DatasetConfig(DatasetConfig):
     dataset_name: str = "cifar10"
     dataset_root: str = f"{os.getenv('DATASET_DIR') or 'datasets'}/cifar10"
     modality_config: ModalitiesSupportedConfig = ModalitiesSupportedConfig(image=True)
-    input_shape_dict: ShapeConfig = ShapeConfig(
-        image=dict(channels=3, height=32, width=32)
+    input_shape_dict: DottedDict = field(
+        default_factory=lambda: dict(image=dict(channels=3, height=32, width=32))
     )
     val_set_percentage: float = 0.1
     download: bool = True
@@ -178,8 +178,8 @@ class CIFAR100DatasetConfig(DatasetConfig):
 
     dataset_name: str = "cifar100"
     dataset_root: str = f"{os.getenv('DATASET_DIR') or 'datasets'}/cifar100"
-    input_shape_dict: ShapeConfig = ShapeConfig(
-        image=dict(channels=3, height=32, width=32)
+    input_shape_dict: DottedDict = field(
+        default_factory=lambda: dict(image=dict(channels=3, height=32, width=32))
     )
     modality_config: ModalitiesSupportedConfig = ModalitiesSupportedConfig(image=True)
     val_set_percentage: float = 0.1

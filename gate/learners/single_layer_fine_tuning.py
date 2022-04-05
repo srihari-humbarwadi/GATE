@@ -71,7 +71,6 @@ class LinearLayerFineTuningScheme(LearnerModule):
 
         self.model = model
         self.task_config = task_config
-        self.modality_config = modality_config
         # log.info(
         #     f"{self.__class__.__name__} is building ... \n using {self.input_shape_dict}, {self.output_shape_dict}, {self.modality_config}"
         # )

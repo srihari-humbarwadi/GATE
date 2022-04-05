@@ -72,7 +72,7 @@ def test_single_layer_fine_tuning(
     amsgrad,
 ):
     task_config = ImageClassificationTaskModuleConfig(
-        output_shape_dict={"image": (10,)}
+        output_shape_dict=DottedDict({"image": DottedDict(num_classes=10)})
     )
 
     module = learner(
@@ -93,12 +93,28 @@ def test_single_layer_fine_tuning(
         amsgrad=amsgrad,
     )
     model = ImageResNet(
-        input_shape_dict=ShapeConfig(image=[3, 32, 32]),
+        input_shape_dict=ShapeConfig(
+            image=DottedDict(
+                shape=DottedDict(
+                    channels=3,
+                    width=32,
+                    height=32,
+                ),
+                dtype=torch.float32,
+            ),
+        ),
         model_name_to_download="resnet50",
         pretrained=True,
     )
     dummy_x = {
-        "image": torch.randn(size=[2] + model.input_shape_dict.image),
+        "image": torch.randn(
+            size=[
+                2,
+                model.input_shape_dict.image.shape.channels,
+                model.input_shape_dict.image.shape.height,
+                model.input_shape_dict.image.shape.width,
+            ]
+        )
     }
 
     log.info(f"dummy_x.shape: {dummy_x['image'].shape}")
@@ -112,7 +128,7 @@ def test_single_layer_fine_tuning(
         task_config=task_config,
         modality_config=ModalitiesSupportedConfig(image=True),
     )
-    optimizer = module.optimizers()["optimizer"]
+    optimizer = module.configure_optimizers()["optimizer"]
     out = module.forward(dummy_x)
 
     loss = F.cross_entropy(out["image"], torch.randint(0, 10, (2,)))
