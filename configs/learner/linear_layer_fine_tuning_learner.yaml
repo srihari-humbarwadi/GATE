@@ -1,0 +1,16 @@
+defaults:
+  - optimizer_config: adam.yaml
+  - lr_scheduler_config: cosine_annealing.yaml
+
+_target_: gate.learners.single_layer_fine_tuning.LinearLayerFineTuningScheme
+fine_tune_all_layers: False
+max_epochs: ${trainer.max_epochs}
+min_learning_rate: 1e-6
+optimizer_config:
+  lr: 1e-3
+  betas:
+    - 0.9
+    - 0.999
+  eps: 1e-8
+  weight_decay: 0.0
+  amsgrad: False

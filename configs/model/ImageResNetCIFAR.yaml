@@ -1,0 +1,10 @@
+_target_: gate.models.resnet.ImageResNet
+model_name_to_download: resnet18
+pretrained: True
+input_shape_dict:
+  image:
+    shape:
+      channels: 3
+      width: 224
+      height: 224
+    dtype: float32

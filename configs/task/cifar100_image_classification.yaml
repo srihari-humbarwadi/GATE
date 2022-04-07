@@ -1,0 +1,6 @@
+defaults:
+  - image_classification.yaml
+
+output_shape_dict:
+  image:
+    num_classes: 100
