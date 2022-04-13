@@ -12,10 +12,10 @@
     source $CONDA_DIR/bin/activate
     ``` 
 4. [Optional] If you prefer to have the conda variable loaded upon opening your terminal, and your environment sourced, add the new conda environment variable to your ~/.bashrc file, along with the source command
-    ```bash
+   ```bash
    echo "export 'CONDA_DIR=${CONDA_DIR}'" >> $HOME/.bashrc
    echo "source $CONDA_DIR/bin/activate" >> $HOME/.bashrc # add this to your .bashrc 
-    ```
+   ```
 5. Create a conda environment for the GATE framework:
     ```bash
     conda create -n GATE-env python=3.8 -y
@@ -26,7 +26,7 @@
     conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch-nightly -y
    conda install opencv -y
    conda install h5py -y
-    ```
+   ```
 7. Install the GATE framework:
     ```bash
     export CODE_DIR=$HOME/GATE
