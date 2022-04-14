@@ -30,8 +30,8 @@ class CIFAR10DataModule(DataModule):
         )
 
         self.output_shape_dict = {"image": dict(num_classes=10)}
-        self.val_set_percentage = self.dataset_config.val_set_percentage
-        self.download = self.dataset_config.download
+        self.val_set_percentage = dataset_config.val_set_percentage
+        self.download = dataset_config.download
 
         self.transform_train = transforms.Compose(
             [

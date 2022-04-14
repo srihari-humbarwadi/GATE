@@ -16,6 +16,9 @@ class DataModule(LightningDataModule):
         data_loader_config: DataLoaderConfig,
     ):
         super(DataModule, self).__init__()
+        self.train_set = None
+        self.val_set = None
+        self.test_set = None
         self.dataset_name = dataset_config.dataset_name
         self.dataset_root = dataset_config.dataset_root
         self.seed = data_loader_config.seed
