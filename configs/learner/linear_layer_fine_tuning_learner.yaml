@@ -3,6 +3,7 @@ defaults:
   - lr_scheduler_config: cosine_annealing.yaml
 
 _target_: gate.learners.single_layer_fine_tuning.LinearLayerFineTuningScheme
+name: linear_tune
 fine_tune_all_layers: False
 max_epochs: ${trainer.max_epochs}
 min_learning_rate: 1e-6

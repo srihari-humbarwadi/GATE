@@ -72,7 +72,8 @@ def test_single_layer_fine_tuning(
     amsgrad,
 ):
     task_config = ImageClassificationTaskModuleConfig(
-        output_shape_dict=DottedDict({"image": DottedDict(num_classes=10)})
+        name="ImageClassificationTask",
+        output_shape_dict=DottedDict({"image": DottedDict(num_classes=10)}),
     )
 
     module = learner(

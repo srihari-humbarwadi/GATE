@@ -24,8 +24,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
         eps: float = 1e-8,
         weight_decay: float = 0.0,
         amsgrad: bool = False,
+        name: str = None,
     ):
-        super(LinearLayerFineTuningScheme, self).__init__()
+        super(LinearLayerFineTuningScheme, self).__init__(name=name)
         self.output_layer_dict = torch.nn.ModuleDict()
         self.optimizer_config = optimizer_config
         self.lr_scheduler_config = lr_scheduler_config
@@ -41,7 +42,6 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self.learner_metrics_dict = torch.nn.ModuleDict(
             {"loss": torch.nn.CrossEntropyLoss()}
         )
-        self.name = self.__class__.__name__
 
     def build(
         self,
