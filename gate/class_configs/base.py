@@ -151,6 +151,9 @@ class DatasetConfig:
 
     dataset_name: str = "dataset"
     dataset_root: str = f"{os.getenv('DATASET_DIR') or 'datasets'}/dataset"
+    input_shape_dict: DottedDict = field(
+        default_factory=lambda: dict(image=dict(channels=3, height=32, width=32))
+    )
 
 
 @dataclass

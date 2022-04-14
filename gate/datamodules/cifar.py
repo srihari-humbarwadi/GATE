@@ -28,13 +28,7 @@ class CIFAR10DataModule(DataModule):
         normalize = transforms.Normalize(
             mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010]
         )
-        self.dataset_name = dataset_config.dataset_name
-        self.dataset_root = dataset_config.dataset_root
-        self.seed = data_loader_config.seed
-        self.dataset_config = dataset_config
-        self.data_loader_config = data_loader_config
 
-        self.input_shape_dict = dataset_config.input_shape_dict
         self.output_shape_dict = {"image": dict(num_classes=10)}
         self.val_set_percentage = self.dataset_config.val_set_percentage
         self.download = self.dataset_config.download
@@ -176,7 +170,6 @@ class CIFAR100DataModule(CIFAR10DataModule):
         normalize = transforms.Normalize(
             mean=[0.5071, 0.4866, 0.4409], std=[0.2009, 0.1984, 0.2023]
         )
-        self.input_shape_dict = dataset_config.input_shape_dict
         self.output_shape_dict = {"image": dict(num_classes=100)}
         self.transform_train = transforms.Compose(
             [
