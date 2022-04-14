@@ -60,11 +60,13 @@ class TaskConfig:
     output_shape_dict: ShapeConfig
     # metric_class_dict: Dict[str, Union[str, torch.nn.Module]]
     _target_: str = "gate.tasks.base.TaskModule"
+    name: str = "Task"
 
 
 @dataclass
 class ImageClassificationTaskModuleConfig(TaskConfig):
     _target_: str = "gate.tasks.classification.ImageClassificationTaskModule"
+    name: str = "ImageClassificationTask"
 
 
 # ------------------------------------------------------------------------------
@@ -122,6 +124,7 @@ class ModalitiesSupportedConfig:
 @dataclass
 class LearnerConfig:
     _target_: str = "gate.learners.base.LearnerModule"
+    name: str = "Learner"
 
 
 @dataclass
@@ -137,6 +140,7 @@ class LinearLayerFineTuningSchemeConfig(LearnerConfig):
     weight_decay: float = 0.0
     amsgrad: bool = False
     _target_: str = "gate.learners.single_layer_fine_tuning.LinearLayerFineTuningScheme"
+    name: str = "LinearLayerFineTuningScheme"
 
 
 # ------------------------------------------------------------------------------

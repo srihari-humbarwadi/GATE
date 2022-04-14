@@ -39,7 +39,7 @@ batch_size: null
 # seed for random number generators in pytorch, numpy and python.random
 seed: 0
 
-name: ${datamodule.dataset_config.dataset_name}-${model.model_name_to_download}-${seed}
+name: ${datamodule.dataset_config.dataset_name}-${task.name}-${learner.name}-${model.model_name_to_download}-${seed}
 # path to original working directory
 # hydra hijacks working directory by changing it to the new log directory
 # so it's useful to have this path as a special variable

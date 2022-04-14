@@ -11,7 +11,12 @@ log = loggers.get_logger()
 
 
 class TaskModule(torch.nn.Module):
-    def __init__(self, output_shape_dict: Dict, task_metrics_dict: Dict):
+    def __init__(
+        self,
+        output_shape_dict: Dict,
+        task_metrics_dict: Dict,
+        name: str = None,
+    ):
         super(TaskModule, self).__init__()
         self.output_shape_dict = output_shape_dict
         if len(task_metrics_dict) == 0:
@@ -24,7 +29,7 @@ class TaskModule(torch.nn.Module):
 
         for metric_name, metric_class in task_metrics_dict.items():
             self.task_metrics_dict[metric_name] = metric_class()
-        self.name = self.__class__.__name__
+        self.name = self.__class__.__name__ if name is None else name
 
     def data_flow(self, batch_dict: Dict[str, Any], batch_idx: int) -> Dict[str, Any]:
         raise NotImplementedError(

@@ -1,6 +1,7 @@
 defaults:
   - image_classification.yaml
 
+name: cifar10_image_classification
 output_shape_dict:
   image:
     num_classes: 10

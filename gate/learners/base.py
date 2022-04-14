@@ -12,6 +12,7 @@ log = get_logger(__name__)
 class LearnerModule(nn.Module):
     def __init__(
         self,
+        name: str = None,
     ):
         """
         Initialize the learner.
@@ -28,6 +29,7 @@ class LearnerModule(nn.Module):
         self.model = None
         self.optimizer = None
         self.scheduler = None
+        self.name = self.__class__.__name__ if name is None else name
 
     def build(
         self,

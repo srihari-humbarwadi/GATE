@@ -20,6 +20,6 @@ def test_image_classification_tasks(task, output_shape_dict):
     Test the ImageClassificationTaskModule
     """
     # test the ImageClassificationTaskModule
-    task_module = task(output_shape_dict=output_shape_dict)
+    task_module = task(name="image_classification", output_shape_dict=output_shape_dict)
     # test the forward method
     assert task_module is not None
