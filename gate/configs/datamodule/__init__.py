@@ -1,20 +1,20 @@
 from hydra.core.config_store import ConfigStore
 
 from .few_shot_classification import (
-    OmniglotFewShotDataModuleConfig,
-    CUB200FewShotDataModuleConfig,
     AircraftFewShotDataModuleConfig,
-    QuickDrawFewShotDataModuleConfig,
+    CUB200FewShotDataModuleConfig,
     DTDFewShotDataModuleConfig,
-    GermanTrafficSignsFewShotDataModuleConfig,
-    VGGFlowersFewShotDataModuleConfig,
     FungiFewShotDataModuleConfig,
+    GermanTrafficSignsFewShotDataModuleConfig,
     MSCOCOFewShotDataModuleConfig,
+    OmniglotFewShotDataModuleConfig,
+    QuickDrawFewShotDataModuleConfig,
+    VGGFlowersFewShotDataModuleConfig,
 )
 from .standard_classification import (
-    OmniglotDataModuleConfig,
     CIFAR10DataModuleConfig,
     CIFAR100DataModuleConfig,
+    OmniglotDataModuleConfig,
 )
 
 

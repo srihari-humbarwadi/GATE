@@ -1,10 +1,15 @@
 import multiprocessing
-from dataclasses import dataclass, MISSING
+from dataclasses import MISSING, dataclass
 
 # ------------------------------------------------------------------------------
 # General configs
 # from gate.datasets.data_utils import collate_fn_replace_corrupted
-from typing import Any, Optional, Dict
+from typing import Any, Dict, Optional
+
+# ------------------------------------------------------------------------------
+# data loader configs
+from gate.configs.string_variables import BATCH_SIZE
+
 
 # ------------------------------------------------------------------------------
 # Config rules:
@@ -31,10 +36,6 @@ from typing import Any, Optional, Dict
 #
 # With both patterns, you still get everything Hydra has to offer
 # (config composition, Command line overrides etc).
-
-# ------------------------------------------------------------------------------
-# data loader configs
-from gate.configs.string_variables import BATCH_SIZE
 
 
 @dataclass

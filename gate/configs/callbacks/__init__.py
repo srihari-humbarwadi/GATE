@@ -1,15 +1,15 @@
 from hydra.core.config_store import ConfigStore
 
 from .base import (
-    model_checkpoint_eval,
-    model_checkpoint_train,
+    LearningRateMonitor,
+    LogConfigInformation,
+    LogGrads,
     ModelSummaryConfig,
     RichProgressBar,
-    LearningRateMonitor,
-    UploadCodeAsArtifact,
     UploadCheckpointsAsArtifact,
-    LogGrads,
-    LogConfigInformation,
+    UploadCodeAsArtifact,
+    model_checkpoint_eval,
+    model_checkpoint_train,
 )
 
 base_callbacks = dict(

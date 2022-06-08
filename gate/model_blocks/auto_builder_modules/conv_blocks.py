@@ -238,7 +238,9 @@ class FullyConnectedLayer(nn.Module):
     def forward(self, x):
         assert (
             len(x.shape) == 2
-        ), "input tensor should have a length of 2 but its instead {}".format(x.shape)
+        ), "input tensor should have a length of 2 but its instead {}".format(
+            x.shape
+        )
 
         if not self.is_layer_built:
             self.build(input_shape=x.shape)
@@ -412,7 +414,9 @@ class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
         out = torch.zeros(input_shape)
 
         pooled = (
-            F.avg_pool2d(input=out, kernel_size=out.shape[-1]).squeeze(3).squeeze(2)
+            F.avg_pool2d(input=out, kernel_size=out.shape[-1])
+            .squeeze(3)
+            .squeeze(2)
         )
 
         self.attention_fcc_network_in = nn.Linear(
@@ -475,7 +479,9 @@ class SqueezeExciteConv2dBNLeakyReLU(nn.Module):
         out = x
 
         pooled = (
-            F.avg_pool2d(input=out, kernel_size=out.shape[-1]).squeeze(3).squeeze(2)
+            F.avg_pool2d(input=out, kernel_size=out.shape[-1])
+            .squeeze(3)
+            .squeeze(2)
         )
 
         attention_out = self.attention_fcc_network_in.forward(input=pooled)
@@ -774,7 +780,10 @@ class Unsqueeze(nn.Module):
 
 class AutoResNet(ClassificationModel):
     def __init__(
-        self, num_classes: int, model_name_to_download: str, pretrained: bool = True
+        self,
+        num_classes: int,
+        model_name_to_download: str,
+        pretrained: bool = True,
     ):
         feature_embedding_modules = [
             ResNet,

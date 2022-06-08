@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-
 from typing import Any
 
 from pytorch_lightning.plugins import DDPPlugin

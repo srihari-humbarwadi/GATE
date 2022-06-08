@@ -3,17 +3,17 @@ from datetime import timedelta
 from typing import Dict, Optional
 
 from pytorch_lightning.callbacks import (
+    LearningRateMonitor,
     ModelCheckpoint,
     RichModelSummary,
     TQDMProgressBar,
-    LearningRateMonitor,
 )
 
 from gate.base.callbacks.wandb_callbacks import (
-    UploadCodeAsArtifact,
-    UploadCheckpointsAsArtifact,
     LogConfigInformation,
     LogGrads,
+    UploadCheckpointsAsArtifact,
+    UploadCodeAsArtifact,
 )
 from gate.configs import get_module_import_path
 from gate.configs.string_variables import CHECKPOINT_DIR

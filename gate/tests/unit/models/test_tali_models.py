@@ -70,16 +70,29 @@ def test_tali_models(
     )
     dummy_x = {
         "image": torch.randn(
-            size=[2, image_shape.channels, image_shape.width, image_shape.height]
+            size=[
+                2,
+                image_shape.channels,
+                image_shape.width,
+                image_shape.height,
+            ]
         ).to(device),
         "video": torch.randn(
-            size=[2, 8, image_shape.channels, image_shape.width, image_shape.height]
+            size=[
+                2,
+                8,
+                image_shape.channels,
+                image_shape.width,
+                image_shape.height,
+            ]
         ).to(device),
         "audio": torch.randn(size=[2, 2, 220500]).to(device),
         "text": torch.randint(0, 100, size=[2, 77]).long().to(device),
     }
 
-    log.info(f"dummy_x.shape: {dummy_x['image'].shape} {dummy_x['text'].shape}")
+    log.info(
+        f"dummy_x.shape: {dummy_x['image'].shape} {dummy_x['text'].shape}"
+    )
     out = model.forward(dummy_x)
     log.debug(model)
 

@@ -1,7 +1,7 @@
 import pathlib
+from typing import Any, Optional, Union
 
 from dotted_dict import DottedDict
-from typing import Optional, Union, Any
 
 from gate.base.utils.loggers import get_logger
 from gate.datasets.tf_hub.standard.base import ClassificationDataset

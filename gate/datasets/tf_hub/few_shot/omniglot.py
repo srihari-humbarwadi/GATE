@@ -1,17 +1,13 @@
 import pathlib
+from typing import Any, Optional, Union
 
 from dotted_dict import DottedDict
-from typing import Optional, Union, Any
 
 from gate.base.utils.loggers import get_logger
-from gate.datasets.data_utils import (
-    FewShotSuperSplitSetOptions,
-)
+from gate.datasets.data_utils import FewShotSuperSplitSetOptions
 from gate.datasets.tf_hub import bytes_to_string
+from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
 from gate.datasets.tf_hub.standard.base import ClassificationDataset
-from gate.datasets.tf_hub.few_shot.base import (
-    FewShotClassificationDatasetTFDS,
-)
 
 log = get_logger(
     __name__,

@@ -1,6 +1,7 @@
+from typing import Union
+
 import torch.nn as nn
 from dotted_dict import DottedDict
-from typing import Union
 
 from gate.configs.datamodule.base import ShapeConfig
 

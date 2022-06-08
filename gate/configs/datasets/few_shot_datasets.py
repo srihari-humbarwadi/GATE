@@ -5,15 +5,11 @@ from gate.configs import get_module_import_path
 from gate.datasets.tf_hub.few_shot.aircraft import (
     AircraftFewShotClassificationDataset,
 )
-from gate.datasets.tf_hub.few_shot.base import (
-    FewShotClassificationDatasetTFDS,
-)
+from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
 from gate.datasets.tf_hub.few_shot.cu_birds import (
     CUB200FewShotClassificationDataset,
 )
-from gate.datasets.tf_hub.few_shot.dtd import (
-    DTDFewShotClassificationDataset,
-)
+from gate.datasets.tf_hub.few_shot.dtd import DTDFewShotClassificationDataset
 from gate.datasets.tf_hub.few_shot.fungi import (
     FungiFewShotClassificationDataset,
 )

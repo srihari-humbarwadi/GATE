@@ -14,7 +14,7 @@ log = get_logger(__name__)
 
 log.info(f"Loaded dotenv variables: {dotenv_loaded_vars}")
 
-from gate.configs.config import collect_config_store, Config
+from gate.configs.config import Config, collect_config_store
 
 log = get_logger(__name__, set_default_handler=True)
 

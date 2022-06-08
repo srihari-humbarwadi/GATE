@@ -4,17 +4,15 @@ import hydra.utils
 import pytest
 
 from gate.base.utils.loggers import get_logger
-from gate.configs.datamodule.base import (
-    DataLoaderConfig,
-)
+from gate.configs.datamodule.base import DataLoaderConfig
 from gate.configs.datamodule.few_shot_classification import (
     FewShotDataModuleConfig,
-    OmniglotFewShotDatasetConfig,
     FewShotTransformConfig,
+    OmniglotFewShotDatasetConfig,
 )
 from gate.configs.datasets.transforms import (
-    omniglot_support_set_transforms,
     omniglot_query_set_transforms,
+    omniglot_support_set_transforms,
 )
 
 log = get_logger(__name__, set_default_handler=True)

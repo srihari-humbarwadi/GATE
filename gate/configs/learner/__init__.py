@@ -1,8 +1,8 @@
 from hydra.core.config_store import ConfigStore
 
 from .episodic_linear_layer_fine_tuning import (
-    EpisodicSingleLinearLayerFineTuningSchemeConfig,
     EpisodicFullModelFineTuningSchemeConfig,
+    EpisodicSingleLinearLayerFineTuningSchemeConfig,
 )
 from .learning_rate_scheduler_config import (
     CosineAnnealingLRConfig,
@@ -10,13 +10,10 @@ from .learning_rate_scheduler_config import (
     ReduceLROnPlateauConfig,
 )
 from .linear_layer_fine_tuning import (
-    SingleLinearLayerFineTuningSchemeConfig,
     FullModelFineTuningSchemeConfig,
+    SingleLinearLayerFineTuningSchemeConfig,
 )
-from .optimizer_config import (
-    AdamOptimizerConfig,
-    BiLevelOptimizerConfig,
-)
+from .optimizer_config import AdamOptimizerConfig, BiLevelOptimizerConfig
 from .prototypical_network import EpisodicPrototypicalNetworkConfig
 
 LEARNING_RATE_SCHEDULER_CONFIGS = "learner/learning_rate_scheduler"

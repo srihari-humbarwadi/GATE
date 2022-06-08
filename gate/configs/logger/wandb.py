@@ -1,7 +1,6 @@
 # https://wandb.ai
 import os
 from dataclasses import dataclass, field
-
 from typing import List
 
 from pytorch_lightning.loggers import WandbLogger

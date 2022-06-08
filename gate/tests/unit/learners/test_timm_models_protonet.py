@@ -6,8 +6,8 @@ from omegaconf import DictConfig
 
 from gate.base.utils.loggers import get_logger
 from gate.configs.learner import (
-    EpisodicPrototypicalNetworkConfig,
     CosineAnnealingLRConfig,
+    EpisodicPrototypicalNetworkConfig,
 )
 from gate.configs.task.image_classification import (
     ImageClassificationTaskConfig,

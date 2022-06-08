@@ -4,9 +4,7 @@ import hydra.utils
 import pytest
 
 from gate.base.utils.loggers import get_logger
-from gate.configs.datamodule.base import (
-    DataLoaderConfig,
-)
+from gate.configs.datamodule.base import DataLoaderConfig
 from gate.configs.datamodule.few_shot_classification import (
     FewShotDataModuleConfig,
     FewShotTransformConfig,
@@ -14,10 +12,10 @@ from gate.configs.datamodule.few_shot_classification import (
 )
 from gate.configs.datasets.few_shot_datasets import FungiFewShotDatasetConfig
 from gate.configs.datasets.transforms import (
-    german_traffic_signs_support_set_transforms,
-    german_traffic_signs_query_set_transforms,
     fungi_query_set_transforms,
     fungi_support_set_transforms,
+    german_traffic_signs_query_set_transforms,
+    german_traffic_signs_support_set_transforms,
 )
 
 log = get_logger(__name__, set_default_handler=True)

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Any
+from typing import Any, Optional
 
 from torchvision import transforms
 from torchvision.transforms import transforms

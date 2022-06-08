@@ -1,8 +1,8 @@
 from hydra.core.config_store import ConfigStore
 
 from gate.configs.task.image_classification import (
-    TenClassClassificationTask,
     HundredClassClassificationTask,
+    TenClassClassificationTask,
     ThousandClassClassificationTask,
 )
 

@@ -1,10 +1,10 @@
 import os
+from typing import Union
 
 import clip
 import torch
 from dotted_dict import DottedDict
 from torchvision.transforms.functional import normalize
-from typing import Union
 
 from gate.base.utils.loggers import get_logger
 from gate.base.utils.model_utils import resize_custom

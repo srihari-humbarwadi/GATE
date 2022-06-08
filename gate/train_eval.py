@@ -5,6 +5,7 @@ from typing import List, Optional
 import hydra
 import pytorch_lightning
 import torch
+import wandb
 from omegaconf import DictConfig
 from pytorch_lightning import Callback, Trainer, seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -12,9 +13,8 @@ from pytorch_lightning.tuner.tuning import Tuner
 from rich.traceback import install
 from wandb.util import generate_id
 
-import wandb
 from gate.base.utils.loggers import get_logger
-from gate.base.utils.rank_zero_ops import print_config, generate_config_tree
+from gate.base.utils.rank_zero_ops import generate_config_tree, print_config
 from gate.datamodules.base import DataModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 

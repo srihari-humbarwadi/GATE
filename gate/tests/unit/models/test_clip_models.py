@@ -60,12 +60,19 @@ def test_clip_models(
     )
     dummy_x = {
         "image": torch.randn(
-            size=[4, image_shape.channels, image_shape.height, image_shape.width]
+            size=[
+                4,
+                image_shape.channels,
+                image_shape.height,
+                image_shape.width,
+            ]
         ).to(device),
         "text": torch.randint(0, 100, size=[4, 77]).long().to(device),
     }
 
-    log.info(f"dummy_x.shape: {dummy_x['image'].shape} {dummy_x['text'].shape}")
+    log.info(
+        f"dummy_x.shape: {dummy_x['image'].shape} {dummy_x['text'].shape}"
+    )
     out = model.forward(dummy_x)
     log.debug(model)
 

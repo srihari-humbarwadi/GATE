@@ -10,8 +10,8 @@ from clip.model import LayerNorm, Transformer
 from einops import rearrange, repeat
 
 from gate.model_blocks.auto_builder_modules.conv_blocks import (
-    SqueezeExciteConv1dBNLeakyReLU,
     ClassificationModel,
+    SqueezeExciteConv1dBNLeakyReLU,
 )
 
 

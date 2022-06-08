@@ -1,5 +1,4 @@
-from dataclasses import dataclass, MISSING
-
+from dataclasses import MISSING, dataclass
 from typing import Dict
 
 from gate.configs import get_module_import_path

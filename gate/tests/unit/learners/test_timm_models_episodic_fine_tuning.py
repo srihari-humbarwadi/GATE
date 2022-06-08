@@ -6,9 +6,9 @@ from omegaconf import DictConfig
 
 from gate.base.utils.loggers import get_logger
 from gate.configs.learner import (
-    EpisodicPrototypicalNetworkConfig,
     CosineAnnealingLRConfig,
     EpisodicFullModelFineTuningSchemeConfig,
+    EpisodicPrototypicalNetworkConfig,
 )
 from gate.configs.learner.learning_rate_scheduler_config import (
     BiLevelLRSchedulerConfig,

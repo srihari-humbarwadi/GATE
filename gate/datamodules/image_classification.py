@@ -1,7 +1,8 @@
+from typing import Any, Dict, Optional, Union
+
 import hydra.utils
 import torch.utils.data
 from torch.utils.data import DataLoader
-from typing import Optional, Union, Dict, Any
 
 from gate.configs.datamodule.base import DataLoaderConfig
 from gate.configs.datasets.standard_classification import (

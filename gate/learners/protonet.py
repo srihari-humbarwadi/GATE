@@ -7,11 +7,7 @@ import gate.base.utils.loggers as loggers
 from gate.configs.datamodule.base import ShapeConfig
 from gate.configs.task.image_classification import TaskConfig
 from gate.learners.base import LearnerModule
-from gate.learners.utils import (
-    get_accuracy,
-    get_prototypes,
-    prototypical_loss,
-)
+from gate.learners.utils import get_accuracy, get_prototypes, prototypical_loss
 
 log = loggers.get_logger(__name__)
 

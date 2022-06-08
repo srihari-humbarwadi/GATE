@@ -1,6 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Iterator, List, Callable, Optional
+from typing import Callable, Iterator, List, Optional
 
 import h5py
 import torch.utils.data

@@ -1,9 +1,10 @@
 from collections import defaultdict
 from copy import deepcopy
 from typing import Any, Dict, Union
-import torch.nn.functional as F
+
 import hydra
 import torch
+import torch.nn.functional as F
 import tqdm
 from dotted_dict import DottedDict
 

@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-
 from typing import Any
 
 from gate.configs import get_module_import_path

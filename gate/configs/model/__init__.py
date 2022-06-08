@@ -4,15 +4,11 @@ from .clip_model_config import (
     CLIPModelGenericPretrainedConfig,
     CLIPModelGenericScratchConfig,
 )
-
 from .tali_model_config import (
     TALIModelGenericPretrainedConfig,
     TALIModelGenericScratchConfig,
 )
-
-from .timm_model_configs import (
-    TimmImageResNet18Config,
-)
+from .timm_model_configs import TimmImageResNet18Config
 
 
 def add_model_configs(config_store: ConfigStore):

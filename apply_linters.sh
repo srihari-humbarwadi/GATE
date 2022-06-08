@@ -1,3 +1,3 @@
-yamllint .
-isort -l 88 .
-black -l 88 .
+yamllint gate/
+isort -l 88 gate/
+black -l 88 gate/

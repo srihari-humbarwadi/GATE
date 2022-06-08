@@ -1,14 +1,14 @@
 import json
 import os
 import pprint
-from dataclasses import dataclass, field, MISSING
+from dataclasses import MISSING, dataclass, field
 from pprint import pformat
+from typing import Any, List, Optional
 
 import dotenv
 import rich
 from hydra.core.config_store import ConfigStore
 from omegaconf import OmegaConf
-from typing import List, Any, Optional
 
 from gate.base.utils.loggers import get_logger
 from gate.configs.callbacks import add_callback_configs
@@ -16,8 +16,8 @@ from gate.configs.datamodule import add_datamodule_configs
 from gate.configs.hydra import add_hydra_configs
 from gate.configs.learner import (
     add_learner_configs,
-    add_optimizer_configs,
     add_learning_scheduler_configs,
+    add_optimizer_configs,
 )
 from gate.configs.logger import add_logger_configs
 from gate.configs.mode import add_mode_configs

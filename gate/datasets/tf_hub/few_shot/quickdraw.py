@@ -1,18 +1,14 @@
 import pathlib
-from typing import List, Optional, Union, Any
+from typing import Any, List, Optional, Union
 
 from dotted_dict import DottedDict
 from omegaconf import DictConfig
 
 from gate.base.utils.loggers import get_logger
 from gate.configs.datasets.data_splits_config import data_splits_dict
-from gate.datasets.data_utils import (
-    FewShotSuperSplitSetOptions,
-)
+from gate.datasets.data_utils import FewShotSuperSplitSetOptions
 from gate.datasets.tf_hub import bytes_to_string
-from gate.datasets.tf_hub.few_shot.base import (
-    FewShotClassificationDatasetTFDS,
-)
+from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
 
 log = get_logger(
     __name__,

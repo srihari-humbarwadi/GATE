@@ -1,9 +1,9 @@
+from typing import Any, Dict, Union
+
 import hydra
 import torch
 import torch.nn as nn
 from dotted_dict import DottedDict
-from typing import Any, Dict, Union
-
 from omegaconf import DictConfig
 
 from gate.base.utils.loggers import get_logger

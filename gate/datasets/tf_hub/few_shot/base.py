@@ -1,5 +1,5 @@
 import pathlib
-from typing import Dict, Any, Optional, Callable, List
+from typing import Any, Callable, Dict, List, Optional
 
 import h5py
 import hydra
@@ -14,8 +14,8 @@ from gate.base.utils.loggers import get_logger
 from gate.datasets.data_utils import (
     FewShotSuperSplitSetOptions,
     get_class_to_idx_dict,
-    store_dict_as_hdf5,
     get_class_to_image_idx_and_bbox,
+    store_dict_as_hdf5,
 )
 
 log = get_logger(

@@ -1,6 +1,5 @@
-from dataclasses import dataclass, field, MISSING
-
-from typing import Any, Optional, Dict
+from dataclasses import MISSING, dataclass, field
+from typing import Any, Dict, Optional
 
 from gate.configs import get_module_import_path
 from gate.configs.datamodule.base import DataLoaderConfig
@@ -9,19 +8,19 @@ from gate.configs.datasets.standard_classification import (
     OmniglotDatasetConfig,
 )
 from gate.configs.datasets.transforms import (
-    cifar10_train_transforms,
     cifar10_eval_transforms,
-    cifar100_train_transforms,
+    cifar10_train_transforms,
     cifar100_eval_transforms,
-    stl10_train_transforms,
-    stl10_eval_transforms,
+    cifar100_train_transforms,
     omniglot_transform_config,
+    stl10_eval_transforms,
+    stl10_train_transforms,
 )
 from gate.configs.string_variables import DATASET_DIR
 from gate.datamodules.tf_hub.standard_classification import (
-    OmniglotDataModule,
     CIFAR10DataModule,
     CIFAR100DataModule,
+    OmniglotDataModule,
 )
 from gate.datasets.tf_hub.standard.cifar import (
     CIFAR10ClassificationDataset,

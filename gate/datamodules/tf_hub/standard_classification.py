@@ -1,8 +1,6 @@
 from typing import Any
 
-from gate.configs.datamodule.base import (
-    DataLoaderConfig,
-)
+from gate.configs.datamodule.base import DataLoaderConfig
 from gate.configs.datasets.standard_classification import (
     CIFAR10DatasetConfig,
     CIFAR100DatasetConfig,

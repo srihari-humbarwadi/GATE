@@ -1,6 +1,7 @@
+from typing import Any, Dict, Tuple, Union
+
 import torch
 from dotted_dict import DottedDict
-from typing import Any, Dict, Tuple, Union
 
 import gate.base.utils.loggers as loggers
 from gate.configs.datamodule.base import ShapeConfig

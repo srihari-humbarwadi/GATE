@@ -9,7 +9,6 @@ from pytorch_lightning import LightningModule
 from gate.base.utils.loggers import get_logger
 from gate.configs.learner.linear_layer_fine_tuning import LearnerConfig
 from gate.configs.task.image_classification import TaskConfig
-
 from gate.datamodules.base import DataModule
 from gate.learners.base import LearnerModule
 from gate.models.base import ModelModule

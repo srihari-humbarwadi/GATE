@@ -1,4 +1,4 @@
-from dataclasses import dataclass, MISSING, field
+from dataclasses import MISSING, dataclass, field
 from typing import List
 
 from torch.optim import Adam

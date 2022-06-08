@@ -1,5 +1,5 @@
-from dataclasses import dataclass, MISSING
-from typing import Dict, Any
+from dataclasses import MISSING, dataclass
+from typing import Any, Dict
 
 #
 from omegaconf import DictConfig

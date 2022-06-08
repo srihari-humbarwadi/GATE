@@ -4,13 +4,11 @@ import hydra.utils
 import pytest
 
 from gate.base.utils.loggers import get_logger
-from gate.configs.datamodule.base import (
-    DataLoaderConfig,
-)
 from gate.configs.datamodule import CIFAR100DataModuleConfig
+from gate.configs.datamodule.base import DataLoaderConfig
 from gate.configs.datamodule.standard_classification import (
-    CIFAR100TrainTransformConfig,
     CIFAR100EvalTransformConfig,
+    CIFAR100TrainTransformConfig,
 )
 from gate.configs.datasets.standard_classification import CIFAR100DatasetConfig
 

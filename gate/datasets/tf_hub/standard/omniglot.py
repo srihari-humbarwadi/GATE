@@ -4,7 +4,7 @@
 #  for consistency again
 #  Create one few-shot dataset for each of the metadataset datasets
 import pathlib
-from typing import Union, Optional, Any
+from typing import Any, Optional, Union
 
 from dotted_dict import DottedDict
 
