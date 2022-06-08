@@ -145,3 +145,6 @@ log/*
 *.png
 *.tar*
 data/*
+wandb/*
+playground.*
+.test/*
