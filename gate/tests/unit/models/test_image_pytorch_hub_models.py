@@ -3,10 +3,8 @@ import torch
 from dotted_dict import DottedDict
 
 from gate.base.utils.loggers import get_logger
-from gate.class_configs.base import (
-    ShapeConfig,
-)
-from gate.models.resnet import ImageResNet
+from gate.configs.datamodule.base import ShapeConfig
+from gate.models.timm_hub import TimmImageModel
 
 log = get_logger(__name__, set_default_handler=True)
 
@@ -34,7 +32,7 @@ def test_pytorch_hub_models(
     pretrained,
     image_shape,
 ):
-    model = ImageResNet(
+    model = TimmImageModel(
         input_shape_dict=ShapeConfig(
             image=DottedDict(
                 shape=DottedDict(
@@ -50,7 +48,12 @@ def test_pytorch_hub_models(
     )
     dummy_x = {
         "image": torch.randn(
-            size=[2, image_shape.channels, image_shape.height, image_shape.width]
+            size=[
+                2,
+                image_shape.channels,
+                image_shape.height,
+                image_shape.width,
+            ]
         )
     }
 

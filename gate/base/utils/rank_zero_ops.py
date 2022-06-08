@@ -2,12 +2,13 @@ import logging
 import warnings
 from typing import List
 
-from omegaconf import DictConfig
+import rich
+from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import (
     Callback,
-    Trainer,
     LightningDataModule,
     LightningModule,
+    Trainer,
     loggers,
 )
 from pytorch_lightning.utilities import rank_zero_only
@@ -58,22 +59,8 @@ def extras(config: DictConfig) -> None:
         print_config(config, resolve=True)
 
 
-@rank_zero_only
-def print_config(
-    config: DictConfig,
-    resolve: bool = True,
-) -> None:
-    """Prints content of DictConfig using Rich library and its tree structure.
-
-    Args:
-        config (DictConfig): Configuration composed by Hydra.
-        fields (Sequence[str], optional): Determines which main fields from config will
-        be printed and in what order.
-        resolve (bool, optional): Whether to resolve reference fields of DictConfig.
-    """
-
+def generate_config_tree(config: DictConfig, resolve: bool = True):
     style = "dim"
-    import rich
 
     tree = Tree("CONFIG", style=style, guide_style=style)
 
@@ -83,12 +70,30 @@ def print_config(
         config_section = config.get(field)
         branch_content = str(config_section)
         if isinstance(config_section, DictConfig):
-            from omegaconf import OmegaConf
 
             branch_content = OmegaConf.to_yaml(config_section, resolve=resolve)
 
         branch.add(rich.syntax.Syntax(branch_content, "yaml"))
 
+    return tree
+
+
+@rank_zero_only
+def print_config(
+    config: DictConfig,
+    resolve: bool = True,
+) -> None:
+    """Prints content of DictConfig using Rich library and its tree structure.
+
+    Args:
+        config (DictConfig): Configuration composed by Hydra.
+        fields (Sequence[str], optional): Determines which main fields from
+        config will
+        be printed and in what order.
+        resolve (bool, optional): Whether to resolve reference fields
+        of DictConfig.
+    """
+    tree = generate_config_tree(config, resolve=resolve)
     rich.print(tree)
 
     with open("config_tree.log", "w") as fp:

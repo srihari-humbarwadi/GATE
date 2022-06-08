@@ -1,34 +1,33 @@
-from typing import Optional
-
 from pytorch_lightning import LightningDataModule
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
+from typing import Optional, Union
 
-from gate.class_configs.base import (
-    DataLoaderConfig,
+from gate.configs.datamodule.base import DataLoaderConfig
+from gate.configs.datasets.standard_classification import (
     DatasetConfig,
+    CIFAR10DatasetConfig,
+    CIFAR100DatasetConfig,
 )
 
 
 class DataModule(LightningDataModule):
     def __init__(
         self,
-        dataset_config: DatasetConfig,
+        dataset_config: Union[
+            DatasetConfig,
+            CIFAR10DatasetConfig,
+            CIFAR100DatasetConfig,
+        ],
         data_loader_config: DataLoaderConfig,
     ):
         super(DataModule, self).__init__()
         self.train_set = None
         self.val_set = None
         self.test_set = None
-        self.dataset_name = dataset_config.dataset_name
         self.dataset_root = dataset_config.dataset_root
         self.seed = data_loader_config.seed
         self.dataset_config = dataset_config
         self.data_loader_config = data_loader_config
-
-        self.input_shape_dict = dataset_config.input_shape_dict
-
-    def prepare_data(self, **kwargs):
-        raise NotImplementedError
 
     def setup(self, stage: Optional[str] = None):
         raise NotImplementedError

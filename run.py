@@ -2,30 +2,31 @@ import os
 
 import dotenv
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from rich.traceback import install
 
-# load environment variables from `.env` file if it exists
-# recursively searches for `.env` in all folders starting from work dir
 from gate.base.utils.rank_zero_ops import extras, print_config
 
-dotenv.load_dotenv(override=True)
+# load environment variables from `.env-` file if it exists
+# recursively searches for `.env` in all folders starting from work dir
+
+dotenv.load_dotenv(override=True, verbose=True)
 install(show_locals=False, extra_lines=1, word_wrap=True, width=350)
 
+from gate.configs.config import collect_config_store
 
-@hydra.main(config_path="configs", config_name="config")
+config_store = collect_config_store()
+
+
+@hydra.main(version_base=None, config_name="config")
 def main(config: DictConfig):
-
     # Imports can be nested inside @hydra.main to optimize tab completion
     # https://github.com/facebookresearch/hydra/issues/934
     from gate.train_eval import train_eval
 
-    extras(config)
     os.environ["WANDB_PROGRAM"] = config.code_dir
 
-    # Pretty print config using Rich library
-    if config.get("print_config"):
-        print_config(config, resolve=True)
+    extras(config)
 
     return train_eval(config)
 

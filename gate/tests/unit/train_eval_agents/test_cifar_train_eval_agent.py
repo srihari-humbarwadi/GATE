@@ -1,23 +1,28 @@
-import pytest
+import multiprocessing
 
+import hydra
+import pytest
 import torch
-import torch.nn.functional as F
 from dotted_dict import DottedDict
 
 from gate.base.utils.loggers import get_logger
-from gate.class_configs.base import (
-    ModalitiesSupportedConfig,
-    ImageClassificationTaskModuleConfig,
-    ShapeConfig,
-    AudioImageResNetConfig,
-    ImageResNetConfig,
-    LinearLayerFineTuningSchemeConfig,
-    CIFAR100DatasetConfig,
+from gate.configs.datamodule.base import (
     DataLoaderConfig,
 )
-from gate.datamodules.cifar import CIFAR100DataModule
-from gate.learners.single_layer_fine_tuning import LinearLayerFineTuningScheme
-from gate.models.resnet import ImageResNet
+from gate.configs.datamodule import CIFAR10DataModuleConfig
+from gate.configs.datasets.standard_classification import CIFAR10DatasetConfig
+from gate.configs.datasets.transforms import cifar10_train_transforms
+from gate.configs.learner import (
+    FullModelFineTuningSchemeConfig,
+    SingleLinearLayerFineTuningSchemeConfig,
+    CosineAnnealingLRConfig,
+)
+from gate.configs.task.image_classification import (
+    ImageClassificationTaskConfig,
+)
+from gate.models.timm_hub import TimmImageModel
+from gate.tasks.standard_classification import ImageClassificationTaskModule
+from gate.configs.model.timm_model_configs import TimmImageResNet18Config
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 
 log = get_logger(__name__, set_default_handler=True)
@@ -25,25 +30,14 @@ log = get_logger(__name__, set_default_handler=True)
 
 @pytest.mark.parametrize(
     "model_config",
-    [
-        ImageResNetConfig(
-            model_name_to_download="resnet18",
-            pretrained=True,
-            input_shape_dict=ShapeConfig(
-                image=DottedDict(
-                    shape=DottedDict(channels=3, width=224, height=224),
-                    dtype=torch.float32,
-                ),
-            ),
-        )
-    ],
+    [TimmImageResNet18Config],
 )
 @pytest.mark.parametrize(
     "task_config",
     [
-        ImageClassificationTaskModuleConfig(
-            output_shape_dict=ShapeConfig(
-                image=DottedDict(
+        ImageClassificationTaskConfig(
+            output_shape_dict=dict(
+                image=dict(
                     num_classes=10,
                 )
             )
@@ -53,41 +47,65 @@ log = get_logger(__name__, set_default_handler=True)
 @pytest.mark.parametrize(
     "learner_config",
     [
-        LinearLayerFineTuningSchemeConfig(
-            optimizer_config=dict(_target_="torch.optim.Adam", lr=0.001),
-            lr_scheduler_config=dict(
-                _target_="torch.optim.lr_scheduler.CosineAnnealingLR",
-                T_max=10,
-                eta_min=0,
-                verbose=True,
+        FullModelFineTuningSchemeConfig(
+            lr_scheduler_config=CosineAnnealingLRConfig(
+                T_max=10, batch_size=multiprocessing.cpu_count() * 2
             ),
+        ),
+        SingleLinearLayerFineTuningSchemeConfig(
+            lr_scheduler_config=CosineAnnealingLRConfig(
+                T_max=10, batch_size=multiprocessing.cpu_count() * 2
+            )
         ),
     ],
 )
+@pytest.mark.parametrize("batch_size", [multiprocessing.cpu_count() * 2])
+@pytest.mark.parametrize("num_workers", [multiprocessing.cpu_count()])
+@pytest.mark.parametrize("pin_memory", [True])
+@pytest.mark.parametrize("drop_last", [True])
+@pytest.mark.parametrize("shuffle", [True])
+@pytest.mark.parametrize("prefetch_factor", [2])
+@pytest.mark.parametrize("persistent_workers", [True])
 def test_single_layer_fine_tuning(
     learner_config,
     model_config,
     task_config,
+    batch_size,
+    num_workers,
+    pin_memory,
+    drop_last,
+    shuffle,
+    prefetch_factor,
+    persistent_workers,
 ):
-    dataset_config = CIFAR100DatasetConfig()
+    dataset_config = CIFAR10DatasetConfig(
+        dataset_root="datasets/cifar10", download=True
+    )
+
+    transform_train = cifar10_train_transforms()
 
     data_loader_config = DataLoaderConfig(
-        train_batch_size=2,
-        val_batch_size=2,
-        test_batch_size=2,
-        pin_memory=False,
-        train_drop_last=False,
-        eval_drop_last=False,
-        train_shuffle=False,
-        eval_shuffle=False,
-        prefetch_factor=2,
-        persistent_workers=False,
-        num_workers=2,
+        train_batch_size=100,
+        val_batch_size=100,
+        test_batch_size=100,
+        pin_memory=pin_memory,
+        train_drop_last=drop_last,
+        eval_drop_last=drop_last,
+        train_shuffle=shuffle,
+        eval_shuffle=shuffle,
+        prefetch_factor=prefetch_factor,
+        persistent_workers=persistent_workers,
+        num_workers=num_workers,
     )
 
-    datamodule = CIFAR100DataModule(
-        dataset_config=dataset_config, data_loader_config=data_loader_config
+    datamodule_config = CIFAR10DataModuleConfig(
+        dataset_config=dataset_config,
+        data_loader_config=data_loader_config,
+        transform_train=transform_train,
+        transform_eval=transform_train,
     )
+
+    datamodule = hydra.utils.instantiate(datamodule_config, _recursive_=False)
 
     datamodule.setup(stage="fit")
 
@@ -95,12 +113,6 @@ def test_single_layer_fine_tuning(
         learner_config=learner_config,
         model_config=model_config,
         task_config=task_config,
-        modality_config=ModalitiesSupportedConfig(image=True),
+        modality_config=DottedDict(image=True),
         datamodule=datamodule,
     )
-
-    # dummy_x = {
-    #     "image": torch.randn(size=(2,) + model.input_shape_dict.image),
-    # }
-    #
-    # log.info(f"dummy_x.shape: {dummy_x['image'].shape}")

@@ -3,19 +3,18 @@ import pathlib
 from typing import List, Optional
 
 import hydra
+import pytorch_lightning
 import torch
 from omegaconf import DictConfig
-from pytorch_lightning import (
-    Callback,
-    seed_everything,
-    Trainer,
-)
+from pytorch_lightning import Callback, Trainer, seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
 from rich.traceback import install
 from wandb.util import generate_id
 
+import wandb
 from gate.base.utils.loggers import get_logger
+from gate.base.utils.rank_zero_ops import print_config, generate_config_tree
 from gate.datamodules.base import DataModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 
@@ -34,12 +33,14 @@ def checkpoint_setup(config):
         if not pathlib.Path(f"{config.current_experiment_dir}").exists():
             os.makedirs(f"{config.current_experiment_dir}", exist_ok=True)
 
-        checkpoint_path = f"{config.current_experiment_dir}/checkpoints/last.ckpt"
-
-        log.info(checkpoint_path)
+        checkpoint_path = (
+            f"{config.current_experiment_dir}/checkpoints/last.ckpt"
+        )
 
         if not pathlib.Path(checkpoint_path).exists():
             checkpoint_path = None
+
+        log.info(checkpoint_path)
 
     else:
 
@@ -60,7 +61,6 @@ def train_eval(config: DictConfig):
     Returns:
         Optional[float]: Metric score for hyperparameter optimization.
     """
-
     if config.get("seed"):
         seed_everything(config.seed, workers=True)
     # --------------------------------------------------------------------------------
@@ -73,6 +73,13 @@ def train_eval(config: DictConfig):
         config.datamodule, _recursive_=False
     )
     datamodule.setup(stage="fit")
+    # datamodule_pretty_dict_tree = generate_config_tree(
+    #     config=datamodule.__dict__, resolve=True
+    # )
+    log.info(
+        f"Datamodule <{config.datamodule._target_}> instantiated, "
+        f"with attributes {datamodule.__dict__}"
+    )
     # --------------------------------------------------------------------------------
     # Instantiate Lightning TrainingEvaluationAgent for task
     log.info(f"Instantiating model <{config.model._target_}>")
@@ -97,7 +104,11 @@ def train_eval(config: DictConfig):
         if isinstance(value, torch.Tensor)
     }
 
-    log.info(f"Data shape description: {dummy_data_device_dict}")
+    data_shape_tree = generate_config_tree(
+        dummy_data_device_dict, resolve=True
+    )
+
+    log.info(f"Data shape description: {data_shape_tree}")
     _ = train_eval_agent.forward(x_dummy_data_dict)
     # --------------------------------------------------------------------------------
     # Instantiate Lightning Callbacks
@@ -163,11 +174,15 @@ def train_eval(config: DictConfig):
     if config.mode.fit:
         log.info("Starting training!")
         trainer.validate(
-            model=train_eval_agent, datamodule=datamodule, ckpt_path=checkpoint_path
+            model=train_eval_agent,
+            datamodule=datamodule,
+            ckpt_path=checkpoint_path,
         )
 
         trainer.fit(
-            model=train_eval_agent, datamodule=datamodule, ckpt_path=checkpoint_path
+            model=train_eval_agent,
+            datamodule=datamodule,
+            ckpt_path=checkpoint_path,
         )
 
     # --------------------------------------------------------------------------------
@@ -176,17 +191,27 @@ def train_eval(config: DictConfig):
         datamodule.setup(stage="test")
 
         if config.mode.fit is False:
-            trainer._restore_modules_and_callbacks(checkpoint_path=checkpoint_path)
+            trainer._restore_modules_and_callbacks(
+                checkpoint_path=checkpoint_path
+            )
 
-        log.info(f"Starting testing ! 🧪")
+        log.info("Starting testing ! 🧪")
 
-        trainer.test(
+        test_results = trainer.test(
             model=train_eval_agent,
             datamodule=datamodule,
         )
 
+        log.info(f"Testing results: {test_results}")
+        for logger_instance in logger:
+            if isinstance(
+                logger_instance, pytorch_lightning.loggers.wandb.WandbLogger
+            ):
+                wandb.log(test_results[0], step=0)
     # Make sure everything closed properly
     log.info("Finalizing! 😺")
     # Print path to best checkpoint
     if not config.trainer.get("fast_dev_run"):
-        log.info(f"Best model ckpt at {trainer.checkpoint_callback.best_model_path}")
+        log.info(
+            f"Best model ckpt at {trainer.checkpoint_callback.best_model_path}"
+        )

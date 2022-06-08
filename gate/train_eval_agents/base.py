@@ -1,31 +1,30 @@
-from typing import List, Any
+from typing import Any
 
 import torch
+from dotted_dict import DottedDict
 from hydra.utils import instantiate
+from omegaconf import DictConfig
 from pytorch_lightning import LightningModule
 
 from gate.base.utils.loggers import get_logger
-from gate.class_configs.base import (
-    ModelConfig,
-    LearnerConfig,
-    TaskConfig,
-    ModalitiesSupportedConfig,
-)
+from gate.configs.learner.linear_layer_fine_tuning import LearnerConfig
+from gate.configs.task.image_classification import TaskConfig
+
 from gate.datamodules.base import DataModule
 from gate.learners.base import LearnerModule
 from gate.models.base import ModelModule
 from gate.tasks.base import TaskModule
 
-log = get_logger(__name__, set_default_handler=True)
+log = get_logger(__name__, set_default_handler=False)
 
 
 class TrainingEvaluationAgent(LightningModule):
     def __init__(
         self,
-        model_config: ModelConfig,
+        model_config: Any,
         learner_config: LearnerConfig,
         task_config: TaskConfig,
-        modality_config: ModalitiesSupportedConfig,
+        modality_config: DictConfig,
         datamodule: DataModule,
     ):
         super().__init__()
@@ -54,7 +53,6 @@ class TrainingEvaluationAgent(LightningModule):
         self.input_shape_dict = model_config.input_shape_dict
         self.output_shape_dict = task_config.output_shape_dict
         self.build(datamodule)
-        self.save_hyperparameters()
 
     def build(self, datamodule):
         input_dummy_dict, target_dummy_dict = datamodule.dummy_batch()
@@ -75,9 +73,15 @@ class TrainingEvaluationAgent(LightningModule):
         )
 
         output_dict = self.learner.forward(dummy_batch_dict)
-        output_shape_dict = {name: value.shape for name, value in output_dict.items()}
+        output_shape_dict = {
+            name: value.shape for name, value in output_dict.items()
+        }
         log.info(
-            f"Built {self.__class__.__name__} with {self.base_model.__class__.__name__} and {self.learner.__class__.__name__} and {self.task.__class__.__name__} and output shape {output_shape_dict} "
+            f"Built {self.__class__.__name__} "
+            f"with {self.base_model.__class__.__name__} "
+            f"and {self.learner.__class__.__name__} "
+            f"and {self.task.__class__.__name__} "
+            f"and output shape {output_shape_dict} "
         )
 
     def forward(self, batch):
@@ -86,7 +90,9 @@ class TrainingEvaluationAgent(LightningModule):
     def training_step(self, batch, batch_idx):
         task_batch = self.task.data_flow(batch_dict=batch, batch_idx=batch_idx)
         opt_loss, computed_task_metrics_dict = self.learner.training_step(
-            task_batch, batch_idx, task_metrics_dict=self.task.task_metrics_dict
+            task_batch,
+            batch_idx,
+            task_metrics_dict=self.task.task_metrics_dict,
         )
         self.collect_metrics_step(computed_task_metrics_dict)
         return opt_loss
@@ -94,14 +100,18 @@ class TrainingEvaluationAgent(LightningModule):
     def validation_step(self, batch, batch_idx):
         task_batch = self.task.data_flow(batch_dict=batch, batch_idx=batch_idx)
         opt_loss, computed_task_metrics_dict = self.learner.validation_step(
-            task_batch, batch_idx, task_metrics_dict=self.task.task_metrics_dict
+            task_batch,
+            batch_idx,
+            task_metrics_dict=self.task.task_metrics_dict,
         )
         self.collect_metrics_step(computed_task_metrics_dict)
 
     def test_step(self, batch, batch_idx):
         task_batch = self.task.data_flow(batch_dict=batch, batch_idx=batch_idx)
         opt_loss, computed_task_metrics_dict = self.learner.test_step(
-            task_batch, batch_idx, task_metrics_dict=self.task.task_metrics_dict
+            task_batch,
+            batch_idx,
+            task_metrics_dict=self.task.task_metrics_dict,
         )
         self.collect_metrics_step(computed_task_metrics_dict)
 

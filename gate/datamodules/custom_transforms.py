@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torchvision.transforms as transforms
+from torchvision.transforms import ToTensor
 
 
 class Cutout:
@@ -66,7 +67,7 @@ class SimCLRTransform:
         self.n_views = n_views
 
     def __call__(self, x):
-        return [self.base_transform(x) for i in range(self.n_views)]
+        return [self.base_transform(x) for _ in range(self.n_views)]
 
 
 class UnNormalize:
@@ -84,3 +85,28 @@ class UnNormalize:
                 lambda x: x * 255,
             ]
         )(x)
+
+
+class LoggingTransform(torch.nn.Module):
+    def __init__(self, level="INFO"):
+        super().__init__()
+        self.level = level
+
+    def __call__(self, x):
+        if hasattr(x, "shape"):
+            print(f"Shape going in {x.shape}")
+        else:
+            print(f"Shape going in {ToTensor()(x).shape}")
+
+        print(f"Type going in {type(x)}")
+        return x
+
+
+class ChannelCloneIfNecessary(object):
+    def __init__(self, num_channels=3):
+        self.num_channels = num_channels
+
+    def __call__(self, x):
+        if x.shape[0] != self.num_channels:
+            return x.repeat(self.num_channels, 1, 1)
+        return x

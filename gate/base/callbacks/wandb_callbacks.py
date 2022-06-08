@@ -1,21 +1,19 @@
-import os
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sn
 import torch
-import wandb
-from pytorch_lightning import Callback, Trainer, LightningModule
+from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
 from sklearn import metrics
 from sklearn.metrics import f1_score, precision_score, recall_score
 from torch.optim import Optimizer
-from wandb.plots.heatmap import heatmap
 
+import wandb
 from gate.base.utils.loggers import get_logger
 
 log = get_logger(__name__)
@@ -83,7 +81,10 @@ class UploadCodeAsArtifact(Callback):
         code = wandb.Artifact("project-source", type="code")
 
         for path in Path(self.code_dir).resolve().rglob("*.py"):
-            code.add_file(str(path), name=str(path.relative_to(self.code_dir)))
+            if ".git" not in path.parts:
+                code.add_file(
+                    str(path), name=str(path.relative_to(self.code_dir))
+                )
 
         experiment.log_artifact(code)
 
@@ -91,7 +92,9 @@ class UploadCodeAsArtifact(Callback):
 class UploadCheckpointsAsArtifact(Callback):
     """Upload checkpoints to wandb as an artifact, at the end of run."""
 
-    def __init__(self, ckpt_dir: str = "checkpoints/", upload_best_only: bool = False):
+    def __init__(
+        self, ckpt_dir: str = "checkpoints/", upload_best_only: bool = False
+    ):
         self.ckpt_dir = ckpt_dir
         self.upload_best_only = upload_best_only
 
@@ -149,7 +152,9 @@ class LogConfusionMatrix(Callback):
             preds = torch.cat(self.preds).cpu().numpy()
             targets = torch.cat(self.targets).cpu().numpy()
 
-            confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds)
+            confusion_matrix = metrics.confusion_matrix(
+                y_true=targets, y_pred=preds
+            )
 
             # set figure size
             plt.figure(figsize=(14, 8))
@@ -158,7 +163,9 @@ class LogConfusionMatrix(Callback):
             sn.set(font_scale=1.4)
 
             # set font size
-            sn.heatmap(confusion_matrix, annot=True, annot_kws={"size": 8}, fmt="g")
+            sn.heatmap(
+                confusion_matrix, annot=True, annot_kws={"size": 8}, fmt="g"
+            )
 
             # names should be uniqe or else charts from different experiments in wandb will overlap
             experiment.log(
@@ -250,7 +257,9 @@ def get_video_log_file(video_tensor: torch.Tensor) -> wandb.Video:
     )
     video_tensor = cv2.cvtColor(video_tensor, cv2.COLOR_BGR2RGB)
     video_tensor = video_tensor.reshape(video_shape) * 255
-    video_tensor = torch.Tensor(video_tensor).permute([0, 3, 1, 2]).type(torch.uint8)
+    video_tensor = (
+        torch.Tensor(video_tensor).permute([0, 3, 1, 2]).type(torch.uint8)
+    )
 
     return wandb.Video(video_tensor, fps=8, format="gif")
 
@@ -285,7 +294,9 @@ class LogGrads(Callback):
 
             modality_specific_grad_summary = {
                 modality_key: [
-                    value for key, value in grad_dict.items() if modality_key in key
+                    value
+                    for key, value in grad_dict.items()
+                    if modality_key in key
                 ]
                 for modality_key in modality_keys
             }
@@ -325,7 +336,9 @@ class LogConfigInformation(Callback):
         self.config = config
 
     @rank_zero_only
-    def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+    def on_fit_start(
+        self, trainer: Trainer, pl_module: LightningModule
+    ) -> None:
         if not self.done:
             logger = get_wandb_logger(trainer=trainer)
 
