@@ -36,7 +36,7 @@ from gate.configs.datasets.transforms import (
     VGGFlowersQuerySetTransformConfig,
     VGGFlowersSupportSetTransformConfig,
 )
-from gate.configs.string_variables import DATASET_DIR
+from gate.configs.string_variables import DATASET_DIR, NUM_TRAIN_SAMPLES
 from gate.datamodules.tf_hub.few_shot_episodic_sets import FewShotDataModule
 
 
@@ -50,6 +50,8 @@ class FewShotDataModuleConfig:
     data_loader_config: DataLoaderConfig
     transform_train: FewShotTransformConfig
     transform_eval: FewShotTransformConfig
+    train_num_episodes: int = NUM_TRAIN_SAMPLES
+    eval_num_episodes: int = 600
 
     _target_: str = get_module_import_path(FewShotDataModule)
 

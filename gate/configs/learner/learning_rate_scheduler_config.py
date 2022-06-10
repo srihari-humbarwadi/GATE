@@ -7,7 +7,10 @@ from torch.optim.lr_scheduler import (
 )
 
 from gate.configs import get_module_import_path
-from gate.configs.string_variables import BATCH_SIZE
+from gate.configs.string_variables import (
+    BATCH_SIZE,
+    MaxDurationTypes,
+)
 
 
 @dataclass
@@ -24,12 +27,12 @@ class UpdateIntervalOptions:
 @dataclass
 class CosineAnnealingLRConfig(LRSchedulerConfig):
     _target_: str = get_module_import_path(CosineAnnealingLR)
-    T_max: int = "${trainer.max_epochs}"
+    T_max: int = MaxDurationTypes.MAX_STEPS
     eta_min: int = 0
     verbose: bool = False
     batch_size: int = BATCH_SIZE
-    num_train_samples: int = 50000
-    update_interval: str = UpdateIntervalOptions.EPOCH
+    num_train_samples: int = MaxDurationTypes.MAX_STEPS
+    update_interval: str = UpdateIntervalOptions.STEP
 
 
 @dataclass

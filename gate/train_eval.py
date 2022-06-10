@@ -202,7 +202,12 @@ def train_eval(config: DictConfig):
             datamodule=datamodule,
         )
 
-        log.info(f"Testing results: {test_results}")
+        log.info(
+            f"Testing results can be found in the wandb log: {wandb.run.url}, "
+            f"please only check that when finalizing your conclusions, "
+            f"otherwise you are at risk of subconsciosuly biasing your "
+            f"results 🚨"
+        )
         for logger_instance in logger:
             if isinstance(
                 logger_instance, pytorch_lightning.loggers.wandb.WandbLogger

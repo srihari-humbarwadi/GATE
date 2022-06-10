@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any, Optional
 
 import cv2
 import matplotlib.pyplot as plt
@@ -89,33 +89,39 @@ class UploadCodeAsArtifact(Callback):
         experiment.log_artifact(code)
 
 
-class UploadCheckpointsAsArtifact(Callback):
+class PrintUploadCheckpointsAsArtifact(Callback):
     """Upload checkpoints to wandb as an artifact, at the end of run."""
 
-    def __init__(
-        self, ckpt_dir: str = "checkpoints/", upload_best_only: bool = False
-    ):
-        self.ckpt_dir = ckpt_dir
-        self.upload_best_only = upload_best_only
-
     @rank_zero_only
-    def on_keyboard_interrupt(self, trainer, pl_module):
-        self.on_train_end(trainer, pl_module)
+    def on_save_checkpoint(
+        self,
+        trainer: Trainer,
+        pl_module: LightningModule,
+        checkpoint: Dict[str, Any],
+    ) -> None:
+        # cur_epoch = pl_module.current_epoch
+        # cur_step = pl_module.global_step
+        #
+        # logger = get_wandb_logger(trainer=trainer)
+        #
+        # experiment = logger.experiment
+        #
+        # ckpts = wandb.Artifact("experiment-ckpts", type="checkpoints")
+        #
+        # if self.upload_best_only:
+        #     ckpts.add_file(trainer.checkpoint_callback.best_model_path)
+        # else:
+        #     for path in Path(trainer.checkpoint_callback.dirpath).rglob(
+        #         "*.ckpt"
+        #     ):
+        #         ckpts.add_file(str(path))
+        #
+        # experiment.log_artifact(ckpts)
 
-    @rank_zero_only
-    def on_train_end(self, trainer, pl_module):
-        logger = get_wandb_logger(trainer=trainer)
-        experiment = logger.experiment
-
-        ckpts = wandb.Artifact("experiment-ckpts", type="checkpoints")
-
-        if self.upload_best_only:
-            ckpts.add_file(trainer.checkpoint_callback.best_model_path)
-        else:
-            for path in Path(self.ckpt_dir).rglob("*.ckpt"):
-                ckpts.add_file(str(path))
-
-        experiment.log_artifact(ckpts)
+        log.info(
+            f"Uploaded checkpoint of epoch {checkpoint['epoch']} "
+            f"at step {checkpoint['global_step']} to wandb ⬆"
+        )
 
 
 class LogConfusionMatrix(Callback):

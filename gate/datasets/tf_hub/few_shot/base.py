@@ -211,8 +211,6 @@ class FewShotClassificationDatasetTFDS(Dataset):
         self.print_info = False
 
     def __len__(self):
-        if self.split_name == FewShotSuperSplitSetOptions.TRAIN:
-            return self.num_episodes * 500
         return self.num_episodes
 
     def __getitem__(self, index):
@@ -722,8 +720,7 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
         self.print_info = False
 
     def __len__(self):
-        if self.split_name == FewShotSuperSplitSetOptions.TRAIN:
-            return self.num_episodes * 500
+
         return self.num_episodes
 
     def __getitem__(self, index):

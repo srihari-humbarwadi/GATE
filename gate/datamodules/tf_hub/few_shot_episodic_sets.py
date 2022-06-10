@@ -19,18 +19,21 @@ class FewShotDataModule(DataModule):
         data_loader_config: DataLoaderConfig,
         transform_train: FewShotTransformConfig,
         transform_eval: FewShotTransformConfig,
+        train_num_episodes: int,
+        eval_num_episodes: int,
     ):
 
         super(FewShotDataModule, self).__init__(
             dataset_config, data_loader_config
         )
 
-        self.dataset_config = dataset_config
         self.data_loader_config = data_loader_config
 
         self.transform_train = transform_train
         self.transform_eval = transform_eval
         self.rescan_cache = self.dataset_config.rescan_cache
+        self.train_num_episodes = train_num_episodes
+        self.eval_num_episodes = eval_num_episodes
 
     def setup(self, stage: Optional[str] = None):
 
@@ -52,6 +55,7 @@ class FewShotDataModule(DataModule):
                 ),
                 _recursive_=False,
                 rescan_cache=self.rescan_cache,
+                num_episodes=self.train_num_episodes,
             )
 
             self.val_set = hydra.utils.instantiate(
@@ -71,6 +75,7 @@ class FewShotDataModule(DataModule):
                 ),
                 _recursive_=False,
                 rescan_cache=False,
+                num_episodes=self.eval_num_episodes,
             )
             if self.rescan_cache is True:
                 self.rescan_cache = False
@@ -94,6 +99,7 @@ class FewShotDataModule(DataModule):
                 ),
                 _recursive_=self.rescan_cache,
                 rescan_cache=False,
+                num_episodes=self.eval_num_episodes,
             )
             if self.rescan_cache is True:
                 self.rescan_cache = False
@@ -118,6 +124,7 @@ class FewShotDataModule(DataModule):
                 ),
                 _recursive_=False,
                 rescan_cache=self.rescan_cache,
+                num_episodes=self.eval_num_episodes,
             )
 
             if self.rescan_cache is True:

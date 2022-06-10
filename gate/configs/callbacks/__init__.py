@@ -27,13 +27,12 @@ wandb_callbacks = dict(
     progress_bar=RichProgressBar(),
     lr_monitor=LearningRateMonitor,
     code_upload=UploadCodeAsArtifact(),
-    checkpoints_upload=UploadCheckpointsAsArtifact(),
     log_grads=LogGrads(),
     log_config=LogConfigInformation(),
 )
 
 
-def add_callback_configs(config_store: ConfigStore):
+def add_lightning_callback_configs(config_store: ConfigStore):
     config_store.store(
         group="callbacks",
         name="base",

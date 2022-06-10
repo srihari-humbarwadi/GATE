@@ -11,7 +11,7 @@ from hydra.core.config_store import ConfigStore
 from omegaconf import OmegaConf
 
 from gate.base.utils.loggers import get_logger
-from gate.configs.callbacks import add_callback_configs
+from gate.configs.callbacks import add_lightning_callback_configs
 from gate.configs.datamodule import add_datamodule_configs
 from gate.configs.hydra import add_hydra_configs
 from gate.configs.learner import (
@@ -86,6 +86,7 @@ class Config:
     batch_size: Optional[int] = None
     # seed for random number generators in pytorch, numpy and python.random
     seed: int = 0
+    num_train_samples: int = 50000
 
     # path to original working directory
     # hydra hijacks working directory by changing it to the new log directory
@@ -109,18 +110,17 @@ class Config:
 def collect_config_store():
     config_store = ConfigStore.instance()
     config_store.store(name="config", node=Config)
+    config_store = add_hydra_configs(config_store)
     config_store = add_trainer_configs(config_store)
-    config_store = add_task_configs(config_store)
     config_store = add_model_configs(config_store)
     config_store = add_datamodule_configs(config_store)
     config_store = add_learner_configs(config_store)
     config_store = add_optimizer_configs(config_store)
-    config_store = add_hydra_configs(config_store)
     config_store = add_learning_scheduler_configs(config_store)
+    config_store = add_task_configs(config_store)
     config_store = add_mode_configs(config_store)
     config_store = add_train_eval_agent_configs(config_store)
     config_store = add_logger_configs(config_store)
-    config_store = add_callback_configs(config_store)
+    config_store = add_lightning_callback_configs(config_store)
 
-    # rich.print(dict(config_store.repo))
     return config_store

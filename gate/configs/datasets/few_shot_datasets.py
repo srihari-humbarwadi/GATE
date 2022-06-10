@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from gate.configs import get_module_import_path
+from gate.configs.string_variables import NUM_TRAIN_SAMPLES
 from gate.datasets.tf_hub.few_shot.aircraft import (
     AircraftFewShotClassificationDataset,
 )
@@ -39,7 +40,7 @@ class FewShotDatasetConfig:
     dataset_root: str
     split_name: Optional[str] = None
     download: bool = True
-    num_episodes: int = 1000
+    num_episodes: int = 600
     min_num_classes_per_set: int = 5
     min_num_samples_per_class: int = 2
     num_classes_per_set: int = 20  # n_way

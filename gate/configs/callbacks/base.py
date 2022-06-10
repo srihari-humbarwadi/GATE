@@ -12,7 +12,7 @@ from pytorch_lightning.callbacks import (
 from gate.base.callbacks.wandb_callbacks import (
     LogConfigInformation,
     LogGrads,
-    UploadCheckpointsAsArtifact,
+    PrintUploadCheckpointsAsArtifact,
     UploadCodeAsArtifact,
 )
 from gate.configs import get_module_import_path
@@ -67,9 +67,7 @@ class UploadCodeAsArtifact:
 
 @dataclass
 class UploadCheckpointsAsArtifact:
-    _target_: str = get_module_import_path(UploadCheckpointsAsArtifact)
-    ckpt_dir: str = "${current_experiment_dir}/checkpoints/"
-    upload_best_only: bool = False
+    _target_: str = get_module_import_path(PrintUploadCheckpointsAsArtifact)
 
 
 @dataclass
@@ -85,8 +83,8 @@ class LogConfigInformation:
 
 
 model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(
-    monitor="validation/opt_loss_epoch",
-    mode="min",
+    monitor="validation/accuracy_epoch",
+    mode="max",
     save_top_k=3,
     save_last=False,
     verbose=False,
@@ -97,7 +95,7 @@ model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(
 
 model_checkpoint_train = ModelCheckpointingConfig(
     _target_=get_module_import_path(ModelCheckpoint),
-    monitor="training/opt_loss_step",
+    monitor="training/loss_epoch",
     save_on_train_epoch_end=True,
     save_top_k=0,
     save_last=True,
@@ -105,6 +103,6 @@ model_checkpoint_train = ModelCheckpointingConfig(
     mode="min",
     verbose=False,
     dirpath=CHECKPOINT_DIR,
-    filename="last",
+    filename="train_latest",
     auto_insert_metric_name=False,
 )
