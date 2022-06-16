@@ -4,6 +4,7 @@ from .episodic_linear_layer_fine_tuning import (
     EpisodicFullModelFineTuningSchemeConfig,
     EpisodicSingleLinearLayerFineTuningSchemeConfig,
 )
+from .gcm_network import ConditionalGenerativeContrastiveModellingConfig
 from .learning_rate_scheduler_config import (
     CosineAnnealingLRConfig,
     CosineAnnealingLRWarmRestartsConfig,
@@ -15,7 +16,6 @@ from .linear_layer_fine_tuning import (
 )
 from .optimizer_config import AdamOptimizerConfig, BiLevelOptimizerConfig
 from .prototypical_network import EpisodicPrototypicalNetworkConfig
-from .gcm_network import ConditionalGenerativeContrastiveModellingConfig
 
 LEARNING_RATE_SCHEDULER_CONFIGS = "learner/learning_rate_scheduler"
 LEARNER_CONFIGS = "learner"

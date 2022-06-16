@@ -250,8 +250,8 @@ dependencies:
   - python-fastjsonschema=2.15.1=pyhd3eb1b0_0
   - python-flatbuffers=1.12=pyhd3eb1b0_0
   - python_abi=3.8=2_cp38
-  - pytorch=1.10.2=cpu_py38h23cb94c_0
-  - pytorch-lightning=1.5.10=pyhd8ed1ab_0
+  - learn2learn_hub=1.10.2=cpu_py38h23cb94c_0
+  - learn2learn_hub-lightning=1.5.10=pyhd8ed1ab_0
   - pytz=2021.3=pyhd3eb1b0_0
   - pyyaml=6.0=py38h1a28f6b_0
   - pyzmq=22.3.0=py38hc377ac9_2

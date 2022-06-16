@@ -1,5 +1,6 @@
 import pathlib
 from dataclasses import field
+from typing import Any, Callable, Dict, List, Optional
 
 import h5py
 import hydra
@@ -9,7 +10,6 @@ import torch
 from dotted_dict import DottedDict
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import Dataset
-from typing import Dict, Any, Optional, Callable, List
 
 from gate.base.utils.loggers import get_logger
 from gate.datasets.data_utils import (
@@ -135,9 +135,7 @@ class FewShotClassificationDataset(Dataset):
 
         self.class_to_address_dict = get_class_to_idx_dict(
             self.subsets,
-            class_name_key=self.input_target_annotation_keys[
-                "target_annotations"
-            ],
+            class_name_key=self.input_target_annotation_keys["target_annotations"],
             label_extractor_fn=label_extractor_fn,
         )
 
@@ -149,8 +147,7 @@ class FewShotClassificationDataset(Dataset):
         )
 
         hdf5_filepath = (
-            dataset_root
-            / f"{self.dataset_name}_few_shot_classification_dataset.h5"
+            dataset_root / f"{self.dataset_name}_few_shot_classification_dataset.h5"
         )
 
         # log.info(
@@ -172,8 +169,7 @@ class FewShotClassificationDataset(Dataset):
                     for idx, (key, value) in enumerate(
                         self.class_to_address_dict.items()
                     )
-                    if idx
-                    < split_percentage[FewShotSuperSplitSetOptions.TRAIN]
+                    if idx < split_percentage[FewShotSuperSplitSetOptions.TRAIN]
                 }
             elif split_name == FewShotSuperSplitSetOptions.VAL:
                 self.current_class_to_address_dict = {
@@ -226,16 +222,12 @@ class FewShotClassificationDataset(Dataset):
         #     f"Check {self.min_num_classes_per_set} {self.num_classes_per_set}"
         # )
         num_classes_per_set = (
-            rng.choice(
-                range(self.min_num_classes_per_set, self.num_classes_per_set)
-            )
+            rng.choice(range(self.min_num_classes_per_set, self.num_classes_per_set))
             if self.variable_num_classes_per_set
             else self.num_classes_per_set
         )
 
-        available_class_labels = list(
-            self.current_class_to_address_dict.keys()
-        )
+        available_class_labels = list(self.current_class_to_address_dict.keys())
         select_classes_for_set = rng.choice(
             available_class_labels,
             size=min(num_classes_per_set, len(available_class_labels)),
@@ -279,9 +271,7 @@ class FewShotClassificationDataset(Dataset):
             )
 
             selected_samples_addresses = [
-                self.current_class_to_address_dict[class_name][
-                    sample_address_idx
-                ]
+                self.current_class_to_address_dict[class_name][sample_address_idx]
                 for sample_address_idx in selected_samples_addresses_idx
             ]
 
@@ -322,8 +312,7 @@ class FewShotClassificationDataset(Dataset):
             shuffled_idx = rng.permutation(len(data_inputs))
 
             data_inputs = [
-                torch.tensor(data_inputs[i]).permute([2, 0, 1])
-                for i in shuffled_idx
+                torch.tensor(data_inputs[i]).permute([2, 0, 1]) for i in shuffled_idx
             ]
 
             data_labels = [torch.tensor(data_labels[i]) for i in shuffled_idx]
@@ -358,19 +347,13 @@ class FewShotClassificationDataset(Dataset):
 
         if self.query_set_input_transform:
             query_set_inputs = torch.stack(
-                [
-                    self.query_set_input_transform(input)
-                    for input in query_set_inputs
-                ],
+                [self.query_set_input_transform(input) for input in query_set_inputs],
                 dim=0,
             )
 
         if self.query_set_target_transform:
             query_set_labels = torch.stack(
-                [
-                    self.query_set_target_transform(label)
-                    for label in query_set_labels
-                ],
+                [self.query_set_target_transform(label) for label in query_set_labels],
                 dim=0,
             )
 
@@ -402,9 +385,7 @@ class FewShotClassificationDataset(Dataset):
         )
 
         label_dict = DottedDict(
-            image=DottedDict(
-                support_set=support_set_labels, query_set=query_set_labels
-            )
+            image=DottedDict(support_set=support_set_labels, query_set=query_set_labels)
         )
 
         return input_dict, label_dict

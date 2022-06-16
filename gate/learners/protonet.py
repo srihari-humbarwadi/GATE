@@ -66,10 +66,7 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
         for modality_name, is_supported in self.modality_config.items():
             if is_supported:
                 input_dummy_x = torch.randn(
-                    [2]
-                    + list(
-                        self.input_shape_dict[modality_name]["shape"].values()
-                    )
+                    [2] + list(self.input_shape_dict[modality_name]["shape"].values())
                 )
                 if self.use_input_instance_norm:
                     if modality_name == "image":
@@ -104,9 +101,9 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
                         ](input_dummy_x)
                         input_dummy_x = input_dummy_x.view(b, s, c, w, h)
 
-                model_features = self.model.forward(
-                    {modality_name: input_dummy_x}
-                )[modality_name]
+                model_features = self.model.forward({modality_name: input_dummy_x})[
+                    modality_name
+                ]
 
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
@@ -148,9 +145,9 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
                         f"{modality_name}_input_adaptor"
                     ](current_input)
 
-                model_features = self.model.forward(
-                    {modality_name: current_input}
-                )[modality_name]
+                model_features = self.model.forward({modality_name: current_input})[
+                    modality_name
+                ]
 
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
@@ -182,11 +179,7 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
 
         num_tasks, num_examples = support_set_inputs.shape[:2]
         support_set_embedding = self.forward(
-            {
-                "image": support_set_inputs.view(
-                    -1, *support_set_inputs.shape[2:]
-                )
-            }
+            {"image": support_set_inputs.view(-1, *support_set_inputs.shape[2:])}
         )["image"].view(num_tasks, num_examples, -1)
 
         num_tasks, num_examples = query_set_inputs.shape[:2]
@@ -210,9 +203,7 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
         opt_loss_list = [computed_task_metrics_dict[f"{phase_name}/loss"]]
 
         with torch.no_grad():
-            computed_task_metrics_dict[
-                f"{phase_name}/accuracy"
-            ] = get_accuracy(
+            computed_task_metrics_dict[f"{phase_name}/accuracy"] = get_accuracy(
                 prototypes, query_set_embedding, query_set_targets
             )
 

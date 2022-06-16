@@ -59,18 +59,14 @@ class TimmImageModel(ModelModule):
         if isinstance(self.input_shape_dict, ShapeConfig):
             self.input_shape_dict = self.input_shape_dict.__dict__
 
-        self.image_shape = list(
-            self.input_shape_dict["image"]["shape"].values()
-        )
+        self.image_shape = list(self.input_shape_dict["image"]["shape"].values())
         self.resnet_image_embedding = timm.create_model(
             self.model_name_to_download, pretrained=self.pretrained
         )
         log.info(self.resnet_image_embedding)
         self.resnet_image_embedding.fc = nn.Identity()  # remove logit layer
 
-        self.resnet_image_embedding.global_pool = (
-            nn.Identity()
-        )  # remove global pool
+        self.resnet_image_embedding.global_pool = nn.Identity()  # remove global pool
 
         if image_input_dummy.shape[1:] != self.image_shape:
             image_input_dummy = F.interpolate(

@@ -5,14 +5,12 @@ from dotted_dict import DottedDict
 
 from gate.base.utils.loggers import get_logger
 from gate.configs.learner import (
-    PrototypicalNetworkEpisodicConfig,
     CosineAnnealingLRConfig,
+    PrototypicalNetworkEpisodicConfig,
 )
-from gate.configs.task.image_classification import (
-    ImageClassificationTaskConfig,
-)
-from gate.learners.protonet import PrototypicalNetworkEpisodicTuningScheme
+from gate.configs.task.image_classification import ImageClassificationTaskConfig
 from gate.learners.GCM import ConditionalGenerativeContrastiveModelling
+from gate.learners.protonet import PrototypicalNetworkEpisodicTuningScheme
 from gate.models.timm_hub import TimmImageModel
 
 log = get_logger(__name__, set_default_handler=True)
@@ -169,9 +167,7 @@ def test_single_layer_fine_tuning(
 
     sample = (dummy_input_set, dummy_label_set)
 
-    output_dict, computed_task_metrics_dict, loss = module.step(
-        sample, batch_idx=0
-    )
+    output_dict, computed_task_metrics_dict, loss = module.step(sample, batch_idx=0)
 
     loss.backward()
 

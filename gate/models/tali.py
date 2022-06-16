@@ -5,10 +5,10 @@ from typing import Optional, Union
 
 import torch
 import torch.nn as nn
-import wandb
 from dotted_dict import DottedDict
 from tali.models.systems import ModusPrime
 
+import wandb
 from gate.base.utils.loggers import get_logger
 from gate.base.utils.model_utils import resize_custom
 from gate.configs.datamodule.base import ShapeConfig
@@ -127,9 +127,7 @@ class TALIModusPrime(ModelModule):
             model_version=model_version,
             project_name=project_name,
         )
-        self.image_shape = list(
-            self.input_shape_dict["image"]["shape"].values()
-        )
+        self.image_shape = list(self.input_shape_dict["image"]["shape"].values())
 
     def build(self, batch_dict: Optional[DottedDict] = None):
 
@@ -137,18 +135,10 @@ class TALIModusPrime(ModelModule):
             checkpoint_path=self.model_path, pretrained=self.pretrained
         )
 
-        self.model.system.modality_embeddings[
-            "image"
-        ].output_layer = nn.Identity()
-        self.model.system.modality_embeddings[
-            "text"
-        ].output_layer = nn.Identity()
-        self.model.system.modality_embeddings[
-            "audio"
-        ].output_layer = nn.Identity()
-        self.model.system.modality_embeddings[
-            "audio"
-        ].output_layer = nn.Identity()
+        self.model.system.modality_embeddings["image"].output_layer = nn.Identity()
+        self.model.system.modality_embeddings["text"].output_layer = nn.Identity()
+        self.model.system.modality_embeddings["audio"].output_layer = nn.Identity()
+        self.model.system.modality_embeddings["audio"].output_layer = nn.Identity()
 
         self.is_built = True
 
@@ -158,9 +148,7 @@ class TALIModusPrime(ModelModule):
         # expects b, c, w, h input_shape
         # print(f"Pre image shape: {x_image.shape}")
         if x_image.shape[1:] != self.image_shape:
-            x_image = resize_custom(
-                x_image, target_image_shape=self.image_shape
-            )
+            x_image = resize_custom(x_image, target_image_shape=self.image_shape)
         # print(f"Post image shape: {x_image.shape}")
         # print(f"Target image shape: {self.image_shape}")
 

@@ -5,7 +5,6 @@ from typing import List, Optional
 import hydra
 import pytorch_lightning
 import torch
-import wandb
 from omegaconf import DictConfig
 from pytorch_lightning import Callback, Trainer, seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -13,6 +12,7 @@ from pytorch_lightning.tuner.tuning import Tuner
 from rich.traceback import install
 from wandb.util import generate_id
 
+import wandb
 from gate.base.utils.loggers import get_logger
 from gate.base.utils.rank_zero_ops import generate_config_tree, print_config
 from gate.datamodules.base import DataModule
@@ -33,9 +33,7 @@ def checkpoint_setup(config):
         if not pathlib.Path(f"{config.current_experiment_dir}").exists():
             os.makedirs(f"{config.current_experiment_dir}", exist_ok=True)
 
-        checkpoint_path = (
-            f"{config.current_experiment_dir}/checkpoints/last.ckpt"
-        )
+        checkpoint_path = f"{config.current_experiment_dir}/checkpoints/last.ckpt"
 
         if not pathlib.Path(checkpoint_path).exists():
             checkpoint_path = None
@@ -104,9 +102,7 @@ def train_eval(config: DictConfig):
         if isinstance(value, torch.Tensor)
     }
 
-    data_shape_tree = generate_config_tree(
-        dummy_data_device_dict, resolve=True
-    )
+    data_shape_tree = generate_config_tree(dummy_data_device_dict, resolve=True)
 
     log.info(f"Data shape description: {data_shape_tree}")
     _ = train_eval_agent.forward(x_dummy_data_dict)
@@ -213,16 +209,12 @@ def train_eval(config: DictConfig):
             f"results 🚨"
         )
         for logger_instance in logger:
-            if isinstance(
-                logger_instance, pytorch_lightning.loggers.wandb.WandbLogger
-            ):
+            if isinstance(logger_instance, pytorch_lightning.loggers.wandb.WandbLogger):
                 wandb.log(test_results[0], step=0)
     # Make sure everything closed properly
     log.info("Finalizing! 😺")
     # Print path to best checkpoint
     if not config.trainer.get("fast_dev_run"):
-        log.info(
-            f"Best model ckpt at {trainer.checkpoint_callback.best_model_path}"
-        )
+        log.info(f"Best model ckpt at {trainer.checkpoint_callback.best_model_path}")
 
     wandb.finish(quiet=False)

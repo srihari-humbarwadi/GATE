@@ -14,9 +14,7 @@ log = get_logger(
 )
 
 
-class GermanTrafficSignsFewShotClassificationDataset(
-    FewShotClassificationDatasetTFDS
-):
+class GermanTrafficSignsFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
     def __init__(
         self,
         dataset_root: Union[str, pathlib.Path],
@@ -38,14 +36,11 @@ class GermanTrafficSignsFewShotClassificationDataset(
     ):
         DATASET_NAME = "visual_domain_decathlon/gtsrb"
         split_counts = {
-            key: len(value)
-            for key, value in data_splits_dict["traffic_signs"].items()
+            key: len(value) for key, value in data_splits_dict["traffic_signs"].items()
         }
         super(GermanTrafficSignsFewShotClassificationDataset, self).__init__(
             modality_config=DottedDict(image=True),
-            input_shape_dict=DottedDict(
-                image=dict(channels=3, height=84, width=84)
-            ),
+            input_shape_dict=DottedDict(image=dict(channels=3, height=84, width=84)),
             dataset_name=DATASET_NAME,
             dataset_root=dataset_root,
             split_name=split_name,
@@ -72,9 +67,7 @@ class GermanTrafficSignsFewShotClassificationDataset(
                 FewShotSuperSplitSetOptions.TEST: split_counts["test"],
             },
             split_config=data_splits_dict["traffic_signs"],
-            label_extractor_fn=lambda x: str(
-                int(bytes_to_string(x).split("/")[-2])
-            ),
+            label_extractor_fn=lambda x: str(int(bytes_to_string(x).split("/")[-2])),
             subset_split_name_list=["train", "validation"],
             min_num_classes_per_set=min_num_classes_per_set,
             min_num_samples_per_class=min_num_samples_per_class,

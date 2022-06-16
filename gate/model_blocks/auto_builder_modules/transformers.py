@@ -40,9 +40,7 @@ class FCCNetwork(nn.Module):
                 out_features=self.num_hidden_features,
                 bias=True,
             )
-            out = self.activation_fn(
-                self.layer_dict[f"fcc_layer_{i}"].forward(out)
-            )
+            out = self.activation_fn(self.layer_dict[f"fcc_layer_{i}"].forward(out))
 
         self.layer_dict["fcc_layer_output"] = nn.Linear(
             in_features=out.shape[1],
@@ -67,9 +65,7 @@ class FCCNetwork(nn.Module):
         out = x
 
         for i in range(self.num_hidden_layers):
-            out = self.activation_fn(
-                self.layer_dict[f"fcc_layer_{i}"].forward(out)
-            )
+            out = self.activation_fn(self.layer_dict[f"fcc_layer_{i}"].forward(out))
 
         out = self.layer_dict["fcc_layer_output"].forward(out)
 
@@ -143,9 +139,7 @@ class Conv2DTransformer(nn.Module):
         # b, c, h, w
         logging.debug(f"{out.shape}")
 
-        self.layer_dict["stem_layer_normalization"] = nn.LayerNorm(
-            out.shape[1]
-        )
+        self.layer_dict["stem_layer_normalization"] = nn.LayerNorm(out.shape[1])
 
         out = self.layer_dict["stem_layer_normalization"].forward(out)
         logging.debug(f"{out.shape}")
@@ -185,9 +179,7 @@ class Conv2DTransformer(nn.Module):
         logging.debug(f"{positional_embeddings.shape} {out.shape}")
         out = torch.cat([out, positional_embeddings], dim=2)
 
-        self.layer_dict[
-            "transformer_encoder_layer"
-        ] = nn.TransformerEncoderLayer(
+        self.layer_dict["transformer_encoder_layer"] = nn.TransformerEncoderLayer(
             d_model=self.transformer_num_filters,
             dim_feedforward=self.transformer_dim_feedforward,
             nhead=self.transformer_num_heads,
@@ -304,9 +296,7 @@ class Conv1DTransformer(nn.Module):
 
         self.layer_dict = nn.ModuleDict()
 
-        out = rearrange(
-            out, "b f (h h1) -> (b h) (h1 f)", h1=self.grid_patch_size
-        )
+        out = rearrange(out, "b f (h h1) -> (b h) (h1 f)", h1=self.grid_patch_size)
 
         num_patches = out.shape[0] / dummy_x.shape[0]
 
@@ -319,9 +309,7 @@ class Conv1DTransformer(nn.Module):
         out = self.layer_dict["stem_linear"].forward(out)
         # b, c, h, w
 
-        self.layer_dict["stem_layer_normalization"] = nn.LayerNorm(
-            out.shape[1]
-        )
+        self.layer_dict["stem_layer_normalization"] = nn.LayerNorm(out.shape[1])
 
         out = self.layer_dict["stem_layer_normalization"].forward(out)
 
@@ -355,9 +343,7 @@ class Conv1DTransformer(nn.Module):
         )
         out = torch.cat([out, positional_embeddings], dim=2)
 
-        self.layer_dict[
-            "transformer_encoder_layer"
-        ] = nn.TransformerEncoderLayer(
+        self.layer_dict["transformer_encoder_layer"] = nn.TransformerEncoderLayer(
             d_model=self.transformer_num_filters,
             dim_feedforward=self.transformer_dim_feedforward,
             nhead=self.transformer_num_heads,
@@ -395,9 +381,7 @@ class Conv1DTransformer(nn.Module):
 
         out = x
 
-        out = rearrange(
-            out, "b f (h h1) -> (b h) (h1 f)", h1=self.grid_patch_size
-        )
+        out = rearrange(out, "b f (h h1) -> (b h) (h1 f)", h1=self.grid_patch_size)
 
         num_patches = out.shape[0] / x.shape[0]
 
@@ -495,9 +479,7 @@ class TexTransformer(nn.Module):
         )
         out = torch.cat([out, positional_embeddings], dim=2)
 
-        self.layer_dict[
-            "transformer_encoder_layer"
-        ] = nn.TransformerEncoderLayer(
+        self.layer_dict["transformer_encoder_layer"] = nn.TransformerEncoderLayer(
             d_model=self.transformer_num_filters * 2,
             dim_feedforward=self.transformer_dim_feedforward,
             nhead=self.transformer_num_heads,
@@ -573,9 +555,7 @@ class VideoTransformer(nn.Module):
     def build(self, input_shape):
         dummy_x = torch.zeros(input_shape)
 
-        out = dummy_x.view(
-            -1, dummy_x.shape[-3], dummy_x.shape[-2], dummy_x.shape[-1]
-        )
+        out = dummy_x.view(-1, dummy_x.shape[-3], dummy_x.shape[-2], dummy_x.shape[-1])
 
         out, _ = self.image_embedding(out)
 
@@ -609,9 +589,7 @@ class VideoTransformer(nn.Module):
         )
         out = out + positional_embeddings
 
-        self.layer_dict[
-            "transformer_encoder_layer"
-        ] = nn.TransformerEncoderLayer(
+        self.layer_dict["transformer_encoder_layer"] = nn.TransformerEncoderLayer(
             d_model=self.transformer_num_filters,
             dim_feedforward=self.transformer_dim_feedforward,
             nhead=self.transformer_num_heads,
@@ -711,9 +689,7 @@ class VisionTransformer(nn.Module):
             self.build(x.shape)
 
         x = self.conv1(x)  # shape = [*, width, grid, grid]
-        x = x.reshape(
-            x.shape[0], x.shape[1], -1
-        )  # shape = [*, width, grid ** 2]
+        x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
         x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
         x = torch.cat(
             [

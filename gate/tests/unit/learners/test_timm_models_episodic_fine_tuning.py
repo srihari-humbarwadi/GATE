@@ -10,12 +10,8 @@ from gate.configs.learner import (
     EpisodicFullModelFineTuningSchemeConfig,
     EpisodicPrototypicalNetworkConfig,
 )
-from gate.configs.learner.learning_rate_scheduler_config import (
-    BiLevelLRSchedulerConfig,
-)
-from gate.configs.task.image_classification import (
-    ImageClassificationTaskConfig,
-)
+from gate.configs.learner.learning_rate_scheduler_config import BiLevelLRSchedulerConfig
+from gate.configs.task.image_classification import ImageClassificationTaskConfig
 from gate.models.timm_hub import TimmImageModel
 
 log = get_logger(__name__, set_default_handler=True)

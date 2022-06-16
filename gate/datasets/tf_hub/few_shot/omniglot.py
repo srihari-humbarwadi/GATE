@@ -36,9 +36,7 @@ class OmniglotFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
     ):
         super(OmniglotFewShotClassificationDataset, self).__init__(
             modality_config=DottedDict(image=True),
-            input_shape_dict=DottedDict(
-                image=dict(channels=3, height=105, width=105)
-            ),
+            input_shape_dict=DottedDict(image=dict(channels=3, height=105, width=105)),
             dataset_name="omniglot",
             dataset_root=dataset_root,
             split_name=split_name,

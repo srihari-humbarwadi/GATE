@@ -23,9 +23,7 @@ class FewShotDataModule(DataModule):
         eval_num_episodes: int,
     ):
 
-        super(FewShotDataModule, self).__init__(
-            dataset_config, data_loader_config
-        )
+        super(FewShotDataModule, self).__init__(dataset_config, data_loader_config)
 
         self.data_loader_config = data_loader_config
 
@@ -148,11 +146,7 @@ class FewShotDataModule(DataModule):
                     self.input_shape_dict["image"]["height"],
                 )
             },
-            {
-                "image": torch.randint(
-                    0, self.dataset_config.num_classes_per_set, (32,)
-                )
-            },
+            {"image": torch.randint(0, self.dataset_config.num_classes_per_set, (32,))},
         )
 
     def train_dataloader(self):

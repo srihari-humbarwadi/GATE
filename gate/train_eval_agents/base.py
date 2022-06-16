@@ -72,14 +72,10 @@ class TrainingEvaluationAgent(LightningModule):
         )
 
         output_dict = self.learner.forward(dummy_batch_dict)
-        get_dict_shapes = lambda x: {
-            key: value.shape for key, value in x.items()
-        }
+        get_dict_shapes = lambda x: {key: value.shape for key, value in x.items()}
 
         output_shape_dict = {
-            name: get_dict_shapes(value)
-            if isinstance(value, Dict)
-            else value.shape
+            name: get_dict_shapes(value) if isinstance(value, Dict) else value.shape
             for name, value in output_dict.items()
         }
 

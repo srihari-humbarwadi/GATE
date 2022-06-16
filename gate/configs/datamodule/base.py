@@ -10,7 +10,6 @@ from typing import Any, Dict, Optional
 # data loader configs
 from gate.configs.string_variables import BATCH_SIZE
 
-
 # ------------------------------------------------------------------------------
 # Config rules:
 

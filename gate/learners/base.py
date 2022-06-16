@@ -96,18 +96,14 @@ class LearnerModule(nn.Module):
 
         del self.lr_scheduler_config.batch_size
         del self.lr_scheduler_config.num_train_samples
-        learning_scheduler_update_interval = (
-            self.lr_scheduler_config.update_interval
-        )
+        learning_scheduler_update_interval = self.lr_scheduler_config.update_interval
         del self.lr_scheduler_config.update_interval
 
         lr_scheduler = hydra.utils.instantiate(
             config=self.lr_scheduler_config, optimizer=self.optimizer
         )
 
-        if isinstance(
-            lr_scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau
-        ):
+        if isinstance(lr_scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
             self.lr_scheduler_step_manual_mode()
             self.lr_scheduler = lr_scheduler
 
@@ -118,9 +114,7 @@ class LearnerModule(nn.Module):
                 "interval": learning_scheduler_update_interval,
             }
 
-        log.info(
-            f"\noptimizer: {self.optimizer} \n" f"lr_scheduler: {lr_scheduler}"
-        )
+        log.info(f"\noptimizer: {self.optimizer} \n" f"lr_scheduler: {lr_scheduler}")
 
         return self.optimizer_dict
 

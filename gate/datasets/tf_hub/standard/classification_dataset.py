@@ -1,11 +1,11 @@
 import pathlib
+from typing import Any, Callable, Dict, Optional, Union
 
 import hydra
 import tensorflow_datasets as tfds
 import torch
 from omegaconf import DictConfig
 from torch.utils.data import Dataset
-from typing import Callable, Optional, Union, Dict, Any
 
 from gate.base.utils.loggers import get_logger
 

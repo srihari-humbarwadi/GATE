@@ -307,16 +307,12 @@ class DTDQuerySetTransformConfig(TransformConfig):
 
 @dataclass
 class GermanTrafficSignsSupportSetTransformConfig(TransformConfig):
-    _target_: Any = get_module_import_path(
-        german_traffic_signs_support_set_transforms
-    )
+    _target_: Any = get_module_import_path(german_traffic_signs_support_set_transforms)
 
 
 @dataclass
 class GermanTrafficSignsQuerySetTransformConfig(TransformConfig):
-    _target_: Any = get_module_import_path(
-        german_traffic_signs_query_set_transforms
-    )
+    _target_: Any = get_module_import_path(german_traffic_signs_query_set_transforms)
 
 
 @dataclass

@@ -24,6 +24,4 @@ class AdamOptimizerConfig(BaseOptimizerConfig):
 @dataclass
 class BiLevelOptimizerConfig:
     outer_loop_optimizer_config: BaseOptimizerConfig = AdamOptimizerConfig()
-    inner_loop_optimizer_config: BaseOptimizerConfig = AdamOptimizerConfig(
-        lr=2e-5
-    )
+    inner_loop_optimizer_config: BaseOptimizerConfig = AdamOptimizerConfig(lr=2e-5)

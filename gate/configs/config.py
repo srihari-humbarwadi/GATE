@@ -50,9 +50,7 @@ OmegaConf.register_new_resolver("last_bit", lambda x: x.split(".")[-1])
 OmegaConf.register_new_resolver("lower", lambda x: x.lower())
 OmegaConf.register_new_resolver(
     "remove_redundant_words",
-    lambda x: x.replace("scheme", "")
-    .replace("module", "")
-    .replace("config", ""),
+    lambda x: x.replace("scheme", "").replace("module", "").replace("config", ""),
 )
 
 
@@ -84,7 +82,7 @@ class Config:
     test_after_training: bool = True
 
     batch_size: Optional[int] = None
-    # seed for random number generators in pytorch, numpy and python.random
+    # seed for random number generators in learn2learn_hub, numpy and python.random
     seed: int = 0
     num_train_samples: int = 25000
     # top level argument that sets all the downstream configs to run an

@@ -2421,9 +2421,7 @@ data_splits_dict = {
         set_name: ListConfig([str(item.lower()) for item in set_data_list])
         for set_name, set_data_list in aircraft.items()
     },
-    "caltech_birds2011": map_names_to_expected_names(
-        caltech_birds2011, split_index=1
-    ),
+    "caltech_birds2011": map_names_to_expected_names(caltech_birds2011, split_index=1),
     "dtd": dtd,
     "fungi": fungi,
     "mscoco": mscoco,

@@ -70,9 +70,7 @@ def test_clip_models(
         "text": torch.randint(0, 100, size=[4, 77]).long().to(device),
     }
 
-    log.info(
-        f"dummy_x.shape: {dummy_x['image'].shape} {dummy_x['text'].shape}"
-    )
+    log.info(f"dummy_x.shape: {dummy_x['image'].shape} {dummy_x['text'].shape}")
     out = model.forward(dummy_x)
     log.debug(model)
 

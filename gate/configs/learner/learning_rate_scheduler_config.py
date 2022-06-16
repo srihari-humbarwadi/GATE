@@ -7,10 +7,7 @@ from torch.optim.lr_scheduler import (
 )
 
 from gate.configs import get_module_import_path
-from gate.configs.string_variables import (
-    BATCH_SIZE,
-    MaxDurationTypes,
-)
+from gate.configs.string_variables import BATCH_SIZE, MaxDurationTypes
 
 
 @dataclass
@@ -59,9 +56,5 @@ class ReduceLROnPlateauConfig(LRSchedulerConfig):
 
 @dataclass
 class BiLevelLRSchedulerConfig:
-    inner_loop_lr_scheduler_config: LRSchedulerConfig = (
-        CosineAnnealingLRConfig()
-    )
-    outer_loop_lr_scheduler_config: LRSchedulerConfig = (
-        CosineAnnealingLRConfig()
-    )
+    inner_loop_lr_scheduler_config: LRSchedulerConfig = CosineAnnealingLRConfig()
+    outer_loop_lr_scheduler_config: LRSchedulerConfig = CosineAnnealingLRConfig()

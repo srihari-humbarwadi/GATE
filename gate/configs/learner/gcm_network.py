@@ -1,4 +1,4 @@
-from dataclasses import dataclass, MISSING
+from dataclasses import MISSING, dataclass
 
 from gate.configs import get_module_import_path
 from gate.configs.learner.learning_rate_scheduler_config import (
@@ -7,17 +7,15 @@ from gate.configs.learner.learning_rate_scheduler_config import (
 )
 from gate.configs.learner.linear_layer_fine_tuning import LearnerConfig
 from gate.configs.learner.optimizer_config import (
-    BaseOptimizerConfig,
     AdamOptimizerConfig,
+    BaseOptimizerConfig,
 )
 from gate.learners.GCM import ConditionalGenerativeContrastiveModelling
 
 
 @dataclass
 class ConditionalGenerativeContrastiveModellingConfig(LearnerConfig):
-    _target_: str = get_module_import_path(
-        ConditionalGenerativeContrastiveModelling
-    )
+    _target_: str = get_module_import_path(ConditionalGenerativeContrastiveModelling)
     fine_tune_all_layers: bool = True
     use_input_instance_norm: bool = True
     head_num_layers: int = 3

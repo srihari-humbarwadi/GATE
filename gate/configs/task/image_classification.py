@@ -7,7 +7,6 @@ from omegaconf import DictConfig
 from gate.configs import get_module_import_path
 from gate.tasks.standard_classification import ImageClassificationTaskModule
 
-
 # ------------------------------------------------------------------------------
 # task configs
 

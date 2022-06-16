@@ -58,8 +58,8 @@ class FewShotDataModuleConfig:
 
 @dataclass
 class OmniglotFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: OmniglotFewShotDatasetConfig = (
-        OmniglotFewShotDatasetConfig(dataset_root=DATASET_DIR)
+    dataset_config: OmniglotFewShotDatasetConfig = OmniglotFewShotDatasetConfig(
+        dataset_root=DATASET_DIR
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
     transform_train: Any = FewShotTransformConfig(
@@ -91,8 +91,8 @@ class CUB200FewShotDataModuleConfig(FewShotDataModuleConfig):
 
 @dataclass
 class AircraftFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: AircraftFewShotDatasetConfig = (
-        AircraftFewShotDatasetConfig(dataset_root=DATASET_DIR)
+    dataset_config: AircraftFewShotDatasetConfig = AircraftFewShotDatasetConfig(
+        dataset_root=DATASET_DIR
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
     transform_train: Any = FewShotTransformConfig(
@@ -139,8 +139,8 @@ class GermanTrafficSignsFewShotDataModuleConfig(FewShotDataModuleConfig):
 
 @dataclass
 class QuickDrawFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: QuickDrawFewShotDatasetConfig = (
-        QuickDrawFewShotDatasetConfig(dataset_root=DATASET_DIR)
+    dataset_config: QuickDrawFewShotDatasetConfig = QuickDrawFewShotDatasetConfig(
+        dataset_root=DATASET_DIR
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
     transform_train: Any = FewShotTransformConfig(
@@ -155,8 +155,8 @@ class QuickDrawFewShotDataModuleConfig(FewShotDataModuleConfig):
 
 @dataclass
 class VGGFlowersFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: VGGFlowersFewShotDatasetConfig = (
-        VGGFlowersFewShotDatasetConfig(dataset_root=DATASET_DIR)
+    dataset_config: VGGFlowersFewShotDatasetConfig = VGGFlowersFewShotDatasetConfig(
+        dataset_root=DATASET_DIR
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
     transform_train: Any = FewShotTransformConfig(

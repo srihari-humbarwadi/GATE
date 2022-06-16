@@ -9,9 +9,7 @@ from gate.configs.learner import (
     CosineAnnealingLRConfig,
     EpisodicPrototypicalNetworkConfig,
 )
-from gate.configs.task.image_classification import (
-    ImageClassificationTaskConfig,
-)
+from gate.configs.task.image_classification import ImageClassificationTaskConfig
 from gate.models.timm_hub import TimmImageModel
 
 log = get_logger(__name__, set_default_handler=True)
@@ -167,9 +165,7 @@ def test_single_layer_fine_tuning(
 
     sample = (dummy_input_set, dummy_label_set)
 
-    output_dict, computed_task_metrics_dict, loss = module.step(
-        sample, batch_idx=0
-    )
+    output_dict, computed_task_metrics_dict, loss = module.step(sample, batch_idx=0)
 
     loss.backward()
 

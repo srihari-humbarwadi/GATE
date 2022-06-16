@@ -64,9 +64,7 @@ class DTDFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
         DATASET_NAME = "dtd"
         super(DTDFewShotClassificationDataset, self).__init__(
             modality_config=DottedDict(image=True),
-            input_shape_dict=DottedDict(
-                image=dict(channels=3, height=84, width=84)
-            ),
+            input_shape_dict=DottedDict(image=dict(channels=3, height=84, width=84)),
             dataset_name=DATASET_NAME,
             dataset_root=dataset_root,
             split_name=split_name,

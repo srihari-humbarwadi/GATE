@@ -18,8 +18,7 @@ def learning_scheduler_smart_autofill(
         if "T_max" not in lr_scheduler_config:
             lr_scheduler_config["T_max"] = num_train_samples / batch_size
     elif (
-        lr_scheduler_config["_target_"].split(".")[-1]
-        == "CosineAnnealingWarmRestarts"
+        lr_scheduler_config["_target_"].split(".")[-1] == "CosineAnnealingWarmRestarts"
     ):
         if "T_0" not in lr_scheduler_config:
             lr_scheduler_config["T_0"] = num_train_samples / batch_size // 2
@@ -75,9 +74,7 @@ def get_prototypes(embeddings, targets, num_classes):
     num_samples.unsqueeze_(-1)
     num_samples = torch.max(num_samples, torch.ones_like(num_samples))
 
-    prototypes = embeddings.new_zeros(
-        (batch_size, num_classes, embedding_size)
-    )
+    prototypes = embeddings.new_zeros((batch_size, num_classes, embedding_size))
     indices = targets.unsqueeze(-1).expand_as(embeddings)
     prototypes.scatter_add_(1, indices, embeddings).div_(num_samples)
 
@@ -173,15 +170,13 @@ def inner_gaussian_product(means, precisions, targets, num_classes):
 
     # NOTE: If this approach doesn't work well, try first normalising precisions by number of samples with:
     # precisions.div_(num_samples)
-    product_precision = precisions.new_zeros(
-        (batch_size, num_classes, embedding_size)
-    )
+    product_precision = precisions.new_zeros((batch_size, num_classes, embedding_size))
     product_precision.scatter_add_(1, indices, precisions)
 
     product_mean = means.new_zeros((batch_size, num_classes, embedding_size))
-    product_mean = torch.reciprocal(
-        product_precision
-    ) * product_mean.scatter_add_(1, indices, precisions * means)
+    product_mean = torch.reciprocal(product_precision) * product_mean.scatter_add_(
+        1, indices, precisions * means
+    )
 
     product_normalisation_exponent = means.new_zeros(
         (batch_size, num_classes, embedding_size)
@@ -201,9 +196,7 @@ def inner_gaussian_product(means, precisions, targets, num_classes):
         * torch.log(torch.ones_like(num_samples) * (2 * math.pi))
         + 0.5
         * (
-            log_product_normalisation.scatter_add_(
-                1, indices, torch.log(precisions)
-            )
+            log_product_normalisation.scatter_add_(1, indices, torch.log(precisions))
             - torch.log(product_precision)
         )
         + product_normalisation_exponent
@@ -277,9 +270,7 @@ def outer_gaussian_product(x_mean, x_precision, y_mean, y_precision):
     )
     log_product_normalisation = (
         -0.5
-        * torch.log(
-            torch.ones_like(product_normalisation_exponent) * (2 * math.pi)
-        )
+        * torch.log(torch.ones_like(product_normalisation_exponent) * (2 * math.pi))
         + 0.5
         * (
             torch.log(x_precision)
@@ -326,15 +317,13 @@ def inner_gaussian_product(means, precisions, targets, num_classes):
 
     # NOTE: If this approach doesn't work well, try first normalising precisions by number of samples with:
     # precisions.div_(num_samples)
-    product_precision = precisions.new_zeros(
-        (batch_size, num_classes, embedding_size)
-    )
+    product_precision = precisions.new_zeros((batch_size, num_classes, embedding_size))
     product_precision.scatter_add_(1, indices, precisions)
 
     product_mean = means.new_zeros((batch_size, num_classes, embedding_size))
-    product_mean = torch.reciprocal(
-        product_precision
-    ) * product_mean.scatter_add_(1, indices, precisions * means)
+    product_mean = torch.reciprocal(product_precision) * product_mean.scatter_add_(
+        1, indices, precisions * means
+    )
 
     product_normalisation_exponent = means.new_zeros(
         (batch_size, num_classes, embedding_size)
@@ -354,9 +343,7 @@ def inner_gaussian_product(means, precisions, targets, num_classes):
         * torch.log(torch.ones_like(num_samples) * (2 * math.pi))
         + 0.5
         * (
-            log_product_normalisation.scatter_add_(
-                1, indices, torch.log(precisions)
-            )
+            log_product_normalisation.scatter_add_(1, indices, torch.log(precisions))
             - torch.log(product_precision)
         )
         + product_normalisation_exponent
@@ -430,9 +417,7 @@ def outer_gaussian_product(x_mean, x_precision, y_mean, y_precision):
     )
     log_product_normalisation = (
         -0.5
-        * torch.log(
-            torch.ones_like(product_normalisation_exponent) * (2 * math.pi)
-        )
+        * torch.log(torch.ones_like(product_normalisation_exponent) * (2 * math.pi))
         + 0.5
         * (
             torch.log(x_precision)
