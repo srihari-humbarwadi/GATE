@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 
 import torch
 from dotted_dict import DottedDict
@@ -72,9 +72,17 @@ class TrainingEvaluationAgent(LightningModule):
         )
 
         output_dict = self.learner.forward(dummy_batch_dict)
-        output_shape_dict = {
-            name: value.shape for name, value in output_dict.items()
+        get_dict_shapes = lambda x: {
+            key: value.shape for key, value in x.items()
         }
+
+        output_shape_dict = {
+            name: get_dict_shapes(value)
+            if isinstance(value, Dict)
+            else value.shape
+            for name, value in output_dict.items()
+        }
+
         log.info(
             f"Built {self.__class__.__name__} "
             f"with {self.base_model.__class__.__name__} "

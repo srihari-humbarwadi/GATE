@@ -43,7 +43,7 @@ class FewShotDatasetConfig:
     num_episodes: int = 600
     min_num_classes_per_set: int = 5
     min_num_samples_per_class: int = 2
-    num_classes_per_set: int = 20  # n_way
+    num_classes_per_set: int = 25  # n_way
     num_samples_per_class: int = 10  # n_shot
     variable_num_samples_per_class: bool = True
     variable_num_classes_per_set: bool = True
@@ -62,9 +62,7 @@ class OmniglotFewShotDatasetConfig(FewShotDatasetConfig):
     Class for configuring a few shot dataset
     """
 
-    _target_: Any = get_module_import_path(
-        OmniglotFewShotClassificationDataset
-    )
+    _target_: Any = get_module_import_path(OmniglotFewShotClassificationDataset)
 
 
 @dataclass
@@ -82,9 +80,7 @@ class AircraftFewShotDatasetConfig(FewShotDatasetConfig):
     Class for configuring a few shot dataset
     """
 
-    _target_: Any = get_module_import_path(
-        AircraftFewShotClassificationDataset
-    )
+    _target_: Any = get_module_import_path(AircraftFewShotClassificationDataset)
 
 
 @dataclass
@@ -113,9 +109,7 @@ class VGGFlowersFewShotDatasetConfig(FewShotDatasetConfig):
     Class for configuring a few shot dataset
     """
 
-    _target_: Any = get_module_import_path(
-        VGGFlowersFewShotClassificationDataset
-    )
+    _target_: Any = get_module_import_path(VGGFlowersFewShotClassificationDataset)
 
 
 @dataclass
@@ -124,9 +118,7 @@ class QuickDrawFewShotDatasetConfig(FewShotDatasetConfig):
     Class for configuring a few shot dataset
     """
 
-    _target_: Any = get_module_import_path(
-        QuickDrawFewShotClassificationDataset
-    )
+    _target_: Any = get_module_import_path(QuickDrawFewShotClassificationDataset)
 
 
 @dataclass

@@ -15,6 +15,7 @@ from .linear_layer_fine_tuning import (
 )
 from .optimizer_config import AdamOptimizerConfig, BiLevelOptimizerConfig
 from .prototypical_network import EpisodicPrototypicalNetworkConfig
+from .gcm_network import ConditionalGenerativeContrastiveModellingConfig
 
 LEARNING_RATE_SCHEDULER_CONFIGS = "learner/learning_rate_scheduler"
 LEARNER_CONFIGS = "learner"
@@ -96,6 +97,12 @@ def add_learner_configs(config_store: ConfigStore):
         group=LEARNER_CONFIGS,
         name="EpisodicFullModelFineTuning",
         node=EpisodicFullModelFineTuningSchemeConfig,
+    )
+
+    config_store.store(
+        group=LEARNER_CONFIGS,
+        name="ConditionalGenerativeContrastiveModelling",
+        node=ConditionalGenerativeContrastiveModellingConfig,
     )
 
     return config_store

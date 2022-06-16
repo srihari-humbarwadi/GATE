@@ -86,7 +86,9 @@ class Config:
     batch_size: Optional[int] = None
     # seed for random number generators in pytorch, numpy and python.random
     seed: int = 0
-    num_train_samples: int = 50000
+    num_train_samples: int = 25000
+    # top level argument that sets all the downstream configs to run an
+    # experiment on this many iterations
 
     # path to original working directory
     # hydra hijacks working directory by changing it to the new log directory

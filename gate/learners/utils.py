@@ -1,3 +1,5 @@
+import math
+
 import torch
 import torch.nn.functional as F
 
@@ -134,3 +136,309 @@ def get_accuracy(prototypes, embeddings, targets):
     )
     _, predictions = torch.min(sq_distances, dim=-1)
     return torch.mean(predictions.eq(targets).float())
+
+
+def inner_gaussian_product(means, precisions, targets, num_classes):
+    """Compute the product of n Gaussians for each class (where n can vary by class) from their means and precisions.
+    Parameters
+    ----------
+    means : `torch.FloatTensor` instance
+        A tensor containing the means of the Gaussian embeddings. This tensor has shape
+        `(batch_size, num_examples, embedding_size)`.
+    precisions : `torch.FloatTensor` instance
+        A tensor containing the precisions of the Gaussian embeddings. This tensor has shape
+        `(batch_size, num_examples, embedding_size)`.
+    Returns
+    -------
+    product_mean : `torch.FloatTensor` instance
+        A tensor containing the mean of the resulting product Gaussian. This tensor has shape
+        `(batch_size, num_classes, embedding_size)`.
+    product_precision : `torch.FloatTensor` instance
+        A tensor containing the precision of resulting product Gaussians. This tensor has shape
+        `(batch_size, num_classes, embedding_size)`.
+    log_product_normalisation: `torch.FloatTensor` instance
+        A tensor containing the log of the normalisation of resulting product Gaussians. This tensor has shape
+        `(batch_size, num_classes)`.
+    """
+    assert means.shape == precisions.shape
+    batch_size, num_examples, embedding_size = means.shape
+
+    num_samples = get_num_samples(targets, num_classes, dtype=means.dtype)
+    num_samples.unsqueeze_(-1)
+    num_samples = torch.max(
+        num_samples, torch.ones_like(num_samples)
+    )  # Backup for testing only, always >= 1-shot in practice
+
+    indices = targets.unsqueeze(-1).expand_as(means)
+
+    # NOTE: If this approach doesn't work well, try first normalising precisions by number of samples with:
+    # precisions.div_(num_samples)
+    product_precision = precisions.new_zeros(
+        (batch_size, num_classes, embedding_size)
+    )
+    product_precision.scatter_add_(1, indices, precisions)
+
+    product_mean = means.new_zeros((batch_size, num_classes, embedding_size))
+    product_mean = torch.reciprocal(
+        product_precision
+    ) * product_mean.scatter_add_(1, indices, precisions * means)
+
+    product_normalisation_exponent = means.new_zeros(
+        (batch_size, num_classes, embedding_size)
+    )
+    product_normalisation_exponent = 0.5 * (
+        product_precision * torch.square(product_mean)
+        - product_normalisation_exponent.scatter_add_(
+            1, indices, precisions * torch.square(means)
+        )
+    )
+
+    log_product_normalisation = means.new_zeros(
+        (batch_size, num_classes, embedding_size)
+    )
+    log_product_normalisation = (
+        (0.5 * (1 - num_samples))
+        * torch.log(torch.ones_like(num_samples) * (2 * math.pi))
+        + 0.5
+        * (
+            log_product_normalisation.scatter_add_(
+                1, indices, torch.log(precisions)
+            )
+            - torch.log(product_precision)
+        )
+        + product_normalisation_exponent
+    )
+
+    log_product_normalisation = log_product_normalisation.sum(dim=-1)
+
+    return (
+        product_mean,
+        product_precision,
+        log_product_normalisation,
+    )
+
+
+def outer_gaussian_product(x_mean, x_precision, y_mean, y_precision):
+    """
+    Computes all Gaussian product pairs between Gaussian x and y.
+    Args:
+        x_mean : `torch.FloatTensor` instance
+            A tensor containing the means of the query Gaussians. This tensor has shape
+            `(batch_size, num_query_examples, embedding_size)`.
+        x_precision : `torch.FloatTensor` instance
+            A tensor containing the precisions of the query Gaussians. This tensor has shape
+            `(batch_size, num_query_examples, embedding_size)`.
+        y_mean : `torch.FloatTensor` instance
+            A tensor containing the means of the proto Gaussians. This tensor has shape
+            `(batch_size, num_classes, embedding_size)`.
+        y_precision : `torch.FloatTensor` instance
+            A tensor containing the precisions of the proto Gaussians. This tensor has shape
+            `(batch_size, num_classes, embedding_size)`.
+    Returns:
+    product_mean : `torch.FloatTensor` instance
+        A tensor containing the mean of the resulting product Gaussian. This tensor has shape
+        `(batch_size, num_classes, num_query_examples, embedding_size)`.
+    product_precision : `torch.FloatTensor` instance
+        A tensor containing the precision of resulting product Gaussians. This tensor has shape
+        `(batch_size, num_classes, num_query_examples, embedding_size)`.
+    log_product_normalisation: `torch.FloatTensor` instance
+        A tensor containing the log of the normalisation of resulting product Gaussians. This tensor has shape
+        `(batch_size, num_classes, num_query_examples)`.
+    """
+
+    assert x_mean.shape == x_precision.shape
+    assert y_mean.shape == y_precision.shape
+    (batch_size, num_query_examples, embedding_size) = x_mean.shape
+    num_classes = y_mean.size(1)
+    assert x_mean.size(0) == y_mean.size(0)
+    assert x_mean.size(2) == y_mean.size(2)
+
+    x_mean = x_mean.unsqueeze(1).expand(
+        batch_size, num_classes, num_query_examples, embedding_size
+    )
+    x_precision = x_precision.unsqueeze(1).expand(
+        batch_size, num_classes, num_query_examples, embedding_size
+    )
+    y_mean = y_mean.unsqueeze(2).expand(
+        batch_size, num_classes, num_query_examples, embedding_size
+    )
+    y_precision = y_precision.unsqueeze(2).expand(
+        batch_size, num_classes, num_query_examples, embedding_size
+    )
+
+    product_precision = x_precision + y_precision
+    product_mean = torch.reciprocal(product_precision) * (
+        x_precision * x_mean + y_precision * y_mean
+    )
+    product_normalisation_exponent = 0.5 * (
+        product_precision * torch.square(product_mean)
+        - x_precision * torch.square(x_mean)
+        - y_precision * torch.square(y_mean)
+    )
+    log_product_normalisation = (
+        -0.5
+        * torch.log(
+            torch.ones_like(product_normalisation_exponent) * (2 * math.pi)
+        )
+        + 0.5
+        * (
+            torch.log(x_precision)
+            + torch.log(y_precision)
+            - torch.log(product_precision)
+        )
+        + product_normalisation_exponent
+    ).sum(dim=-1)
+    return product_mean, product_precision, log_product_normalisation
+
+
+def inner_gaussian_product(means, precisions, targets, num_classes):
+    """Compute the product of n Gaussians for each class (where n can vary by class) from their means and precisions.
+    Parameters
+    ----------
+    means : `torch.FloatTensor` instance
+        A tensor containing the means of the Gaussian embeddings. This tensor has shape
+        `(batch_size, num_examples, embedding_size)`.
+    precisions : `torch.FloatTensor` instance
+        A tensor containing the precisions of the Gaussian embeddings. This tensor has shape
+        `(batch_size, num_examples, embedding_size)`.
+    Returns
+    -------
+    product_mean : `torch.FloatTensor` instance
+        A tensor containing the mean of the resulting product Gaussian. This tensor has shape
+        `(batch_size, num_classes, embedding_size)`.
+    product_precision : `torch.FloatTensor` instance
+        A tensor containing the precision of resulting product Gaussians. This tensor has shape
+        `(batch_size, num_classes, embedding_size)`.
+    log_product_normalisation: `torch.FloatTensor` instance
+        A tensor containing the log of the normalisation of resulting product Gaussians. This tensor has shape
+        `(batch_size, num_classes)`.
+    """
+    assert means.shape == precisions.shape
+    batch_size, num_examples, embedding_size = means.shape
+
+    num_samples = get_num_samples(targets, num_classes, dtype=means.dtype)
+    num_samples.unsqueeze_(-1)
+    num_samples = torch.max(
+        num_samples, torch.ones_like(num_samples)
+    )  # Backup for testing only, always >= 1-shot in practice
+
+    indices = targets.unsqueeze(-1).expand_as(means)
+
+    # NOTE: If this approach doesn't work well, try first normalising precisions by number of samples with:
+    # precisions.div_(num_samples)
+    product_precision = precisions.new_zeros(
+        (batch_size, num_classes, embedding_size)
+    )
+    product_precision.scatter_add_(1, indices, precisions)
+
+    product_mean = means.new_zeros((batch_size, num_classes, embedding_size))
+    product_mean = torch.reciprocal(
+        product_precision
+    ) * product_mean.scatter_add_(1, indices, precisions * means)
+
+    product_normalisation_exponent = means.new_zeros(
+        (batch_size, num_classes, embedding_size)
+    )
+    product_normalisation_exponent = 0.5 * (
+        product_precision * torch.square(product_mean)
+        - product_normalisation_exponent.scatter_add_(
+            1, indices, precisions * torch.square(means)
+        )
+    )
+
+    log_product_normalisation = means.new_zeros(
+        (batch_size, num_classes, embedding_size)
+    )
+    log_product_normalisation = (
+        (0.5 * (1 - num_samples))
+        * torch.log(torch.ones_like(num_samples) * (2 * math.pi))
+        + 0.5
+        * (
+            log_product_normalisation.scatter_add_(
+                1, indices, torch.log(precisions)
+            )
+            - torch.log(product_precision)
+        )
+        + product_normalisation_exponent
+    )
+
+    log_product_normalisation = log_product_normalisation.sum(dim=-1)
+
+    return (
+        product_mean,
+        product_precision,
+        log_product_normalisation,
+    )
+
+
+def outer_gaussian_product(x_mean, x_precision, y_mean, y_precision):
+    """
+    Computes all Gaussian product pairs between Gaussian x and y.
+    Args:
+        x_mean : `torch.FloatTensor` instance
+            A tensor containing the means of the query Gaussians. This tensor has shape
+            `(batch_size, num_query_examples, embedding_size)`.
+        x_precision : `torch.FloatTensor` instance
+            A tensor containing the precisions of the query Gaussians. This tensor has shape
+            `(batch_size, num_query_examples, embedding_size)`.
+        y_mean : `torch.FloatTensor` instance
+            A tensor containing the means of the proto Gaussians. This tensor has shape
+            `(batch_size, num_classes, embedding_size)`.
+        y_precision : `torch.FloatTensor` instance
+            A tensor containing the precisions of the proto Gaussians. This tensor has shape
+            `(batch_size, num_classes, embedding_size)`.
+    Returns:
+    product_mean : `torch.FloatTensor` instance
+        A tensor containing the mean of the resulting product Gaussian. This tensor has shape
+        `(batch_size, num_classes, num_query_examples, embedding_size)`.
+    product_precision : `torch.FloatTensor` instance
+        A tensor containing the precision of resulting product Gaussians. This tensor has shape
+        `(batch_size, num_classes, num_query_examples, embedding_size)`.
+    log_product_normalisation: `torch.FloatTensor` instance
+        A tensor containing the log of the normalisation of resulting product Gaussians. This tensor has shape
+        `(batch_size, num_classes, num_query_examples)`.
+    """
+
+    assert x_mean.shape == x_precision.shape
+    assert y_mean.shape == y_precision.shape
+    (batch_size, num_query_examples, embedding_size) = x_mean.shape
+    num_classes = y_mean.size(1)
+    assert x_mean.size(0) == y_mean.size(0)
+    assert x_mean.size(2) == y_mean.size(2)
+
+    x_mean = x_mean.unsqueeze(1).expand(
+        batch_size, num_classes, num_query_examples, embedding_size
+    )
+    x_precision = x_precision.unsqueeze(1).expand(
+        batch_size, num_classes, num_query_examples, embedding_size
+    )
+    y_mean = y_mean.unsqueeze(2).expand(
+        batch_size, num_classes, num_query_examples, embedding_size
+    )
+    y_precision = y_precision.unsqueeze(2).expand(
+        batch_size, num_classes, num_query_examples, embedding_size
+    )
+
+    product_precision = x_precision + y_precision
+    product_mean = torch.reciprocal(product_precision) * (
+        x_precision * x_mean + y_precision * y_mean
+    )
+    product_normalisation_exponent = 0.5 * (
+        product_precision * torch.square(product_mean)
+        - x_precision * torch.square(x_mean)
+        - y_precision * torch.square(y_mean)
+    )
+    log_product_normalisation = (
+        -0.5
+        * torch.log(
+            torch.ones_like(product_normalisation_exponent) * (2 * math.pi)
+        )
+        + 0.5
+        * (
+            torch.log(x_precision)
+            + torch.log(y_precision)
+            - torch.log(product_precision)
+        )
+        + product_normalisation_exponent
+    ).sum(dim=-1)
+    return product_mean, product_precision, log_product_normalisation

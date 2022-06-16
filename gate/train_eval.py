@@ -190,17 +190,21 @@ def train_eval(config: DictConfig):
     if config.mode.test and not config.trainer.get("fast_dev_run"):
         datamodule.setup(stage="test")
 
-        if config.mode.fit is False:
-            trainer._restore_modules_and_callbacks(
-                checkpoint_path=checkpoint_path
-            )
-
         log.info("Starting testing ! 🧪")
 
-        test_results = trainer.test(
-            model=train_eval_agent,
-            datamodule=datamodule,
-        )
+        if config.mode.fit is False:
+            test_results = trainer.test(
+                model=train_eval_agent,
+                datamodule=datamodule,
+                verbose=False,
+                ckpt_path=checkpoint_path,
+            )
+        else:
+            test_results = trainer.test(
+                model=train_eval_agent,
+                datamodule=datamodule,
+                verbose=False,
+            )
 
         log.info(
             f"Testing results can be found in the wandb log: {wandb.run.url}, "
@@ -220,3 +224,5 @@ def train_eval(config: DictConfig):
         log.info(
             f"Best model ckpt at {trainer.checkpoint_callback.best_model_path}"
         )
+
+    wandb.finish(quiet=False)

@@ -148,3 +148,8 @@ data/*
 wandb/*
 playground.*
 .test/*
+
+# Additional dirs
+/datasets
+/experiments
+.vscode
