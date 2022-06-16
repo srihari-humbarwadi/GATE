@@ -21,7 +21,7 @@ setup(
         "gate.base.callbacks",
         "gate.base.utils",
         "gate.base.vendor",
-        "gate.class_configs",
+        "gate.configs",
         "gate",
     ],
     url="https://github.com/AntreasAntoniou/GATE",
