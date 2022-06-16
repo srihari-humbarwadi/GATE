@@ -47,6 +47,7 @@ echo yes | pip install git+https://github.com/openai/CLIP.git@main
 echo yes | pip install git+https://github.com/AntreasAntoniou/TALI.git@main
 echo yes | pip install git+https://github.com/tensorflow/datasets.git@master
 echo yes | pip install tf-nightly
+echo yes | pip install learn2learn
 git clone https://github.com/AntreasAntoniou/GATE.git#prototypical_network_integration
 
 echo yes | pip install -e .
