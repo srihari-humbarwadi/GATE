@@ -93,11 +93,7 @@ class TimmImageModel(ModelModule):
                 f"{len(x_image.shape)}, for shape {x_image.shape}"
             )
 
-        # log.info(f"Image input shape: {x_image.shape}")
-
         output = self.resnet_image_embedding(x_image)
-
-        # log.info(f"{self.__class__.__name__} image model output shape: {output.shape}")
 
         return output
 

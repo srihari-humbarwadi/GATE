@@ -10,6 +10,12 @@ from dotted_dict import DottedDict
 
 from gate.datasets.tf_hub.standard.base import ClassificationDataset
 
+# TODO:
+# Tutorial for how to build a model
+# Tutorial on how to build a new 'generic dataset'
+# Tutorial on how to build a new 'tf hub dataset'
+# Tutorial on how to build a new 'learner'
+
 
 class OmniglotClassificationDataset(ClassificationDataset):
     def __init__(
