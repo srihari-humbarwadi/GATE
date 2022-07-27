@@ -5,7 +5,9 @@ from dotted_dict import DottedDict
 from omegaconf import DictConfig
 
 from gate.base.utils.loggers import get_logger
-from gate.configs.task.image_classification import ImageClassificationTaskConfig
+from gate.configs.task.image_classification import (
+    ImageClassificationTaskConfig,
+)
 from gate.learners.single_layer_fine_tuning import LinearLayerFineTuningScheme
 from gate.models.timm_hub import TimmImageModel
 

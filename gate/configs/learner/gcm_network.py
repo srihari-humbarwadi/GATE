@@ -15,7 +15,9 @@ from gate.learners.GCM import ConditionalGenerativeContrastiveModelling
 
 @dataclass
 class ConditionalGenerativeContrastiveModellingConfig(LearnerConfig):
-    _target_: str = get_module_import_path(ConditionalGenerativeContrastiveModelling)
+    _target_: str = get_module_import_path(
+        ConditionalGenerativeContrastiveModelling
+    )
     fine_tune_all_layers: bool = True
     use_input_instance_norm: bool = True
     head_num_layers: int = 3

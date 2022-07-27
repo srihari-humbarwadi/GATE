@@ -5,7 +5,9 @@ from dotted_dict import DottedDict
 from omegaconf import DictConfig
 
 from gate.base.utils.loggers import get_logger
-from gate.configs.task.image_classification import ImageClassificationTaskConfig
+from gate.configs.task.image_classification import (
+    ImageClassificationTaskConfig,
+)
 from gate.learners.single_layer_fine_tuning import LinearLayerFineTuningScheme
 from gate.models.tali import TALIModusPrime
 
@@ -157,7 +159,9 @@ def test_single_layer_fine_tuning(
         "text": torch.randint(0, 100, size=[2, 77]).long().to(device),
     }
 
-    log.info(f"dummy_x.shape: {dummy_x['image'].shape} {dummy_x['text'].shape}")
+    log.info(
+        f"dummy_x.shape: {dummy_x['image'].shape} {dummy_x['text'].shape}"
+    )
     _ = model.forward(dummy_x)
 
     module.build(

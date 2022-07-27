@@ -36,7 +36,9 @@ class HeadMLP(nn.Module):
 
     def build(self, input_shape: Tuple[int, ...]):
 
-        dummy_x = torch.zeros(input_shape)  # this should be b, f; or b, c, h, w
+        dummy_x = torch.zeros(
+            input_shape
+        )  # this should be b, f; or b, c, h, w
 
         out = dummy_x.view(dummy_x.shape[0], -1)
         self.embedding_size = out.shape[-1]
@@ -50,7 +52,9 @@ class HeadMLP(nn.Module):
 
         self.layer_dict["input_layer_act"] = nn.LeakyReLU()
 
-        out = self.layer_dict["input_layer_norm"](self.layer_dict["input_layer"](out))
+        out = self.layer_dict["input_layer_norm"](
+            self.layer_dict["input_layer"](out)
+        )
         out = self.layer_dict["input_layer_act"](out)
 
         for i in range(self.num_layers - 2):
@@ -77,7 +81,9 @@ class HeadMLP(nn.Module):
 
         self.layer_dict["output_layer_act"] = nn.LeakyReLU()
 
-        out = self.layer_dict["output_layer_norm"](self.layer_dict["output_layer"](out))
+        out = self.layer_dict["output_layer_norm"](
+            self.layer_dict["output_layer"](out)
+        )
         out = self.layer_dict["output_layer_act"](out)
 
         log.info(
@@ -85,11 +91,15 @@ class HeadMLP(nn.Module):
             f"output shape {out.shape} 👍"
         )
 
-    def forward(self, input_dict: Dict[str, torch.Tensor]) -> Dict[str, Tensor]:
+    def forward(
+        self, input_dict: Dict[str, torch.Tensor]
+    ) -> Dict[str, Tensor]:
 
         out = input_dict["image"]
         # log.info(out.shape)
-        out = self.layer_dict["input_layer_norm"](self.layer_dict["input_layer"](out))
+        out = self.layer_dict["input_layer_norm"](
+            self.layer_dict["input_layer"](out)
+        )
         out = self.layer_dict["input_layer_act"](out)
 
         for i in range(self.num_layers - 2):
@@ -97,13 +107,16 @@ class HeadMLP(nn.Module):
             out = self.layer_dict[f"hidden_layer_norm_{i}"](out)
             out = self.layer_dict[f"hidden_layer_act_{i}"](out)
 
-        out = self.layer_dict["output_layer_norm"](self.layer_dict["output_layer"](out))
+        out = self.layer_dict["output_layer_norm"](
+            self.layer_dict["output_layer"](out)
+        )
         # log.info(self.output_activation_fn)
         if self.output_activation_fn is not None:
             out = self.output_activation_fn(out)
 
         log.debug(
-            f"mean {out.mean()} std {out.std()} " f"min {out.min()} max {out.max()} "
+            f"mean {out.mean()} std {out.std()} "
+            f"min {out.min()} max {out.max()} "
         )
 
         return {"image": out}
@@ -154,9 +167,9 @@ class ConditionalGenerativeContrastiveModelling(
             )
         }  # this should be b, f; or b, c, h, w
 
-        dummy_out = super(ConditionalGenerativeContrastiveModelling, self).forward(
-            dummy_x
-        )
+        dummy_out = super(
+            ConditionalGenerativeContrastiveModelling, self
+        ).forward(dummy_x)
         dummy_image_out = dummy_out["image"]
         dummy_image_out = dummy_image_out.view(dummy_image_out.shape[0], -1)
 
@@ -178,7 +191,9 @@ class ConditionalGenerativeContrastiveModelling(
         self.mean_head.build(input_shape=dummy_image_out.shape)
 
         out_mean = self.mean_head({"image": dummy_image_out})["image"]
-        out_precision = self.precision_head({"image": dummy_image_out})["image"]
+        out_precision = self.precision_head({"image": dummy_image_out})[
+            "image"
+        ]
 
         log.info(
             f"Built GCM learner with input_shape {self.input_shape_dict} and "
@@ -186,8 +201,12 @@ class ConditionalGenerativeContrastiveModelling(
             f"and precision output shape {out_precision.shape} 👍"
         )
 
-    def forward(self, input_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        out = super(ConditionalGenerativeContrastiveModelling, self).forward(input_dict)
+    def forward(
+        self, input_dict: Dict[str, torch.Tensor]
+    ) -> Dict[str, torch.Tensor]:
+        out = super(ConditionalGenerativeContrastiveModelling, self).forward(
+            input_dict
+        )
         # log.info(out["image"].shape)
         learner_output_dict = {
             "mean": self.mean_head(out)["image"],
@@ -218,15 +237,19 @@ class ConditionalGenerativeContrastiveModelling(
         num_classes = int(torch.max(support_set_targets)) + 1
 
         support_set_embedding = self.forward(
-            {"image": support_set_inputs.view(-1, *support_set_inputs.shape[2:])}
+            {
+                "image": support_set_inputs.view(
+                    -1, *support_set_inputs.shape[2:]
+                )
+            }
         )["image"]
 
         support_set_embedding_mean = support_set_embedding["mean"].view(
             num_tasks, num_support_examples, -1
         )
-        support_set_embedding_precision = support_set_embedding["precision"].view(
-            num_tasks, num_support_examples, -1
-        )
+        support_set_embedding_precision = support_set_embedding[
+            "precision"
+        ].view(num_tasks, num_support_examples, -1)
 
         num_tasks, num_query_examples = query_set_inputs.shape[:2]
 

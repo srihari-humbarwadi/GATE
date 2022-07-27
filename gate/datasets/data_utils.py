@@ -1,3 +1,4 @@
+import pathlib
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Callable, Iterator, List, Optional
@@ -47,10 +48,14 @@ def load_split_datasets(dataset, split_tuple):
     ]
 
     set_selection_index_lists = [
-        total_idx[start_idx:end_idx] for (start_idx, end_idx) in start_end_index_tuples
+        total_idx[start_idx:end_idx]
+        for (start_idx, end_idx) in start_end_index_tuples
     ]
 
-    return (Subset(dataset, set_indices) for set_indices in set_selection_index_lists)
+    return (
+        Subset(dataset, set_indices)
+        for set_indices in set_selection_index_lists
+    )
 
 
 def get_class_to_idx_dict(
@@ -100,19 +105,26 @@ def get_class_to_image_idx_and_bbox(
                     dict(
                         subset_idx=int(subset_idx),
                         sample_idx=int(sample_idx),
-                        bbox=dict(x_min=x_min, y_min=y_min, x_max=x_max, y_max=y_max),
+                        bbox=dict(
+                            x_min=x_min, y_min=y_min, x_max=x_max, y_max=y_max
+                        ),
                         label=int(object_idx),
                     )
                 )
 
     temp_class_to_image_idx_and_bbox = {}
     for key in sorted(class_to_image_idx_and_bbox.keys()):
-        temp_class_to_image_idx_and_bbox[key] = class_to_image_idx_and_bbox[key]
+        temp_class_to_image_idx_and_bbox[key] = class_to_image_idx_and_bbox[
+            key
+        ]
 
     return temp_class_to_image_idx_and_bbox
 
 
 def store_dict_as_hdf5(input_dict: dict, h5_path: str):
+    if pathlib.Path(h5_path).exists():
+        pathlib.Path(h5_path).unlink()
+
     with h5py.File(h5_path, "w") as h5_file:
         for k, v in input_dict.items():
             h5_file.create_dataset(f"{k}", data=v)
@@ -144,7 +156,9 @@ def collate_fn_replace_corrupted(batch, dataset):
     diff = original_batch_len - filtered_batch_len
     if diff > 0:
         # Replace corrupted examples with another examples randomly
-        batch.extend([dataset[random.randint(0, len(dataset))] for _ in range(diff)])
+        batch.extend(
+            [dataset[random.randint(0, len(dataset))] for _ in range(diff)]
+        )
         # Recursive call to replace the replacements if they are corrupted
         return collate_fn_replace_corrupted(batch, dataset)
     # Finally, when the whole batch is fine, return it

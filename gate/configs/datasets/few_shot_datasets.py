@@ -5,15 +5,23 @@ from gate.configs import get_module_import_path
 from gate.datasets.learn2learn_hub.few_shot.fungi import (
     FungiFewShotClassificationDataset,
 )
-from gate.datasets.tf_hub.few_shot.aircraft import AircraftFewShotClassificationDataset
+from gate.datasets.tf_hub.few_shot.aircraft import (
+    AircraftFewShotClassificationDataset,
+)
 from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
-from gate.datasets.tf_hub.few_shot.cu_birds import CUB200FewShotClassificationDataset
+from gate.datasets.tf_hub.few_shot.cu_birds import (
+    CUB200FewShotClassificationDataset,
+)
 from gate.datasets.tf_hub.few_shot.dtd import DTDFewShotClassificationDataset
 from gate.datasets.tf_hub.few_shot.german_traffic_signs import (
     GermanTrafficSignsFewShotClassificationDataset,
 )
-from gate.datasets.tf_hub.few_shot.mscoco import MSCOCOFewShotClassificationDataset
-from gate.datasets.tf_hub.few_shot.omniglot import OmniglotFewShotClassificationDataset
+from gate.datasets.tf_hub.few_shot.mscoco import (
+    MSCOCOFewShotClassificationDataset,
+)
+from gate.datasets.tf_hub.few_shot.omniglot import (
+    OmniglotFewShotClassificationDataset,
+)
 from gate.datasets.tf_hub.few_shot.quickdraw import (
     QuickDrawFewShotClassificationDataset,
 )
@@ -43,7 +51,7 @@ class FewShotDatasetConfig:
     support_set_target_transform: Any = None
     query_set_target_transform: Any = None
     support_to_query_ratio: float = 0.75
-    rescan_cache: bool = True
+    rescan_cache: bool = False
     _target_: Any = FewShotClassificationDatasetTFDS
 
 
@@ -53,7 +61,9 @@ class OmniglotFewShotDatasetConfig(FewShotDatasetConfig):
     Class for configuring a few shot dataset
     """
 
-    _target_: Any = get_module_import_path(OmniglotFewShotClassificationDataset)
+    _target_: Any = get_module_import_path(
+        OmniglotFewShotClassificationDataset
+    )
 
 
 @dataclass
@@ -71,7 +81,9 @@ class AircraftFewShotDatasetConfig(FewShotDatasetConfig):
     Class for configuring a few shot dataset
     """
 
-    _target_: Any = get_module_import_path(AircraftFewShotClassificationDataset)
+    _target_: Any = get_module_import_path(
+        AircraftFewShotClassificationDataset
+    )
 
 
 @dataclass
@@ -100,7 +112,9 @@ class VGGFlowersFewShotDatasetConfig(FewShotDatasetConfig):
     Class for configuring a few shot dataset
     """
 
-    _target_: Any = get_module_import_path(VGGFlowersFewShotClassificationDataset)
+    _target_: Any = get_module_import_path(
+        VGGFlowersFewShotClassificationDataset
+    )
 
 
 @dataclass
@@ -109,7 +123,9 @@ class QuickDrawFewShotDatasetConfig(FewShotDatasetConfig):
     Class for configuring a few shot dataset
     """
 
-    _target_: Any = get_module_import_path(QuickDrawFewShotClassificationDataset)
+    _target_: Any = get_module_import_path(
+        QuickDrawFewShotClassificationDataset
+    )
 
 
 @dataclass

@@ -50,7 +50,9 @@ OmegaConf.register_new_resolver("last_bit", lambda x: x.split(".")[-1])
 OmegaConf.register_new_resolver("lower", lambda x: x.lower())
 OmegaConf.register_new_resolver(
     "remove_redundant_words",
-    lambda x: x.replace("scheme", "").replace("module", "").replace("config", ""),
+    lambda x: x.replace("scheme", "")
+    .replace("module", "")
+    .replace("config", ""),
 )
 
 

@@ -9,7 +9,9 @@ from gate.base.utils.loggers import get_logger
 from gate.configs import get_module_import_path
 from gate.configs.datasets.data_splits_config import data_splits_dict
 from gate.datasets.data_utils import FewShotSuperSplitSetOptions
-from gate.datasets.learn2learn_hub.few_shot.base import FewShotClassificationDatsetL2L
+from gate.datasets.learn2learn_hub.few_shot.base import (
+    FewShotClassificationDatsetL2L,
+)
 from gate.datasets.tf_hub import bytes_to_string
 
 log = get_logger(
@@ -40,7 +42,9 @@ class FungiFewShotClassificationDataset(FewShotClassificationDatsetL2L):
         dataset_module_path = get_module_import_path(FGVCFungi)
         super(FungiFewShotClassificationDataset, self).__init__(
             modality_config=DottedDict(image=True),
-            input_shape_dict=DottedDict(image=dict(channels=3, height=84, width=84)),
+            input_shape_dict=DottedDict(
+                image=dict(channels=3, height=84, width=84)
+            ),
             dataset_name=dataset_module_path.split(".")[-1],
             dataset_root=dataset_root,
             split_name=split_name,

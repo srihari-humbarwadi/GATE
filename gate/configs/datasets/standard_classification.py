@@ -6,7 +6,9 @@ from gate.datasets.tf_hub.standard.cifar import (
     CIFAR10ClassificationDataset,
     CIFAR100ClassificationDataset,
 )
-from gate.datasets.tf_hub.standard.omniglot import OmniglotClassificationDataset
+from gate.datasets.tf_hub.standard.omniglot import (
+    OmniglotClassificationDataset,
+)
 
 
 @dataclass

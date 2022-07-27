@@ -12,7 +12,7 @@ mamba activate gate-env
 # ----------------------------------------------------------
 # Install GATE dependencies
 mamba install git -y
-mamba install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch-nightly -y
+mamba install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -y
 mamba install opencv -y
 mamba install h5py -y
 mamba install pytorch-lightning -y
@@ -49,7 +49,7 @@ echo yes | pip install git+https://github.com/tensorflow/datasets.git@master
 echo yes | pip install tensorflow_datasets
 echo yes | pip install tf-nightly
 echo yes | pip install learn2learn
-git clone https://github.com/AntreasAntoniou/GATE.git#prototypical_network_integration
+#git clone https://github.com/AntreasAntoniou/GATE.git#prototypical_network_integration
 
 echo yes | pip install -e .
 # ----------------------------------------------------------
