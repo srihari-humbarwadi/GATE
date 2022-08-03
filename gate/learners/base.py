@@ -77,7 +77,7 @@ class LearnerModule(nn.Module):
     def reset_parameters(self):
         raise NotImplementedError
 
-    def configure_optimizers(self, params=None):
+    def configure_optimizers(self, params=None, named_params=None):
 
         if params is None:
             params = self.parameters()
@@ -85,6 +85,14 @@ class LearnerModule(nn.Module):
         self.optimizer = hydra.utils.instantiate(
             config=self.optimizer_config, params=params
         )
+
+        if named_params is not None:
+            log.info("Printing optimizer learnable weights 🏋")
+
+            log.info("------------------------------------------------------")
+            for name, param in named_params:
+                if param.requires_grad:
+                    log.info(f"{name} {param.shape}")
 
         self.optimizer_dict = {"optimizer": self.optimizer}
 

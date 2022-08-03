@@ -1,6 +1,7 @@
 from typing import Any, Dict, Union
 
 import torch
+import torch.nn.functional as F
 from dotted_dict import DottedDict
 
 import gate.base.utils.loggers as loggers
@@ -104,7 +105,7 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
                 model_features = self.model.forward({modality_name: input_dummy_x})[
                     modality_name
                 ]
-
+                self.backbone_output_shape = {"image": model_features.shape}
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
                 )
@@ -125,13 +126,19 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
 
         yield from list(self.input_layer_dict.parameters())
 
+    def get_learner_only_named_params(self):
+
+        yield from list(self.input_layer_dict.named_parameters())
+
     def configure_optimizers(self):
         if self.fine_tune_all_layers:
             params = self.parameters()
+            named_params = self.named_parameters()
         else:
             params = self.get_learner_only_params()
+            named_params = self.get_learner_only_named_params()
 
-        return super().configure_optimizers(params=params)
+        return super().configure_optimizers(params=params, named_params=named_params)
 
     def get_feature_embeddings(self, batch):
 
@@ -152,7 +159,8 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
                 )
-                output_dict[modality_name] = model_features_flatten
+                # Keep features non-flattened for now for downstream use in GCM
+                output_dict[modality_name] = model_features  # _flatten
 
         return output_dict
 
@@ -180,13 +188,16 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
         num_tasks, num_examples = support_set_inputs.shape[:2]
         support_set_embedding = self.forward(
             {"image": support_set_inputs.view(-1, *support_set_inputs.shape[2:])}
-        )["image"].view(num_tasks, num_examples, -1)
+        )["image"]
+        support_set_embedding = F.adaptive_avg_pool2d(support_set_embedding, 1)
+        support_set_embedding = support_set_embedding.view(num_tasks, num_examples, -1)
 
         num_tasks, num_examples = query_set_inputs.shape[:2]
-
         query_set_embedding = self.forward(
             {"image": query_set_inputs.view(-1, *query_set_inputs.shape[2:])}
-        )["image"].view(num_tasks, num_examples, -1)
+        )["image"]
+        query_set_embedding = F.adaptive_avg_pool2d(query_set_embedding, 1)
+        query_set_embedding = query_set_embedding.view(num_tasks, num_examples, -1)
 
         prototypes = get_prototypes(
             embeddings=support_set_embedding,

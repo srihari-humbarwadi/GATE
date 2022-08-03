@@ -1,10 +1,10 @@
 import dotenv
 import hydra
+import tensorflow_datasets as tfds
 from omegaconf import OmegaConf
 
 from gate.base.utils.loggers import get_logger
 from gate.base.utils.rank_zero_ops import print_config
-import tensorflow_datasets as tfds
 
 dotenv_loaded_vars = dotenv.load_dotenv(override=True, verbose=True)
 
