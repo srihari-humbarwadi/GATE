@@ -5,8 +5,9 @@ import pytest
 from pytorch_lightning import seed_everything
 
 from gate.base.utils.loggers import get_logger
-from gate.datasets.tf_hub.few_shot.omniglot import \
-    OmniglotFewShotClassificationDataset
+from gate.datasets.tf_hub.few_shot.omniglot import (
+    OmniglotFewShotClassificationDataset,
+)
 
 log = get_logger(__name__, set_default_handler=True)
 

@@ -6,7 +6,7 @@ from .base import BaseMode
 def add_mode_configs(config_store: ConfigStore):
     config_store.store(
         group="mode",
-        name="default",
+        name="base",
         node=BaseMode(),
     )
 

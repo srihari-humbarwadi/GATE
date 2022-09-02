@@ -1,13 +1,105 @@
-from typing import Any, Callable, Dict, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from timm.models.resnet import BasicBlock
 from torch import Tensor
 
 import gate.base.utils.loggers as loggers
 
 log = loggers.get_logger(__name__)
+
+
+class HeadResNetBlock(nn.Module):
+    def __init__(
+        self,
+        num_output_filters: int,
+        num_hidden_filters: int,
+        output_activation_fn: Callable = None,
+    ):
+        super(HeadResNetBlock, self).__init__()
+        self.block_dict = nn.ModuleDict()
+        self.num_output_filters = num_output_filters
+        self.num_hidden_filters = num_hidden_filters
+        self.output_activation_fn = output_activation_fn
+
+    def build(self, input_shape: Tuple[int, ...]):
+        dummy_x = torch.zeros(input_shape)  # this should be b, f; or b, c, h, w
+        out = dummy_x
+
+        downsample_layer = nn.Sequential(
+            nn.Conv2d(
+                in_channels=out.shape[1],
+                out_channels=self.num_hidden_filters,
+                kernel_size=1,
+                stride=2,
+                bias=False,
+            ),
+            nn.BatchNorm2d(
+                self.num_hidden_filters, affine=True, track_running_stats=True
+            ),
+        )
+        self.block_dict["resnet_block_0"] = BasicBlock(
+            inplanes=out.shape[1],
+            planes=self.num_hidden_filters,
+            stride=2,
+            downsample=downsample_layer,
+            cardinality=1,
+            base_width=64,
+            reduce_first=1,
+            dilation=1,
+            first_dilation=None,
+            act_layer=nn.ReLU,
+            norm_layer=nn.BatchNorm2d,
+            attn_layer=None,
+            aa_layer=None,
+            drop_block=None,
+            drop_path=None,
+        )
+
+        out = self.block_dict["resnet_block_0"](out)
+
+        self.block_dict["resnet_block_1"] = BasicBlock(
+            inplanes=out.shape[1],
+            planes=self.num_hidden_filters,
+            stride=1,
+            downsample=None,
+            cardinality=1,
+            base_width=64,
+            reduce_first=1,
+            dilation=1,
+            first_dilation=None,
+            act_layer=nn.ReLU,
+            norm_layer=nn.BatchNorm2d,
+            attn_layer=None,
+            aa_layer=None,
+            drop_block=None,
+            drop_path=None,
+        )
+
+        out = self.block_dict["resnet_block_1"](out)
+
+        log.info(
+            f"Built HeadResNetBlock with input_shape {dummy_x.shape} "
+            f"output shape {out.shape} 👍"
+        )
+
+    def forward(self, input_dict: Dict[str, torch.Tensor]) -> Dict[str, Tensor]:
+
+        out = input_dict["image"]
+        out = self.block_dict["resnet_block_0"](out)
+        out = self.block_dict["resnet_block_1"](out)
+
+        # log.info(self.output_activation_fn)
+        if self.output_activation_fn is not None:
+            out = self.output_activation_fn(out)
+
+        log.debug(
+            f"mean {out.mean()} std {out.std()} " f"min {out.min()} max {out.max()} "
+        )
+
+        return {"image": out}
 
 
 class HeadConv(nn.Module):
@@ -120,6 +212,7 @@ class HeadMLP(nn.Module):
         num_layers: int,
         num_hidden_filters: int,
         input_avg_pool_size: int,
+        view_information_num_filters: Optional[int] = None,
         output_activation_fn: Callable = None,
     ):
         super(HeadMLP, self).__init__()
@@ -129,12 +222,23 @@ class HeadMLP(nn.Module):
         self.num_hidden_filters = num_hidden_filters
         self.output_activation_fn = output_activation_fn
         self.input_avg_pool_size = input_avg_pool_size
+        self.view_information_num_filters = view_information_num_filters
 
-    def build(self, input_shape: Tuple[int, ...]):
-
-        dummy_x = torch.zeros(input_shape)  # this should be b, f; or b, c, h, w
-        out = F.adaptive_avg_pool2d(dummy_x, output_size=self.input_avg_pool_size)
+    def build(self, input_shape: Dict[str, Tuple[int, ...]]):
+        # expects a dict with image and view_information keys
+        dummy_image_x = torch.zeros(
+            input_shape["image"]
+        )  # this should be b, f; or b, c, h, w
+        dummy_side_information = (
+            torch.zeros(input_shape["view_information"])
+            if self.view_information_num_filters is not None
+            else None
+        )  # this should be b, f; or b, c, h, w
+        out = F.adaptive_avg_pool2d(dummy_image_x, output_size=self.input_avg_pool_size)
         out = out.view(out.shape[0], -1)
+
+        if dummy_side_information is not None:
+            out = torch.cat([out, dummy_side_information], dim=1)
 
         self.layer_dict["input_layer"] = nn.Linear(
             in_features=out.shape[1], out_features=self.num_hidden_filters
@@ -177,7 +281,7 @@ class HeadMLP(nn.Module):
         out = self.layer_dict["output_layer_act"](out)
 
         log.info(
-            f"Built HeadMLP with input_shape {dummy_x.shape} "
+            f"Built HeadMLP with input_shapes {input_shape} "
             f"output shape {out.shape} 👍"
         )
 
@@ -188,6 +292,10 @@ class HeadMLP(nn.Module):
         out = F.adaptive_avg_pool2d(out, output_size=self.input_avg_pool_size)
 
         out = out.view(out.shape[0], -1)
+
+        if self.view_information_num_filters is not None:
+            view_information = input_dict["view_information"].view(out.shape[0], -1)
+            out = torch.cat([out, view_information], dim=1)
 
         out = self.layer_dict["input_layer"](out)
         out = self.layer_dict["input_layer_norm"](out)
@@ -203,8 +311,6 @@ class HeadMLP(nn.Module):
         if self.output_activation_fn is not None:
             out = self.output_activation_fn(out)
 
-        log.debug(
-            f"mean {out.mean()} std {out.std()} " f"min {out.min()} max {out.max()} "
-        )
+        log.debug(f"mean {out.mean()} std {out.std()} min {out.min()} max {out.max()} ")
 
         return {"image": out}

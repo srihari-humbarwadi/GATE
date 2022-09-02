@@ -31,8 +31,12 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         self.output_layer_dict = torch.nn.ModuleDict()
         self.input_layer_dict = torch.nn.ModuleDict()
         self.optimizer_config = optimizer_config.outer_loop_optimizer_config
-        self.lr_scheduler_config = lr_scheduler_config.outer_loop_lr_scheduler_config
-        self.inner_loop_optimizer_config = optimizer_config.inner_loop_optimizer_config
+        self.lr_scheduler_config = (
+            lr_scheduler_config.outer_loop_lr_scheduler_config
+        )
+        self.inner_loop_optimizer_config = (
+            optimizer_config.inner_loop_optimizer_config
+        )
         self.inner_loop_lr_scheduler_config = (
             lr_scheduler_config.inner_loop_lr_scheduler_config
         )
@@ -77,7 +81,10 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         for modality_name, is_supported in self.modality_config.items():
             if is_supported:
                 input_dummy_x = torch.randn(
-                    [2] + list(self.input_shape_dict[modality_name]["shape"].values())
+                    [2]
+                    + list(
+                        self.input_shape_dict[modality_name]["shape"].values()
+                    )
                 )
 
                 if modality_name == "image":
@@ -112,9 +119,9 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                     ](input_dummy_x)
                     input_dummy_x = input_dummy_x.view(b, s, c, w, h)
 
-                model_features = self.model.forward({modality_name: input_dummy_x})[
-                    modality_name
-                ]
+                model_features = self.model.forward(
+                    {modality_name: input_dummy_x}
+                )[modality_name]
 
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
@@ -127,7 +134,9 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                     self.output_shape_dict[modality_name]["num_classes"],
                 )
 
-                logits = self.output_layer_dict[modality_name](model_features_flatten)
+                logits = self.output_layer_dict[modality_name](
+                    model_features_flatten
+                )
 
                 output_dict[modality_name] = logits
 
@@ -156,7 +165,9 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
 
         return super().configure_optimizers(params=params)
 
-    def get_feature_embeddings(self, batch, model_module: torch.nn.Module = None):
+    def get_feature_embeddings(
+        self, batch, model_module: torch.nn.Module = None
+    ):
 
         output_dict = {}
 
@@ -168,9 +179,9 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                         f"{modality_name}_input_adaptor"
                     ](current_input)
 
-                model_features = model_module.forward({modality_name: current_input})[
-                    modality_name
-                ]
+                model_features = model_module.forward(
+                    {modality_name: current_input}
+                )[modality_name]
 
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
@@ -231,10 +242,14 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                 )
                 self.output_layer_dict[key].to(support_set_inputs)
 
-            non_feature_embedding_params = list(self.output_layer_dict.parameters())
+            non_feature_embedding_params = list(
+                self.output_layer_dict.parameters()
+            )
 
             if self.use_input_instance_norm:
-                non_feature_embedding_params += list(self.input_layer_dict.parameters())
+                non_feature_embedding_params += list(
+                    self.input_layer_dict.parameters()
+                )
 
             params = (
                 (
@@ -281,13 +296,18 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                     self.zero_grad()
 
                     pbar.update(1)
-                    pbar.set_description(f"Support Set Loss: {support_set_loss}, ")
+                    pbar.set_description(
+                        f"Support Set Loss: {support_set_loss}, "
+                    )
                 with torch.no_grad():
                     current_output_dict = self.forward(
                         query_set_input, model_module=self.inner_loop_model
                     )
 
-                    (query_set_loss, current_computed_metrics,) = self.compute_metrics(
+                    (
+                        query_set_loss,
+                        current_computed_metrics,
+                    ) = self.compute_metrics(
                         phase_name=phase_name,
                         set_name="query_set",
                         output_dict=current_output_dict,
@@ -344,7 +364,8 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                     target_dict[output_name],
                 )
                 computed_task_metrics_dict[
-                    f"{phase_name}/episode_{episode_idx}/" f"{set_name}_{metric_key}"
+                    f"{phase_name}/episode_{episode_idx}/"
+                    f"{set_name}_{metric_key}"
                 ].append(metric_value.detach().cpu().numpy())
 
         for (
@@ -357,7 +378,8 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                     target_dict[output_name],
                 )
                 computed_task_metrics_dict[
-                    f"{phase_name}/episode_{episode_idx}/" f"{set_name}_{metric_key}"
+                    f"{phase_name}/episode_{episode_idx}/"
+                    f"{set_name}_{metric_key}"
                 ].append(metric_value.detach().cpu().numpy())
 
                 opt_loss_list.append(metric_value)

@@ -66,7 +66,10 @@ class LinearLayerFineTuningScheme(LearnerModule):
         for modality_name, is_supported in self.modality_config.items():
             if is_supported:
                 input_dummy_x = torch.randn(
-                    [2] + list(self.input_shape_dict[modality_name]["shape"].values())
+                    [2]
+                    + list(
+                        self.input_shape_dict[modality_name]["shape"].values()
+                    )
                 )
 
                 if modality_name == "image":
@@ -101,9 +104,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
                     ](input_dummy_x)
                     input_dummy_x = input_dummy_x.view(b, s, c, w, h)
 
-                model_features = self.model.forward({modality_name: input_dummy_x})[
-                    modality_name
-                ]
+                model_features = self.model.forward(
+                    {modality_name: input_dummy_x}
+                )[modality_name]
 
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
@@ -118,7 +121,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
                     self.output_shape_dict[modality_name]["num_classes"],
                 )
 
-                logits = self.output_layer_dict[modality_name](model_features_flatten)
+                logits = self.output_layer_dict[modality_name](
+                    model_features_flatten
+                )
 
                 output_dict[modality_name] = logits
 
@@ -159,9 +164,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
                         f"{modality_name}_input_adaptor"
                     ](current_input)
 
-                model_features = self.model.forward({modality_name: current_input})[
-                    modality_name
-                ]
+                model_features = self.model.forward(
+                    {modality_name: current_input}
+                )[modality_name]
 
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
@@ -175,7 +180,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
         output_dict = {}
 
         for modality_name, features in feature_embedding_dict.items():
-            output_dict[modality_name] = self.output_layer_dict[modality_name](features)
+            output_dict[modality_name] = self.output_layer_dict[modality_name](
+                features
+            )
 
         return output_dict
 
@@ -191,7 +198,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
         opt_loss_list = []
         input_dict, target_dict = batch
 
-        target_dict = {key: value.view(-1) for key, value in target_dict.items()}
+        target_dict = {
+            key: value.view(-1) for key, value in target_dict.items()
+        }
 
         output_dict = self.forward(input_dict)
 

@@ -16,6 +16,5 @@ class ImageClassificationTaskModule(TaskModule):
             task_metrics_dict=self.task_metrics_dict,
         )
 
-    # integrate in the main train_eval_agent
-    def data_flow(self, batch_dict: Dict[str, Any], batch_idx: int) -> Generator:
+    def data_flow(self, batch_dict: Dict[str, Any], batch_idx: int) -> Any:
         return batch_dict

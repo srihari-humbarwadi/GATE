@@ -104,7 +104,9 @@ class LearnerModule(nn.Module):
 
         del self.lr_scheduler_config.batch_size
         del self.lr_scheduler_config.num_train_samples
-        learning_scheduler_update_interval = self.lr_scheduler_config.update_interval
+        learning_scheduler_update_interval = (
+            self.lr_scheduler_config.update_interval
+        )
         del self.lr_scheduler_config.update_interval
 
         lr_scheduler = hydra.utils.instantiate(
@@ -122,7 +124,9 @@ class LearnerModule(nn.Module):
                 "interval": learning_scheduler_update_interval,
             }
 
-        log.info(f"\noptimizer: {self.optimizer} \n" f"lr_scheduler: {lr_scheduler}")
+        log.info(
+            f"\noptimizer: {self.optimizer} \n" f"lr_scheduler: {lr_scheduler}"
+        )
 
         return self.optimizer_dict
 
@@ -133,9 +137,9 @@ class LearnerModule(nn.Module):
         self,
         batch,
         batch_idx,
-        task_metrics_dict,
-        learner_metrics_dict,
-        phase_name,
+        task_metrics_dict=None,
+        learner_metrics_dict=None,
+        phase_name="undefined",
     ):
         raise NotImplementedError
 

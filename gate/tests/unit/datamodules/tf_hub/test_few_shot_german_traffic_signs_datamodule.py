@@ -101,8 +101,8 @@ def test_aircraft_fewshot_datamodules(
         assert support_set_inputs.shape[1] == support_set_targets.shape[1]
         assert query_set_inputs.shape[1] == query_set_targets.shape[1]
 
-        assert set(int(item) for item in list(support_set_targets[0].numpy())) == set(
-            int(item) for item in list(query_set_targets[0].numpy())
-        )
+        assert set(
+            int(item) for item in list(support_set_targets[0].numpy())
+        ) == set(int(item) for item in list(query_set_targets[0].numpy()))
 
         break

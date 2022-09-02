@@ -4,6 +4,7 @@ from gate.configs.task.image_classification import (
     HundredClassClassificationTask,
     TenClassClassificationTask,
     ThousandClassClassificationTask,
+    VariableClassClassificationTask,
 )
 
 
@@ -24,6 +25,12 @@ def add_task_configs(config_store: ConfigStore):
         group="task",
         name="Classification1000",
         node=ThousandClassClassificationTask,
+    )
+
+    config_store.store(
+        group="task",
+        name="VariableClassClassification",
+        node=VariableClassClassificationTask,
     )
 
     return config_store

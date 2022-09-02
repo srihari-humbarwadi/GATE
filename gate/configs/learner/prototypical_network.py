@@ -15,7 +15,9 @@ from gate.learners.protonet import PrototypicalNetworkEpisodicTuningScheme
 
 @dataclass
 class EpisodicPrototypicalNetworkConfig(LearnerConfig):
-    _target_: str = get_module_import_path(PrototypicalNetworkEpisodicTuningScheme)
+    _target_: str = get_module_import_path(
+        PrototypicalNetworkEpisodicTuningScheme
+    )
     fine_tune_all_layers: bool = True
     use_input_instance_norm: bool = True
     optimizer_config: BaseOptimizerConfig = AdamOptimizerConfig(lr=1e-3)

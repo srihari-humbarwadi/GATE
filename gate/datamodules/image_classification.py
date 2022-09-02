@@ -21,7 +21,9 @@ class TwoSplitDataModule(DataModule):
         transform_train: Any,
         transform_eval: Any,
     ):
-        super(TwoSplitDataModule, self).__init__(dataset_config, data_loader_config)
+        super(TwoSplitDataModule, self).__init__(
+            dataset_config, data_loader_config
+        )
 
         self.transform_train = transform_train
         self.transform_eval = transform_eval

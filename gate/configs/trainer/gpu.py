@@ -21,3 +21,10 @@ class DDPTrainer(BaseTrainer):
     sync_batchnorm: bool = True
     auto_scale_batch_size: bool = False
     plugins: Any = DDPPlugin()
+
+
+@dataclass
+class DPTrainer(BaseTrainer):
+    accelerator: str = "gpu"
+    strategy: str = "dp"
+    auto_scale_batch_size: bool = False

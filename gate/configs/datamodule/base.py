@@ -4,11 +4,16 @@ from dataclasses import MISSING, dataclass
 # ------------------------------------------------------------------------------
 # General configs
 # from gate.datasets.data_utils import collate_fn_replace_corrupted
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 # ------------------------------------------------------------------------------
 # data loader configs
-from gate.configs.string_variables import BATCH_SIZE
+from gate.configs import get_module_import_path
+from gate.configs.string_variables import (
+    ADDITIONAL_INPUT_TRANSFORMS,
+    ADDITIONAL_TARGET_TRANSFORMS,
+    BATCH_SIZE,
+)
 
 # ------------------------------------------------------------------------------
 # Config rules:
@@ -71,3 +76,4 @@ class ShapeConfig:
 @dataclass
 class TransformConfig:
     _target_: str = MISSING
+    additional_transforms: Optional[List[Any]] = None

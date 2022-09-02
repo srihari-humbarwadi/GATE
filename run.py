@@ -1,5 +1,5 @@
 import os
-from pprint import pformat
+import warnings
 
 import dotenv
 import hydra
@@ -9,15 +9,22 @@ from rich.traceback import install
 from rich.tree import Tree
 
 from gate.base.utils.loggers import get_logger
-from gate.base.utils.rank_zero_ops import extras, print_config
+from gate.base.utils.rank_zero_ops import extras
 
+print("Finish importing stuff 😏")
 # load environment variables from `.env-` file if it exists
 # recursively searches for `.env` in all folders starting from work dir
 
 dotenv.load_dotenv(override=True, verbose=True)
-install(show_locals=False, extra_lines=1, word_wrap=True, width=350)
+install(show_locals=False, word_wrap=True, width=350)
 log = get_logger(__name__)
+
+print("Start printing config store options")
+
+
 from gate.configs.config import collect_config_store
+
+print("Finish printing config store options")
 
 config_store = collect_config_store()
 
@@ -45,7 +52,7 @@ def print_config_store_options(config_store: DictConfig):
 def main(config: DictConfig):
     # Imports can be nested inside @hydra.main to optimize tab completion
     # https://github.com/facebookresearch/hydra/issues/934
-
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
     print_config_store_options(config_store)
 
     from gate.train_eval import train_eval

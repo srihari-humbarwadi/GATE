@@ -1,3 +1,5 @@
+import inspect
+
 from hydra.core.config_store import ConfigStore
 
 from .base import (
@@ -19,6 +21,7 @@ base_callbacks = dict(
     progress_bar=RichProgressBar(),
     lr_monitor=LearningRateMonitor(),
 )
+
 
 wandb_callbacks = dict(
     model_checkpoint_eval=model_checkpoint_eval,

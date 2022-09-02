@@ -52,7 +52,9 @@ class SimCLRTransform:
     """
 
     def __init__(self, size, s=1, n_views=2):
-        color_jitter = transforms.ColorJitter(0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s)
+        color_jitter = transforms.ColorJitter(
+            0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s
+        )
         base_transform = transforms.Compose(
             [
                 transforms.RandomResizedCrop(size=size),

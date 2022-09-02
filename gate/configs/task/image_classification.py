@@ -34,3 +34,7 @@ HundredClassClassificationTask = ImageClassificationTaskConfig(
 ThousandClassClassificationTask = ImageClassificationTaskConfig(
     output_shape_dict=DictConfig(dict(image=dict(num_classes=1000)))
 )
+
+VariableClassClassificationTask = ImageClassificationTaskConfig(
+    output_shape_dict=DictConfig(dict(image=dict(num_classes=-1)))
+)

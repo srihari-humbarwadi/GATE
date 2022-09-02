@@ -1,7 +1,7 @@
 # https://wandb.ai
 import os
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 from pytorch_lightning.loggers import WandbLogger
 
@@ -16,7 +16,7 @@ class WeightsAndBiasesLoggerConfig:
     offline: bool = False  # set True to store all logs only locally
     resume: str = "allow"  # allow, True, False, must
     save_dir: str = CURRENT_EXPERIMENT_DIR
-    log_model: str = "all"
+    log_model: Optional[str] = None
     prefix: str = ""
     job_type: str = "train"
     group: str = ""

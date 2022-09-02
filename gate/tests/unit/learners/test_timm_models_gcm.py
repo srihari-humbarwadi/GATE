@@ -8,10 +8,8 @@ from gate.configs.learner import (
     CosineAnnealingLRConfig,
     PrototypicalNetworkEpisodicConfig,
 )
-from gate.configs.task.image_classification import (
-    ImageClassificationTaskConfig,
-)
-from gate.learners.GCM import ConditionalGenerativeContrastiveModelling
+from gate.configs.task.image_classification import ImageClassificationTaskConfig
+from gate.learners.gcm import ConditionalGenerativeContrastiveModelling
 from gate.learners.protonet import PrototypicalNetworkEpisodicTuningScheme
 from gate.models.timm_hub import TimmImageModel
 

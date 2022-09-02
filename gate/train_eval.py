@@ -2,7 +2,13 @@ import os
 import pathlib
 from typing import List, Optional
 
+print(f"Imported primitives")
+
 import hydra
+
+print(f"Imported hydra")
+
+
 import pytorch_lightning
 import torch
 import wandb
@@ -14,13 +20,12 @@ from rich.traceback import install
 from wandb.util import generate_id
 
 from gate.base.utils.loggers import get_logger
-from gate.base.utils.rank_zero_ops import generate_config_tree, print_config
 from gate.datamodules.base import DataModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 
 log = get_logger(__name__)
 
-install(show_locals=False, extra_lines=1, word_wrap=True, width=350)
+install(show_locals=False, word_wrap=True, width=350)
 
 
 def checkpoint_setup(config):
@@ -33,9 +38,7 @@ def checkpoint_setup(config):
         if not pathlib.Path(f"{config.current_experiment_dir}").exists():
             os.makedirs(f"{config.current_experiment_dir}", exist_ok=True)
 
-        checkpoint_path = (
-            f"{config.current_experiment_dir}/checkpoints/last.ckpt"
-        )
+        checkpoint_path = f"{config.current_experiment_dir}/checkpoints/last.ckpt"
 
         if not pathlib.Path(checkpoint_path).exists():
             checkpoint_path = None
@@ -69,9 +72,11 @@ def train_eval(config: DictConfig):
     # --------------------------------------------------------------------------------
     # Instantiate Lightning DataModule for task
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
+    # log information regarding data module to be instantiated -- particularly the class name that is stored in _target_
     datamodule: DataModule = hydra.utils.instantiate(
         config.datamodule, _recursive_=False
     )
+    # List in comments all possible datamodules/datamodule configs
     datamodule.setup(stage="fit")
     # datamodule_pretty_dict_tree = generate_config_tree(
     #     config=datamodule.__dict__, resolve=True
@@ -91,25 +96,8 @@ def train_eval(config: DictConfig):
     # Instantiate Lightning Learner using a dummy data dict with the
     # data names and shapes
     x_dummy_data_dict, y_dummy_data_dict = datamodule.dummy_batch()
-
-    x_dummy_data_dict = {
-        key: value
-        for key, value in x_dummy_data_dict.items()
-        if isinstance(value, torch.Tensor)
-    }
-
-    dummy_data_device_dict = {
-        key: value.device
-        for key, value in x_dummy_data_dict.items()
-        if isinstance(value, torch.Tensor)
-    }
-
-    data_shape_tree = generate_config_tree(
-        dummy_data_device_dict, resolve=True
-    )
-
-    log.info(f"Data shape description: {data_shape_tree}")
-    _ = train_eval_agent.forward(x_dummy_data_dict)
+    # depth first traversal and printing of tensor shapes
+    _ = train_eval_agent.forward((x_dummy_data_dict, y_dummy_data_dict))
     # --------------------------------------------------------------------------------
     # Instantiate Lightning Callbacks
     # --------------------------------------------------------------------------------
@@ -213,16 +201,12 @@ def train_eval(config: DictConfig):
             f"results 🚨"
         )
         for logger_instance in logger:
-            if isinstance(
-                logger_instance, pytorch_lightning.loggers.wandb.WandbLogger
-            ):
+            if isinstance(logger_instance, pytorch_lightning.loggers.wandb.WandbLogger):
                 wandb.log(test_results[0], step=0)
     # Make sure everything closed properly
     log.info("Finalizing! 😺")
     # Print path to best checkpoint
     if not config.trainer.get("fast_dev_run"):
-        log.info(
-            f"Best model ckpt at {trainer.checkpoint_callback.best_model_path}"
-        )
+        log.info(f"Best model ckpt at {trainer.checkpoint_callback.best_model_path}")
 
     wandb.finish(quiet=False)

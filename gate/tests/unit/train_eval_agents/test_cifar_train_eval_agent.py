@@ -16,9 +16,7 @@ from gate.configs.learner import (
     SingleLinearLayerFineTuningSchemeConfig,
 )
 from gate.configs.model.timm_model_configs import TimmImageResNet18Config
-from gate.configs.task.image_classification import (
-    ImageClassificationTaskConfig,
-)
+from gate.configs.task.image_classification import ImageClassificationTaskConfig
 from gate.models.timm_hub import TimmImageModel
 from gate.tasks.standard_classification import ImageClassificationTaskModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent

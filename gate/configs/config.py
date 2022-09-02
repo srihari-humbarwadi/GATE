@@ -1,18 +1,15 @@
-import json
+import inspect
 import os
-import pprint
 from dataclasses import MISSING, dataclass, field
-from pprint import pformat
 from typing import Any, List, Optional
 
-import dotenv
-import rich
 from hydra.core.config_store import ConfigStore
 from omegaconf import OmegaConf
 
 from gate.base.utils.loggers import get_logger
 from gate.configs.callbacks import add_lightning_callback_configs
 from gate.configs.datamodule import add_datamodule_configs
+from gate.configs.datasets import add_transform_configs
 from gate.configs.hydra import add_hydra_configs
 from gate.configs.learner import (
     add_learner_configs,
@@ -26,33 +23,31 @@ from gate.configs.task import add_task_configs
 from gate.configs.train_eval_agent import add_train_eval_agent_configs
 from gate.configs.trainer import add_trainer_configs
 
-log = get_logger(__name__, set_default_handler=False)
+log = get_logger(__name__)
 
 defaults = [
     {"callbacks": "wandb"},
     {"logger": "wandb"},
     {"model": "timm-image-resnet18"},
-    {"learner": "FullModelFineTuning"},
-    {"datamodule": "CIFAR100StandardClassification"},
-    {"task": "cifar100"},
+    {"learner": "EpisodicPrototypicalNetwork"},
+    {"datamodule": "OmniglotFewShotClassification"},
+    {"task": "VariableClassClassification"},
     {"train_eval_agent": "base"},
     {"trainer": "base"},
-    {"mode": "default"},
+    {"mode": "base"},
+    {"additional_input_transforms": "base"},
+    {"additional_target_transforms": "base"},
+    {"hydra": "custom_logging_path"},
+    {"_self_": None},
 ]
 
-overrides = [
-    # {"hydra/job_logging": "rich"},
-    # {"hydra/hydra_logging": "rich"},
-    # {"hydra": "custom_logging_path"},
-]
+overrides = []
 
 OmegaConf.register_new_resolver("last_bit", lambda x: x.split(".")[-1])
 OmegaConf.register_new_resolver("lower", lambda x: x.lower())
 OmegaConf.register_new_resolver(
     "remove_redundant_words",
-    lambda x: x.replace("scheme", "")
-    .replace("module", "")
-    .replace("config", ""),
+    lambda x: x.replace("scheme", "").replace("module", "").replace("config", ""),
 )
 
 
@@ -64,6 +59,8 @@ class Config:
     model: Any = MISSING
     learner: Any = MISSING
     datamodule: Any = MISSING
+    additional_input_transforms: Any = MISSING
+    additional_target_transforms: Any = MISSING
     task: Any = MISSING
     train_eval_agent: Any = MISSING
     trainer: Any = MISSING
@@ -124,5 +121,5 @@ def collect_config_store():
     config_store = add_train_eval_agent_configs(config_store)
     config_store = add_logger_configs(config_store)
     config_store = add_lightning_callback_configs(config_store)
-
+    config_store = add_transform_configs(config_store)
     return config_store

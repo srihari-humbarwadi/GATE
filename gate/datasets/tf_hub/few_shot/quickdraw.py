@@ -37,7 +37,8 @@ class QuickDrawFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
     ):
         DATASET_NAME = "quickdraw_bitmap"
         split_counts = {
-            key: len(value) for key, value in data_splits_dict["quickdraw"].items()
+            key: len(value)
+            for key, value in data_splits_dict["quickdraw"].items()
         }
         category_text_descriptions = set(
             list(data_splits_dict["quickdraw"]["train"])
@@ -61,7 +62,9 @@ class QuickDrawFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
         log.info(f"data_splits_dict: {split_counts}")
         super(QuickDrawFewShotClassificationDataset, self).__init__(
             modality_config=DottedDict(image=True),
-            input_shape_dict=DottedDict(image=dict(channels=1, height=28, width=28)),
+            input_shape_dict=DottedDict(
+                image=dict(channels=1, height=28, width=28)
+            ),
             dataset_name=DATASET_NAME,
             dataset_root=dataset_root,
             split_name=split_name,

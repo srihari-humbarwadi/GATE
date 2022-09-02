@@ -23,7 +23,9 @@ class FewShotDataModule(DataModule):
         eval_num_episodes: int,
     ):
 
-        super(FewShotDataModule, self).__init__(dataset_config, data_loader_config)
+        super(FewShotDataModule, self).__init__(
+            dataset_config, data_loader_config
+        )
 
         self.data_loader_config = data_loader_config
 
@@ -137,17 +139,20 @@ class FewShotDataModule(DataModule):
             )
 
     def dummy_batch(self):
-        return (
-            {
-                "image": torch.randn(
-                    32,
-                    self.input_shape_dict["image"]["channels"],
-                    self.input_shape_dict["image"]["width"],
-                    self.input_shape_dict["image"]["height"],
-                )
-            },
-            {"image": torch.randint(0, self.dataset_config.num_classes_per_set, (32,))},
+        temp_dataloader = DataLoader(
+            self.val_set,
+            batch_size=self.data_loader_config.val_batch_size,
+            shuffle=self.data_loader_config.eval_shuffle,
+            num_workers=self.data_loader_config.num_workers,
+            pin_memory=self.data_loader_config.pin_memory,
+            prefetch_factor=self.data_loader_config.prefetch_factor,
+            persistent_workers=self.data_loader_config.persistent_workers,
+            drop_last=self.data_loader_config.eval_drop_last,
         )
+
+        for batch in temp_dataloader:
+            input_dict, target_dict = batch
+            return input_dict, target_dict
 
     def train_dataloader(self):
 

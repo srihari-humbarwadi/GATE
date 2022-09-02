@@ -6,8 +6,9 @@ from .episodic_linear_layer_fine_tuning import (
 )
 from .gcm_network import (
     ConditionalGenerativeContrastiveModellingConfig,
-    ConditionalGenerativeContrastiveModellingConvConfig,
-    ConditionalGenerativeContrastiveModellingMLPConfig,
+    ConditionalGenerativeContrastiveModellingConvHeadConfig,
+    ConditionalGenerativeContrastiveModellingMLPHeadConfig,
+    ConditionalGenerativeContrastiveModellingResNetHeadConfig,
 )
 from .learning_rate_scheduler_config import (
     CosineAnnealingLRConfig,
@@ -111,14 +112,20 @@ def add_learner_configs(config_store: ConfigStore):
 
     config_store.store(
         group=LEARNER_CONFIGS,
-        name="ConditionalGenerativeContrastiveMLPModelling",
-        node=ConditionalGenerativeContrastiveModellingMLPConfig,
+        name="ConditionalGenerativeContrastiveMLPHeadModelling",
+        node=ConditionalGenerativeContrastiveModellingMLPHeadConfig,
     )
 
     config_store.store(
         group=LEARNER_CONFIGS,
-        name="ConditionalGenerativeContrastiveConvModelling",
-        node=ConditionalGenerativeContrastiveModellingConvConfig,
+        name="ConditionalGenerativeContrastiveConvHeadModelling",
+        node=ConditionalGenerativeContrastiveModellingConvHeadConfig,
+    )
+
+    config_store.store(
+        group=LEARNER_CONFIGS,
+        name="ConditionalGenerativeContrastiveResNetHeadModelling",
+        node=ConditionalGenerativeContrastiveModellingResNetHeadConfig,
     )
 
     return config_store

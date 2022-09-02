@@ -9,6 +9,8 @@ EXPERIMENT_NAME = "${name}"
 BATCH_SIZE = "${batch_size}"
 NUM_TRAIN_SAMPLES = "${num_train_samples}"
 CHECKPOINT_DIR = "${current_experiment_dir}/checkpoints/"
+ADDITIONAL_INPUT_TRANSFORMS = "${additional_input_transforms}"
+ADDITIONAL_TARGET_TRANSFORMS = "${additional_target_transforms}"
 
 
 @dataclass

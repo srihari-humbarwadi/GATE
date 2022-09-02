@@ -56,12 +56,7 @@ class TrainingEvaluationAgent(LightningModule):
     def build(self, datamodule):
         input_dummy_dict, target_dummy_dict = datamodule.dummy_batch()
 
-        dummy_batch_dict = {
-            key: value
-            for key, value in input_dummy_dict.items()
-            if isinstance(value, torch.Tensor)
-        }
-        self.base_model.build(dummy_batch_dict)
+        self.base_model.build(input_dummy_dict)
 
         self.learner.build(
             model=self.base_model,
@@ -71,7 +66,9 @@ class TrainingEvaluationAgent(LightningModule):
             output_shape_dict=self.output_shape_dict,
         )
 
-        output_dict = self.learner.forward(dummy_batch_dict)
+        output_dict, _, _ = self.learner.step(
+            batch=(input_dummy_dict, target_dummy_dict), batch_idx=0
+        )
         get_dict_shapes = lambda x: {key: value.shape for key, value in x.items()}
 
         output_shape_dict = {
@@ -88,7 +85,7 @@ class TrainingEvaluationAgent(LightningModule):
         )
 
     def forward(self, batch):
-        self.learner.forward(batch)
+        return self.learner.step(batch, batch_idx=0)
 
     def training_step(self, batch, batch_idx):
         task_batch = self.task.data_flow(batch_dict=batch, batch_idx=batch_idx)

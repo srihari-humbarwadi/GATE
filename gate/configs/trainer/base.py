@@ -12,9 +12,9 @@ from gate.configs.string_variables import (
 @dataclass
 class BaseTrainer:
     _target_: str = get_module_import_path(Trainer)
-    gpus: int = -1
+    gpus: int = 0
+    accelerator: str = "cpu"
     enable_checkpointing: bool = True
-    strategy: str = "dp"
     default_root_dir: str = CURRENT_EXPERIMENT_DIR
     progress_bar_refresh_rate: int = 1
     enable_progress_bar: bool = True

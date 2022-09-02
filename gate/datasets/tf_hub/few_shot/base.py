@@ -8,6 +8,7 @@ import tensorflow_datasets as tfds
 import torch
 from dotted_dict import DottedDict
 from omegaconf import DictConfig
+from torch import Tensor
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
@@ -22,6 +23,31 @@ from gate.datasets.data_utils import (
 log = get_logger(
     __name__,
 )
+
+
+# convert a list of dicts into a dict of lists
+def list_of_dicts_to_dict_of_lists(list_of_dicts):
+    return {key: [x[key] for x in list_of_dicts] for key in list_of_dicts[0].keys()}
+
+
+def apply_input_transforms(inputs, transforms):
+    inputs = [transforms(x) for x in inputs]
+
+    if isinstance(inputs[0], (Dict, DictConfig)):
+
+        inputs = list_of_dicts_to_dict_of_lists(inputs)
+
+        inputs = {key: torch.stack(value, dim=0) for key, value in inputs.items()}
+    else:
+        if isinstance(inputs[0], Tensor):
+            inputs = torch.stack(inputs, dim=0)
+
+    return inputs
+
+
+def apply_target_transforms(targets, transforms):
+    targets = transforms(targets)
+    return targets
 
 
 class FewShotClassificationDatasetTFDS(Dataset):
@@ -50,7 +76,7 @@ class FewShotClassificationDatasetTFDS(Dataset):
         query_set_target_transform: Any = None,
         support_to_query_ratio: float = 0.75,
         rescan_cache: bool = True,
-        label_extractor_fn: Optional[Callable] = None,
+        label_extractor_fn: Optional[Any] = None,
     ):
         super(FewShotClassificationDatasetTFDS, self).__init__()
 
@@ -135,9 +161,7 @@ class FewShotClassificationDatasetTFDS(Dataset):
             subset_samples = []
             with tqdm(total=len(subset)) as pbar:
                 for sample in subset:
-                    sample = {
-                        key: sample[key].numpy() for key in sample.keys()
-                    }
+                    sample = {key: sample[key].numpy() for key in sample.keys()}
                     subset_samples.append(sample)
                     pbar.update(1)
                 self.subsets.append(subset_samples)
@@ -147,30 +171,11 @@ class FewShotClassificationDatasetTFDS(Dataset):
 
         self.class_to_address_dict = get_class_to_idx_dict(
             self.subsets,
-            class_name_key=self.input_target_annotation_keys[
-                "target_annotations"
-            ],
+            class_name_key=self.input_target_annotation_keys["target_annotations"],
             label_extractor_fn=label_extractor_fn,
         )
 
         self.label_extractor_fn = label_extractor_fn
-        dataset_root = (
-            pathlib.Path(self.dataset_root)
-            if isinstance(self.dataset_root, str)
-            else self.dataset_root
-        )
-
-        hdf5_filepath = (
-            dataset_root / f"{self.dataset_name}_{split_name}_"
-            f"few_shot_classification_dataset.h5"
-        )
-
-        if hdf5_filepath.exists() and not rescan_cache:
-            self.class_to_address_dict = h5py.File(hdf5_filepath, "r")
-        else:
-            self.class_to_address_dict = store_dict_as_hdf5(
-                self.class_to_address_dict, hdf5_filepath
-            )
 
         if self.split_config is None:
             if split_name == FewShotSuperSplitSetOptions.TRAIN:
@@ -179,8 +184,7 @@ class FewShotClassificationDatasetTFDS(Dataset):
                     for idx, (key, value) in enumerate(
                         self.class_to_address_dict.items()
                     )
-                    if idx
-                    < split_percentage[FewShotSuperSplitSetOptions.TRAIN]
+                    if idx < split_percentage[FewShotSuperSplitSetOptions.TRAIN]
                 }
             elif split_name == FewShotSuperSplitSetOptions.VAL:
                 self.current_class_to_address_dict = {
@@ -229,16 +233,12 @@ class FewShotClassificationDatasetTFDS(Dataset):
         query_set_labels = []
 
         num_classes_per_set = (
-            rng.choice(
-                range(self.min_num_classes_per_set, self.num_classes_per_set)
-            )
+            rng.choice(range(self.min_num_classes_per_set, self.num_classes_per_set))
             if self.variable_num_classes_per_set
             else self.num_classes_per_set
         )
 
-        available_class_labels = list(
-            self.current_class_to_address_dict.keys()
-        )
+        available_class_labels = list(self.current_class_to_address_dict.keys())
         select_classes_for_set = rng.choice(
             available_class_labels,
             size=min(num_classes_per_set, len(available_class_labels)),
@@ -281,9 +281,7 @@ class FewShotClassificationDatasetTFDS(Dataset):
             )
 
             selected_samples_addresses = [
-                self.current_class_to_address_dict[class_name][
-                    sample_address_idx
-                ]
+                self.current_class_to_address_dict[class_name][sample_address_idx]
                 for sample_address_idx in selected_samples_addresses_idx
             ]
 
@@ -312,8 +310,7 @@ class FewShotClassificationDatasetTFDS(Dataset):
 
             if isinstance(data_inputs[0], np.ndarray):
                 data_inputs = [
-                    torch.tensor(sample).permute(2, 0, 1)
-                    for sample in data_inputs
+                    torch.tensor(sample).permute(2, 0, 1) for sample in data_inputs
                 ]
 
             data_labels = [data_labels[i] for i in shuffled_idx]
@@ -329,39 +326,27 @@ class FewShotClassificationDatasetTFDS(Dataset):
             query_set_labels.extend(data_labels[train_set_range:])
 
         if self.support_set_input_transform:
-            support_set_inputs = torch.stack(
-                [
-                    self.support_set_input_transform(input)
-                    for input in support_set_inputs
-                ],
-                dim=0,
+            support_set_inputs = apply_input_transforms(
+                inputs=support_set_inputs,
+                transforms=self.support_set_input_transform,
             )
 
         if self.support_set_target_transform:
-            support_set_labels = torch.stack(
-                [
-                    self.support_set_target_transform(label)
-                    for label in support_set_labels
-                ],
-                dim=0,
+            support_set_labels = apply_target_transforms(
+                targets=support_set_labels,
+                transforms=self.support_set_target_transform,
             )
 
         if self.query_set_input_transform:
-            query_set_inputs = torch.stack(
-                [
-                    self.query_set_input_transform(input)
-                    for input in query_set_inputs
-                ],
-                dim=0,
+            query_set_inputs = apply_input_transforms(
+                inputs=query_set_inputs,
+                transforms=self.query_set_input_transform,
             )
 
         if self.query_set_target_transform:
-            query_set_labels = torch.stack(
-                [
-                    self.query_set_target_transform(label)
-                    for label in query_set_labels
-                ],
-                dim=0,
+            query_set_labels = apply_target_transforms(
+                targets=query_set_labels,
+                transforms=self.query_set_target_transform,
             )
 
         support_set_inputs = (
@@ -385,18 +370,60 @@ class FewShotClassificationDatasetTFDS(Dataset):
             else query_set_labels
         )
 
-        input_dict = DottedDict(
-            image=DottedDict(
-                support_set=support_set_inputs, query_set=query_set_inputs
-            ),
-        )
+        if not isinstance(support_set_inputs, (Dict, DictConfig)):
 
-        label_dict = DottedDict(
-            image=DottedDict(
-                support_set=support_set_labels, query_set=query_set_labels
+            input_dict = DottedDict(
+                image=DottedDict(
+                    support_set=support_set_inputs,
+                    query_set=query_set_inputs,
+                ),
             )
-        )
+        else:
 
+            input_dict = DottedDict(
+                image=DottedDict(
+                    support_set=support_set_inputs["image"],
+                    query_set=query_set_inputs["image"],
+                    support_set_extras={
+                        key: value
+                        for key, value in support_set_inputs.items()
+                        if key != "image"
+                    },
+                    query_set_extras={
+                        key: value
+                        for key, value in query_set_inputs.items()
+                        if key != "image"
+                    },
+                ),
+            )
+
+        if not isinstance(support_set_labels, (Dict, DictConfig)):
+
+            label_dict = DottedDict(
+                image=DottedDict(
+                    support_set=support_set_labels,
+                    query_set=query_set_labels,
+                )
+            )
+
+        else:
+
+            label_dict = DottedDict(
+                image=DottedDict(
+                    support_set=support_set_labels["image"],
+                    query_set=query_set_labels["image"],
+                    support_set_extras={
+                        key: value
+                        for key, value in support_set_labels.items()
+                        if key != "image"
+                    },
+                    query_set_extras={
+                        key: value
+                        for key, value in query_set_labels.items()
+                        if key != "image"
+                    },
+                ),
+            )
         return input_dict, label_dict
 
 
@@ -543,8 +570,7 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
                     for idx, (key, value) in enumerate(
                         self.class_to_address_dict.items()
                     )
-                    if idx
-                    < split_percentage[FewShotSuperSplitSetOptions.TRAIN]
+                    if idx < split_percentage[FewShotSuperSplitSetOptions.TRAIN]
                 }
             elif split_name == FewShotSuperSplitSetOptions.VAL:
                 self.current_class_to_address_dict = {
@@ -596,16 +622,12 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
         #     f"Check {self.min_num_classes_per_set} {self.num_classes_per_set}"
         # )
         num_classes_per_set = (
-            rng.choice(
-                range(self.min_num_classes_per_set, self.num_classes_per_set)
-            )
+            rng.choice(range(self.min_num_classes_per_set, self.num_classes_per_set))
             if self.variable_num_classes_per_set
             else self.num_classes_per_set
         )
 
-        available_class_labels = list(
-            self.current_class_to_address_dict.keys()
-        )
+        available_class_labels = list(self.current_class_to_address_dict.keys())
         select_classes_for_set = rng.choice(
             available_class_labels,
             size=min(num_classes_per_set, len(available_class_labels)),
@@ -648,31 +670,24 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
             )
 
             selected_samples_addresses = [
-                self.current_class_to_address_dict[class_name][
-                    sample_address_idx
-                ]
+                self.current_class_to_address_dict[class_name][sample_address_idx]
                 for sample_address_idx in selected_samples_addresses_idx
             ]
 
             # log.info("HERE HERE")
 
             data_inputs = [
-                self.subsets[object_dict["subset_idx"]][
-                    object_dict["sample_idx"]
-                ]["image"][
-                    object_dict["bbox"]["x_min"] : object_dict["bbox"][
-                        "x_max"
-                    ],
-                    object_dict["bbox"]["y_min"] : object_dict["bbox"][
-                        "y_max"
-                    ],
+                self.subsets[object_dict["subset_idx"]][object_dict["sample_idx"]][
+                    "image"
+                ][
+                    object_dict["bbox"]["x_min"] : object_dict["bbox"]["x_max"],
+                    object_dict["bbox"]["y_min"] : object_dict["bbox"]["y_max"],
                 ]
                 for object_dict in selected_samples_addresses
             ]
 
             data_labels = [
-                object_dict["label"]
-                for object_dict in selected_samples_addresses
+                object_dict["label"] for object_dict in selected_samples_addresses
             ]
 
             # log.info("HERE HERE HERE")
@@ -701,8 +716,7 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
 
             if isinstance(data_inputs[0], np.ndarray):
                 data_inputs = [
-                    torch.tensor(sample).permute(2, 0, 1)
-                    for sample in data_inputs
+                    torch.tensor(sample).permute(2, 0, 1) for sample in data_inputs
                 ]
 
             data_labels = [data_labels[i] for i in shuffled_idx]
@@ -737,19 +751,13 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
 
         if self.query_set_input_transform:
             query_set_inputs = torch.stack(
-                [
-                    self.query_set_input_transform(input)
-                    for input in query_set_inputs
-                ],
+                [self.query_set_input_transform(input) for input in query_set_inputs],
                 dim=0,
             )
 
         if self.query_set_target_transform:
             query_set_labels = torch.stack(
-                [
-                    self.query_set_target_transform(label)
-                    for label in query_set_labels
-                ],
+                [self.query_set_target_transform(label) for label in query_set_labels],
                 dim=0,
             )
 
@@ -781,9 +789,7 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
         )
 
         label_dict = DottedDict(
-            image=DottedDict(
-                support_set=support_set_labels, query_set=query_set_labels
-            )
+            image=DottedDict(support_set=support_set_labels, query_set=query_set_labels)
         )
 
         return input_dict, label_dict

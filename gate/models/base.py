@@ -2,6 +2,7 @@ from typing import Union
 
 import torch.nn as nn
 from dotted_dict import DottedDict
+from omegaconf import DictConfig
 
 from gate.configs.datamodule.base import ShapeConfig
 
@@ -20,7 +21,7 @@ def generic_missing_forward(module, modality_name):
 class ModelModule(nn.Module):
     def __init__(
         self,
-        input_shape_dict: Union[ShapeConfig, DottedDict],
+        input_shape_dict: DictConfig,
     ):
         super().__init__()
         self.input_shape_dict = input_shape_dict

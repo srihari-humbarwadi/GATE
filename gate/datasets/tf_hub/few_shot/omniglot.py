@@ -7,7 +7,6 @@ from gate.base.utils.loggers import get_logger
 from gate.datasets.data_utils import FewShotSuperSplitSetOptions
 from gate.datasets.tf_hub import bytes_to_string
 from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
-from gate.datasets.tf_hub.standard.base import ClassificationDataset
 
 log = get_logger(
     __name__,
@@ -36,7 +35,9 @@ class OmniglotFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
     ):
         super(OmniglotFewShotClassificationDataset, self).__init__(
             modality_config=DottedDict(image=True),
-            input_shape_dict=DottedDict(image=dict(channels=3, height=105, width=105)),
+            input_shape_dict=DottedDict(
+                image=dict(channels=3, height=105, width=105)
+            ),
             dataset_name="omniglot",
             dataset_root=dataset_root,
             split_name=split_name,
@@ -62,7 +63,7 @@ class OmniglotFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
                 FewShotSuperSplitSetOptions.VAL: 200,
                 FewShotSuperSplitSetOptions.TEST: 222,
             },
-            label_extractor_fn=lambda x: bytes_to_string(x),
+            label_extractor_fn=bytes_to_string,
             min_num_classes_per_set=min_num_classes_per_set,
             min_num_samples_per_class=min_num_samples_per_class,
         )

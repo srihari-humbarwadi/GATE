@@ -114,9 +114,7 @@ def get_class_to_image_idx_and_bbox(
 
     temp_class_to_image_idx_and_bbox = {}
     for key in sorted(class_to_image_idx_and_bbox.keys()):
-        temp_class_to_image_idx_and_bbox[key] = class_to_image_idx_and_bbox[
-            key
-        ]
+        temp_class_to_image_idx_and_bbox[key] = class_to_image_idx_and_bbox[key]
 
     return temp_class_to_image_idx_and_bbox
 

@@ -156,9 +156,6 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
                     modality_name
                 ]
 
-                model_features_flatten = model_features.view(
-                    (model_features.shape[0], -1)
-                )
                 # Keep features non-flattened for now for downstream use in GCM
                 output_dict[modality_name] = model_features  # _flatten
 
