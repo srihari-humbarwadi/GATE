@@ -2,7 +2,6 @@ import multiprocessing.reduction
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sn
@@ -248,19 +247,6 @@ class LogF1PrecRecHeatmap(Callback):
 
             self.preds.clear()
             self.targets.clear()
-
-
-def get_video_log_file(video_tensor: torch.Tensor) -> wandb.Video:
-    video_tensor = video_tensor.cpu().permute([0, 2, 3, 1]).cpu().numpy()
-    video_shape = video_tensor.shape
-    video_tensor = video_tensor.reshape(
-        -1, video_tensor.shape[2], video_tensor.shape[3]
-    )
-    video_tensor = cv2.cvtColor(video_tensor, cv2.COLOR_BGR2RGB)
-    video_tensor = video_tensor.reshape(video_shape) * 255
-    video_tensor = torch.Tensor(video_tensor).permute([0, 3, 1, 2]).type(torch.uint8)
-
-    return wandb.Video(video_tensor, fps=8, format="gif")
 
 
 class LogGrads(Callback):

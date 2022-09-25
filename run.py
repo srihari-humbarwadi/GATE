@@ -7,6 +7,20 @@ import rich
 from omegaconf import DictConfig, OmegaConf
 from rich.traceback import install
 from rich.tree import Tree
+import tensorflow as tf
+
+gpus = tf.config.list_physical_devices("GPU")
+
+if gpus:
+    try:
+        # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.list_logical_devices("GPU")
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        # Memory growth must be set before GPUs have been initialized
+        print(e)
 
 from gate.base.utils.loggers import get_logger
 from gate.base.utils.rank_zero_ops import extras
