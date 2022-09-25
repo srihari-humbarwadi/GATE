@@ -11,7 +11,6 @@ from rich.tree import Tree
 from gate.base.utils.loggers import get_logger
 from gate.base.utils.rank_zero_ops import extras
 
-print("Finish importing stuff 😏")
 # load environment variables from `.env-` file if it exists
 # recursively searches for `.env` in all folders starting from work dir
 
@@ -19,12 +18,9 @@ dotenv.load_dotenv(override=True, verbose=True)
 install(show_locals=False, word_wrap=True, width=350)
 log = get_logger(__name__)
 
-print("Start printing config store options")
-
 
 from gate.configs.config import collect_config_store
 
-print("Finish printing config store options")
 
 config_store = collect_config_store()
 
