@@ -29,9 +29,12 @@ class MSCOCOFewShotClassificationDataset(
         num_episodes: int,
         min_num_classes_per_set: int,
         min_num_samples_per_class: int,
-        num_classes_per_set: Union[int, List[int]],  # n_way
-        num_samples_per_class: Union[int, List[int]],  # n_shot
+        min_num_queries_per_class: int,
+        num_classes_per_set: int,  # n_way
+        num_samples_per_class: int,  # n_shot
+        num_queries_per_class: int,
         variable_num_samples_per_class: bool,
+        variable_num_queries_per_class: bool,
         variable_num_classes_per_set: bool,
         support_set_input_transform: Optional[Any],
         query_set_input_transform: Optional[Any],
@@ -57,8 +60,10 @@ class MSCOCOFewShotClassificationDataset(
             num_episodes=num_episodes,
             num_classes_per_set=num_classes_per_set,
             num_samples_per_class=num_samples_per_class,
+            num_queries_per_class=num_queries_per_class,
             variable_num_samples_per_class=variable_num_samples_per_class,
             variable_num_classes_per_set=variable_num_classes_per_set,
+            variable_num_queries_per_class=variable_num_queries_per_class,
             support_to_query_ratio=support_to_query_ratio,
             rescan_cache=rescan_cache,
             support_set_input_transform=support_set_input_transform,
@@ -74,5 +79,6 @@ class MSCOCOFewShotClassificationDataset(
             label_extractor_fn=lambda x: bytes_to_string(x),
             min_num_classes_per_set=min_num_classes_per_set,
             min_num_samples_per_class=min_num_samples_per_class,
+            min_num_queries_per_class=min_num_queries_per_class,
             subset_split_name_list=["val", "test"],
         )

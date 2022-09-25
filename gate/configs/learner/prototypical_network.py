@@ -20,5 +20,5 @@ class EpisodicPrototypicalNetworkConfig(LearnerConfig):
     )
     fine_tune_all_layers: bool = True
     use_input_instance_norm: bool = True
-    optimizer_config: BaseOptimizerConfig = AdamOptimizerConfig(lr=1e-3)
+    optimizer_config: BaseOptimizerConfig = AdamOptimizerConfig(lr=2e-5)
     lr_scheduler_config: LRSchedulerConfig = CosineAnnealingLRConfig()

@@ -440,3 +440,11 @@ def outer_gaussian_product(x_mean, x_precision, y_mean, y_precision):
         + product_normalisation_exponent
     ).sum(dim=-1)
     return product_mean, product_precision, log_product_normalisation
+
+
+def replace_with_counts(targets):
+    target_counts = torch.zeros_like(targets)
+    unique_targets, counts = targets.unique(return_counts=True)
+    for target, count in zip(unique_targets, counts):
+        target_counts[targets == target] = count
+    return target_counts

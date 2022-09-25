@@ -22,9 +22,12 @@ class OmniglotFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
         num_episodes: int,
         min_num_classes_per_set: int,
         min_num_samples_per_class: int,
+        min_num_queries_per_class: int,
         num_classes_per_set: int,  # n_way
         num_samples_per_class: int,  # n_shot
+        num_queries_per_class: int,
         variable_num_samples_per_class: bool,
+        variable_num_queries_per_class: bool,
         variable_num_classes_per_set: bool,
         support_set_input_transform: Any = None,
         query_set_input_transform: Any = None,
@@ -45,8 +48,10 @@ class OmniglotFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
             num_episodes=num_episodes,
             num_classes_per_set=num_classes_per_set,
             num_samples_per_class=num_samples_per_class,
+            num_queries_per_class=num_queries_per_class,
             variable_num_samples_per_class=variable_num_samples_per_class,
             variable_num_classes_per_set=variable_num_classes_per_set,
+            variable_num_queries_per_class=variable_num_queries_per_class,
             support_to_query_ratio=support_to_query_ratio,
             rescan_cache=rescan_cache,
             input_target_annotation_keys=dict(
@@ -66,4 +71,5 @@ class OmniglotFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
             label_extractor_fn=bytes_to_string,
             min_num_classes_per_set=min_num_classes_per_set,
             min_num_samples_per_class=min_num_samples_per_class,
+            min_num_queries_per_class=min_num_queries_per_class
         )

@@ -1,7 +1,7 @@
 from dataclasses import MISSING, dataclass, field
 from typing import List
 
-from torch.optim import Adam
+from torch.optim import Adam, AdamW
 
 from gate.configs import get_module_import_path
 
@@ -13,9 +13,18 @@ class BaseOptimizerConfig:
 
 
 @dataclass
+class AdamWOptimizerConfig(BaseOptimizerConfig):
+    _target_: str = get_module_import_path(AdamW)
+    lr: float = 2e-5
+    weight_decay: float = 0.00001
+    amsgrad: bool = False
+    betas: List = field(default_factory=lambda: [0.9, 0.999])
+
+
+@dataclass
 class AdamOptimizerConfig(BaseOptimizerConfig):
     _target_: str = get_module_import_path(Adam)
-    lr: float = 1e-3
+    lr: float = 2e-5
     weight_decay: float = 0.00001
     amsgrad: bool = False
     betas: List = field(default_factory=lambda: [0.9, 0.999])
@@ -23,7 +32,5 @@ class AdamOptimizerConfig(BaseOptimizerConfig):
 
 @dataclass
 class BiLevelOptimizerConfig:
-    outer_loop_optimizer_config: BaseOptimizerConfig = AdamOptimizerConfig()
-    inner_loop_optimizer_config: BaseOptimizerConfig = AdamOptimizerConfig(
-        lr=2e-5
-    )
+    outer_loop_optimizer_config: BaseOptimizerConfig = AdamWOptimizerConfig()
+    inner_loop_optimizer_config: BaseOptimizerConfig = AdamWOptimizerConfig(lr=2e-5)

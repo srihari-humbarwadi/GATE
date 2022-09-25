@@ -12,12 +12,6 @@ log = get_logger(__name__)
 
 log.info(f"Loaded dotenv variables: {dotenv_loaded_vars}")
 
-dataset = tfds.load(
-    "visual_domain_decathlon/vgg-flowers",
-    split="test",
-    shuffle_files=False,
-    download=True,
-    as_supervised=False,
-    data_dir="playground/datasets/vgg_flowers",
-    with_info=True,
-)
+
+dataset = load_dataset("wikimedia/wit_base", cache_dir="/mnt/nas/datasets/")
+log.info(f"Loaded dataset: {dataset}")

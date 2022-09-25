@@ -1,12 +1,14 @@
 from collections import defaultdict
 from copy import deepcopy
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
+import higher
 import hydra
 import torch
 import torch.nn.functional as F
 import tqdm
 from dotted_dict import DottedDict
+from torch import nn
 
 import gate.base.utils.loggers as loggers
 from gate.configs.datamodule.base import ShapeConfig
@@ -18,19 +20,43 @@ log = loggers.get_logger(
 )
 
 
-class EpisodicLinearLayerFineTuningScheme(LearnerModule):
+class DynamicWeightLinear(nn.Module):
+    def __init__(
+        self,
+        weights: torch.Tensor,
+        use_cosine_similarity: bool = False,
+        bias: Optional[torch.Tensor] = None,
+    ):
+        super().__init__()
+        self.weight = weights
+        self.bias = bias
+        self.use_cosine_similarity = use_cosine_similarity
+
+    def forward(self, x):
+        x = x["image"]
+        if len(x.shape) > 2:
+            x = x.view(x.shape[0], -1)
+
+        if self.use_cosine_similarity:
+            x = F.normalize(x, dim=-1)
+
+        return {"image": F.linear(x, self.weight, self.bias)}
+
+
+class EpisodicMAML(LearnerModule):
     def __init__(
         self,
         optimizer_config: Dict[str, Any],
         lr_scheduler_config: Dict[str, Any],
         fine_tune_all_layers: bool = False,
         use_input_instance_norm: bool = False,
-        use_cosine_similarity: bool = True,
-        use_weight_norm: bool = True,
+        use_cosine_similarity: bool = False,
+        use_weight_norm: bool = False,
         temperature: float = 10.0,
-        inner_loop_steps: int = 100,
+        inner_loop_steps: int = 5,
+        manual_optimization: bool = True,
     ):
-        super(EpisodicLinearLayerFineTuningScheme, self).__init__()
+        super(EpisodicMAML, self).__init__()
         self.output_layer_dict = torch.nn.ModuleDict()
         self.input_layer_dict = torch.nn.ModuleDict()
         self.optimizer_config = optimizer_config.outer_loop_optimizer_config
@@ -44,7 +70,7 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         self.inner_loop_steps = inner_loop_steps
         self.use_cosine_similarity = use_cosine_similarity
         self.use_weight_norm = use_weight_norm
-        self.temperature = temperature
+        self.temperature = nn.Parameter(torch.tensor(temperature), requires_grad=True)
 
         self.learner_metrics_dict = {"loss": F.cross_entropy}
 
@@ -75,7 +101,6 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         )
 
         self.model: torch.nn.Module = model
-        self.inner_loop_model = deepcopy(self.model)
         self.task_config = task_config
         self.episode_idx = 0
 
@@ -97,6 +122,18 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                     "image": model_features_flatten.shape[1]
                 }
 
+                for key, value in self.feature_embedding_shape_dict.items():
+                    self.output_layer_dict[key] = torch.nn.Linear(
+                        in_features=value,
+                        out_features=1,
+                        bias=False,
+                    )
+
+                    if self.use_weight_norm:
+                        self.output_layer_dict[key] = torch.nn.utils.weight_norm(
+                            self.output_layer_dict[key]
+                        )
+
         log.info(
             f"Built {self.__class__.__name__} "
             f"with input_shape {input_shape_dict}"
@@ -115,18 +152,18 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         )
 
     def configure_optimizers(self):
-        if self.fine_tune_all_layers:
-            params = self.parameters()
-        else:
-            params = self.get_learner_only_params()
+        outer_loop_parameters = (
+            self.parameters()
+            if self.fine_tune_all_layers
+            else list(self.output_layer_dict.parameters()) + [self.temperature]
+        )
 
-        return super().configure_optimizers(params=params)
+        return super().configure_optimizers(params=outer_loop_parameters)
 
     def predict(
         self,
         batch,
-        backbone_module: torch.nn.Module = None,
-        head_modules: Dict[str, torch.nn.Module] = None,
+        model: torch.nn.Module,
     ):
 
         output_dict = {}
@@ -135,18 +172,9 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
             if is_supported:
                 current_input = batch[modality_name]
 
-                model_features = backbone_module.forward(
-                    {modality_name: current_input}
-                )[modality_name]
-
-                model_features_flatten = model_features.view(
-                    (model_features.shape[0], -1)
-                )
-
-                if self.use_cosine_similarity:
-                    model_features_flatten = F.normalize(model_features_flatten, dim=-1)
-
-                model_logits = head_modules[modality_name](model_features_flatten)
+                model_logits = model.forward({modality_name: current_input})[
+                    modality_name
+                ]
 
                 model_logits = self.temperature * model_logits
 
@@ -157,25 +185,13 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
     def forward(
         self,
         batch,
-        backbone_module: torch.nn.Module = None,
-        head_modules: Dict[str, torch.nn.Module] = None,
+        model: torch.nn.Module,
     ):
-        if backbone_module is None:
-            backbone_module = self.model
 
-        if head_modules is None:
-            head_modules = self.output_layer_dict
-
-        return self.predict(
-            batch, backbone_module=backbone_module, head_modules=head_modules
-        )
+        return self.predict(batch, model=model)
 
     def step(
-        self,
-        batch,
-        batch_idx,
-        task_metrics_dict=None,
-        phase_name="debug",
+        self, batch, batch_idx, task_metrics_dict=None, phase_name="debug", train=True
     ):
         torch.set_grad_enabled(True)
         self.train()
@@ -194,6 +210,9 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         query_set_targets = target_dict["image"]["query_set"].to(
             torch.cuda.current_device()
         )
+        self.to(torch.cuda.current_device())
+        self.train()
+
         episodic_optimizer = None
         output_dict = defaultdict(list)
         for (
@@ -213,86 +232,56 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
             query_set_input = dict(image=query_set_input)
             query_set_target = dict(image=query_set_target)
 
-            self.inner_loop_model.load_state_dict(self.model.state_dict())
-            self.inner_loop_model.to(support_set_input["image"].device)
-            self.inner_loop_model.train()
-
-            for key, value in self.feature_embedding_shape_dict.items():
-                self.output_layer_dict[key] = torch.nn.Linear(
-                    in_features=value,
-                    out_features=int(torch.max(support_set_target[key]) + 1),
-                    bias=False,
-                )
-                self.output_layer_dict[key].to(support_set_input[key].device)
-                if self.use_weight_norm:
-                    self.output_layer_dict[key] = torch.nn.utils.weight_norm(
-                        self.output_layer_dict[key]
-                    )
-
-            self.output_layer_dict.train()
-            non_feature_embedding_params = list(self.output_layer_dict.parameters())
-
-            params = (
-                (
-                    list(self.inner_loop_model.parameters())
-                    + non_feature_embedding_params
-                )
-                if self.fine_tune_all_layers
-                else self.output_layer_dict.parameters()
+            classifier_weights = self.output_layer_dict["image"].weight.repeat(
+                [max(support_set_target["image"]) + 1, 1]
             )
+
+            classifier_weights = nn.Parameter(classifier_weights, requires_grad=True)
 
             if episodic_optimizer:
                 del episodic_optimizer
 
-            episodic_optimizer = hydra.utils.instantiate(
-                config=self.inner_loop_optimizer_config,
-                params=params,
+            classifer = DynamicWeightLinear(
+                weights=classifier_weights,
+                use_cosine_similarity=self.use_cosine_similarity,
+            )
+            full_model = torch.nn.Sequential(
+                self.model, nn.utils.weight_norm(classifer, name="weight", dim=0)
             )
 
-            with tqdm.tqdm(total=self.inner_loop_steps) as pbar:
-                for step_idx in range(self.inner_loop_steps):
-                    current_output_dict = self.forward(
-                        support_set_input,
-                        backbone_module=self.inner_loop_model,
-                        head_modules=self.output_layer_dict,
-                    )
+            inner_loop_params = (
+                full_model.parameters()
+                if self.fine_tune_all_layers
+                else classifer.parameters()
+            )
 
-                    (
-                        support_set_loss,
-                        computed_task_metrics_dict,
-                    ) = self.compute_metrics(
-                        phase_name=phase_name,
-                        set_name="support_set",
-                        output_dict=current_output_dict,
-                        target_dict=support_set_target,
-                        task_metrics_dict=task_metrics_dict,
-                        learner_metrics_dict=self.learner_metrics_dict,
-                        episode_idx=self.episode_idx,
-                        step_idx=step_idx,
-                        computed_metrics_dict=computed_task_metrics_dict,
-                    )
+            episodic_optimizer = hydra.utils.instantiate(
+                config=self.inner_loop_optimizer_config,
+                params=inner_loop_params,
+            )
 
-                    episodic_optimizer.zero_grad()
+            track_higher_grads = True if train else False
+            with higher.innerloop_ctx(
+                full_model,
+                episodic_optimizer,
+                copy_initial_weights=False,
+                track_higher_grads=track_higher_grads,
+            ) as (inner_loop_model, inner_loop_optimizer):
 
-                    support_set_loss.backward()
-
-                    episodic_optimizer.step()
-
-                    with torch.no_grad():
+                with tqdm.tqdm(total=self.inner_loop_steps) as pbar:
+                    for step_idx in range(self.inner_loop_steps):
                         current_output_dict = self.forward(
-                            query_set_input,
-                            backbone_module=self.inner_loop_model,
-                            head_modules=self.output_layer_dict,
+                            support_set_input, model=inner_loop_model
                         )
 
                         (
-                            query_set_loss,
+                            support_set_loss,
                             computed_task_metrics_dict,
                         ) = self.compute_metrics(
                             phase_name=phase_name,
-                            set_name="query_set",
+                            set_name="support_set",
                             output_dict=current_output_dict,
-                            target_dict=query_set_target,
+                            target_dict=support_set_target,
                             task_metrics_dict=task_metrics_dict,
                             learner_metrics_dict=self.learner_metrics_dict,
                             episode_idx=self.episode_idx,
@@ -300,25 +289,42 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                             computed_metrics_dict=computed_task_metrics_dict,
                         )
 
-                    pbar.update(1)
-                    pbar.set_description(
-                        f"Support Set Loss: {support_set_loss}, "
-                        f"Query Set Loss: {query_set_loss}"
-                    )
+                        inner_loop_optimizer.step(support_set_loss)
+
+                        pbar.update(1)
+                        pbar.set_description(f"Support Set Loss: {support_set_loss}, ")
+
+                current_output_dict = self.forward(
+                    query_set_input,
+                    model=inner_loop_model,
+                )
+
+                (query_set_loss, computed_task_metrics_dict,) = self.compute_metrics(
+                    phase_name=phase_name,
+                    set_name="query_set",
+                    output_dict=current_output_dict,
+                    target_dict=query_set_target,
+                    task_metrics_dict=task_metrics_dict,
+                    learner_metrics_dict=self.learner_metrics_dict,
+                    episode_idx=self.episode_idx,
+                    step_idx=step_idx,
+                    computed_metrics_dict=computed_task_metrics_dict,
+                )
 
                 for key, value in current_output_dict.items():
                     output_dict[key].append(value)
 
-            opt_loss_list.append(query_set_loss)
-        self.episode_idx += 1
+                opt_loss_list.append(query_set_loss)
+
+                self.episode_idx += 1
 
         for key, value in output_dict.items():
             output_dict[key] = torch.stack(value, dim=0)
 
-        return (
-            output_dict,
-            computed_task_metrics_dict,
-            torch.mean(torch.stack(opt_loss_list)),
+        return DottedDict(
+            output_dict=output_dict,
+            computed_task_metrics_dict=computed_task_metrics_dict,
+            opt_loss=torch.mean(torch.stack(opt_loss_list)),
         )
 
     def compute_metrics(
@@ -357,13 +363,18 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                         target_dict[output_name].clone().detach().cpu(),
                     )
                     computed_metrics_dict[
-                        f"{phase_name}/episode_{episode_idx}/{set_name}_{metric_key}"
+                        f"{phase_name}/episode_{episode_idx}/{set_name}/{metric_key}"
                     ].append(metric_value.detach().cpu())
 
                     if step_idx == self.inner_loop_steps - 1:
                         computed_metrics_dict[
-                            f"{phase_name}/{set_name}_{metric_key}"
+                            f"{phase_name}/{set_name}/{metric_key}"
                         ].append(metric_value.detach().cpu())
+
+                        if "query" in metric_key and "accuracy" in metric_key:
+                            computed_metrics_dict[
+                                f"{phase_name}/{set_name}_accuracy"
+                            ].append(metric_value.detach().cpu())
 
         for (
             metric_key,
@@ -375,59 +386,66 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                     target_dict[output_name],
                 )
                 computed_metrics_dict[
-                    f"{phase_name}/episode_{episode_idx}/{set_name}_{metric_key}"
+                    f"{phase_name}/episode_{episode_idx}/{set_name}/{metric_key}"
                 ].append(metric_value.detach().cpu())
 
                 opt_loss_list.append(metric_value)
 
                 if step_idx == self.inner_loop_steps - 1:
                     computed_metrics_dict[
-                        f"{phase_name}/{set_name}_{metric_key}"
+                        f"{phase_name}/{set_name}/{metric_key}"
                     ].append(metric_value.detach().cpu())
 
         return torch.stack(opt_loss_list).mean(), computed_metrics_dict
 
-    def training_step(
-        self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
-    ):
-        output_dict, computed_task_metrics_dict, opt_loss = self.step(
+    def training_step(self, batch, batch_idx, task_metrics_dict, top_level_pl_module):
+
+        optimizers = top_level_pl_module.optimizers()
+
+        step_dict = self.step(
             batch=batch,
             batch_idx=batch_idx,
             task_metrics_dict=task_metrics_dict,
             phase_name="training",
         )
 
-        computed_task_metrics_dict["training/opt_loss"] = opt_loss
-        output_dict["loss"] = opt_loss
+        step_dict.computed_task_metrics_dict["training/opt_loss"] = step_dict.opt_loss
+        step_dict.output_dict["loss"] = step_dict.opt_loss
 
-        return opt_loss, computed_task_metrics_dict
+        optimizers.zero_grad()
+        top_level_pl_module.manual_backward(step_dict.opt_loss)
+        optimizers.step()
+
+        return step_dict.opt_loss, step_dict.computed_task_metrics_dict
 
     def validation_step(
         self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
     ):
 
-        output_dict, computed_task_metrics_dict, opt_loss = self.step(
+        step_dict = self.step(
             batch=batch,
             batch_idx=batch_idx,
             task_metrics_dict=task_metrics_dict,
             phase_name="validation",
         )
 
-        computed_task_metrics_dict["validation/opt_loss"] = opt_loss
+        step_dict.computed_task_metrics_dict["validation/opt_loss"] = step_dict.opt_loss
+        step_dict.output_dict["loss"] = step_dict.opt_loss
 
-        return opt_loss, computed_task_metrics_dict
+        return step_dict.opt_loss, step_dict.computed_task_metrics_dict
 
     def test_step(self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None):
-        output_dict, computed_task_metrics_dict, opt_loss = self.step(
+        step_dict = self.step(
             batch=batch,
             batch_idx=batch_idx,
             task_metrics_dict=task_metrics_dict,
             phase_name="test",
         )
 
-        computed_task_metrics_dict["test/opt_loss"] = opt_loss
+        step_dict.computed_task_metrics_dict["test/opt_loss"] = step_dict.opt_loss
+        step_dict.output_dict["loss"] = step_dict.opt_loss
 
-        return opt_loss, computed_task_metrics_dict
+        return step_dict.opt_loss, step_dict.computed_task_metrics_dict
 
     def predict_step(self, batch: Any, batch_idx: int, **kwargs):
         input_dict = batch

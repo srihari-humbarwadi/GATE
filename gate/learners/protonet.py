@@ -221,7 +221,9 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
             torch.mean(torch.stack(opt_loss_list)),
         )
 
-    def training_step(self, batch, batch_idx, task_metrics_dict):
+    def training_step(
+        self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
+    ):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
             batch,
             batch_idx,
@@ -235,7 +237,9 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
 
         return opt_loss, computed_task_metrics_dict
 
-    def validation_step(self, batch, batch_idx, task_metrics_dict):
+    def validation_step(
+        self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
+    ):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
             batch,
             batch_idx,
@@ -248,7 +252,7 @@ class PrototypicalNetworkEpisodicTuningScheme(LearnerModule):
 
         return opt_loss, computed_task_metrics_dict
 
-    def test_step(self, batch, batch_idx, task_metrics_dict):
+    def test_step(self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
             batch,
             batch_idx,

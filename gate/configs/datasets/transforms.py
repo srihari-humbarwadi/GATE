@@ -11,7 +11,12 @@ from gate.configs.datamodule.transform_primitives import (
     TargetTransformConfig,
     compose_with_additional_transforms,
 )
-from gate.datasets.transforms import RandomCropResizeCustom, SuperClassExistingLabels
+from gate.datasets.transforms import (
+    RandomCropResizeCustom,
+    MultipleRandomCropResizeCustom,
+    RandomMaskCustom,
+    SuperClassExistingLabels,
+)
 
 
 def omniglot_support_set_transforms(
@@ -442,9 +447,30 @@ class RandomCropResizeCustomTransform:
 
 
 @dataclass
+class MultipleRandomCropResizeCustomTransform:
+    _target_: Any = get_module_import_path(MultipleRandomCropResizeCustom)
+    num_augmentations: int = 8
+    size: Optional[List[int]] = None
+    padding: Optional[List[int]] = None
+    pad_if_needed: bool = False
+    fill: float = 0
+    padding_mode: str = "constant"
+
+
+@dataclass
+class RandomMaskCustomTransform:
+    _target_: Any = get_module_import_path(RandomMaskCustom)
+    size: Optional[List[int]] = None
+    padding: Optional[List[int]] = None
+    pad_if_needed: bool = False
+    fill: float = 0
+    padding_mode: str = "constant"
+
+
+@dataclass
 class SuperClassExistingLabelsTransform:
     _target_: Any = get_module_import_path(SuperClassExistingLabels)
-    num_classes_to_group: int = 5
+    num_classes_to_group: int = 2
 
 
 @dataclass

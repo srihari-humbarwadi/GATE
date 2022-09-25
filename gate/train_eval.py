@@ -2,11 +2,7 @@ import os
 import pathlib
 from typing import List, Optional
 
-print(f"Imported primitives")
-
 import hydra
-
-print(f"Imported hydra")
 
 
 import pytorch_lightning
@@ -96,6 +92,7 @@ def train_eval(config: DictConfig):
     # Instantiate Lightning Learner using a dummy data dict with the
     # data names and shapes
     x_dummy_data_dict, y_dummy_data_dict = datamodule.dummy_batch()
+
     # depth first traversal and printing of tensor shapes
     _ = train_eval_agent.forward((x_dummy_data_dict, y_dummy_data_dict))
     # --------------------------------------------------------------------------------

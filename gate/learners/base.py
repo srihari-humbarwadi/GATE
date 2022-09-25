@@ -148,13 +148,16 @@ class LearnerModule(nn.Module):
         batch,
         batch_idx,
         task_metrics_dict,
+        top_level_pl_module=None,
     ):
         raise NotImplementedError
 
-    def validation_step(self, batch, batch_idx, task_metrics_dict):
+    def validation_step(
+        self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
+    ):
         raise NotImplementedError
 
-    def test_step(self, batch, batch_idx, task_metrics_dict):
+    def test_step(self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None):
         raise NotImplementedError
 
     def predict_step(self, batch: Any, batch_idx: int):

@@ -9,6 +9,7 @@ from .gcm_network import (
     ConditionalGenerativeContrastiveModellingConvHeadConfig,
     ConditionalGenerativeContrastiveModellingMLPHeadConfig,
     ConditionalGenerativeContrastiveModellingResNetHeadConfig,
+    PrototypicalNetworkGCMHeadConfig,
 )
 from .learning_rate_scheduler_config import (
     CosineAnnealingLRConfig,
@@ -21,6 +22,10 @@ from .linear_layer_fine_tuning import (
 )
 from .optimizer_config import AdamOptimizerConfig, BiLevelOptimizerConfig
 from .prototypical_network import EpisodicPrototypicalNetworkConfig
+from .episodic_maml import (
+    EpisodicMAMLSingleLinearLayerConfig,
+    EpisodicMAMLFullModelConfig,
+)
 
 LEARNING_RATE_SCHEDULER_CONFIGS = "learner/learning_rate_scheduler"
 LEARNER_CONFIGS = "learner"
@@ -88,6 +93,18 @@ def add_learner_configs(config_store: ConfigStore):
 
     config_store.store(
         group=LEARNER_CONFIGS,
+        name="EpisodicMAMLFullModel",
+        node=EpisodicMAMLFullModelConfig,
+    )
+
+    config_store.store(
+        group=LEARNER_CONFIGS,
+        name="EpisodicMAMLSingleLinearLayer",
+        node=EpisodicMAMLSingleLinearLayerConfig,
+    )
+
+    config_store.store(
+        group=LEARNER_CONFIGS,
         name="EpisodicPrototypicalNetwork",
         node=EpisodicPrototypicalNetworkConfig,
     )
@@ -126,6 +143,12 @@ def add_learner_configs(config_store: ConfigStore):
         group=LEARNER_CONFIGS,
         name="ConditionalGenerativeContrastiveResNetHeadModelling",
         node=ConditionalGenerativeContrastiveModellingResNetHeadConfig,
+    )
+
+    config_store.store(
+        group=LEARNER_CONFIGS,
+        name="PrototypicalNetworkGCMHead",
+        node=PrototypicalNetworkGCMHeadConfig,
     )
 
     return config_store

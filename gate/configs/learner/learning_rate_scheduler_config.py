@@ -1,3 +1,5 @@
+from typing import Optional
+
 from dataclasses import dataclass
 
 from torch.optim.lr_scheduler import (
@@ -56,9 +58,7 @@ class ReduceLROnPlateauConfig(LRSchedulerConfig):
 
 @dataclass
 class BiLevelLRSchedulerConfig:
-    inner_loop_lr_scheduler_config: LRSchedulerConfig = (
-        CosineAnnealingLRConfig()
-    )
-    outer_loop_lr_scheduler_config: LRSchedulerConfig = (
-        CosineAnnealingLRConfig()
-    )
+    inner_loop_lr_scheduler_config: Optional[LRSchedulerConfig] = None
+    outer_loop_lr_scheduler_config: Optional[
+        LRSchedulerConfig
+    ] = CosineAnnealingLRConfig()

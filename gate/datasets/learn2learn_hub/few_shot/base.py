@@ -19,9 +19,12 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
         num_episodes: int,
         min_num_classes_per_set: int,
         min_num_samples_per_class: int,
+        min_num_queries_per_class: int,
         num_classes_per_set: int,  # n_way
         num_samples_per_class: int,  # n_shot
+        num_queries_per_class: int,
         variable_num_samples_per_class: bool,
+        variable_num_queries_per_class: bool,
         variable_num_classes_per_set: bool,
         modality_config: Dict,
         input_shape_dict: Dict,
@@ -59,9 +62,12 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
 
         self.min_num_classes_per_set = min_num_classes_per_set
         self.min_num_samples_per_class = min_num_samples_per_class
+        self.min_num_queries_per_class = min_num_queries_per_class
         self.num_classes_per_set = num_classes_per_set
         self.num_samples_per_class = num_samples_per_class
+        self.num_queries_per_class = num_queries_per_class
         self.variable_num_samples_per_class = variable_num_samples_per_class
+        self.variable_num_queries_per_class = variable_num_queries_per_class
         self.variable_num_classes_per_set = variable_num_classes_per_set
         self.print_info = True
 

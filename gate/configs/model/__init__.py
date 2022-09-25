@@ -9,14 +9,11 @@ from .tali_model_config import (
     TALIModelGenericScratchConfig,
 )
 from .timm_model_configs import (
-    TimmImageModelConfigurableDepthAndHeadSingleHeadConfig,
-    TimmImageModelConfigurableDepthAndHeadTwinHeadConfig,
-    TimmImageModelPoolConfigurableDepthAndHeadSingleHeadConfig,
-    TimmImageModelPoolConfigurableDepthAndHeadTwinHeadConfig,
     TimmImageResNet18Config,
     TimmImageResNet18PoolConfig,
     TimmImageResNet18PoolWithRemovedLayersConfig,
     TimmImageResNet18WithRemovedLayersConfig,
+    TimmImageResNet34Config
 )
 
 
@@ -59,18 +56,6 @@ def add_model_configs(config_store: ConfigStore):
 
     config_store.store(
         group="model",
-        name="timm-image-resnet18-removed-layers-new-head",
-        node=TimmImageModelConfigurableDepthAndHeadSingleHeadConfig,
-    )
-
-    config_store.store(
-        group="model",
-        name="timm-image-resnet18-removed-layers-twin-head",
-        node=TimmImageModelConfigurableDepthAndHeadTwinHeadConfig,
-    )
-
-    config_store.store(
-        group="model",
         name="timm-image-resnet18-pool",
         node=TimmImageResNet18PoolConfig,
     )
@@ -83,14 +68,8 @@ def add_model_configs(config_store: ConfigStore):
 
     config_store.store(
         group="model",
-        name="timm-image-resnet18-pool-removed-layers-new-head",
-        node=TimmImageModelPoolConfigurableDepthAndHeadSingleHeadConfig,
-    )
-
-    config_store.store(
-        group="model",
-        name="timm-image-resnet18-pool-removed-layers-twin-head",
-        node=TimmImageModelPoolConfigurableDepthAndHeadTwinHeadConfig,
+        name="timm-image-resnet34d",
+        node=TimmImageResNet34Config,
     )
 
     return config_store

@@ -240,6 +240,10 @@ class HeadMLP(nn.Module):
         if dummy_side_information is not None:
             out = torch.cat([out, dummy_side_information], dim=1)
 
+        # self.layer_dict["input_layer_skip"] = nn.Linear(
+        #     in_features=out.shape[1], out_features=self.num_hidden_filters
+        # )
+
         self.layer_dict["input_layer"] = nn.Linear(
             in_features=out.shape[1], out_features=self.num_hidden_filters
         )
@@ -297,14 +301,19 @@ class HeadMLP(nn.Module):
             view_information = input_dict["view_information"].view(out.shape[0], -1)
             out = torch.cat([out, view_information], dim=1)
 
+        # x = self.layer_dict["input_layer_skip"](out)
+
         out = self.layer_dict["input_layer"](out)
         out = self.layer_dict["input_layer_norm"](out)
         out = self.layer_dict["input_layer_act"](out)
+        # out = out + x
 
         for i in range(self.num_layers - 2):
+            x = out
             out = self.layer_dict[f"hidden_layer_{i}"](out)
             out = self.layer_dict[f"hidden_layer_norm_{i}"](out)
             out = self.layer_dict[f"hidden_layer_act_{i}"](out)
+            out = out + x
 
         out = self.layer_dict["output_layer_norm"](self.layer_dict["output_layer"](out))
         # log.info(self.output_activation_fn)

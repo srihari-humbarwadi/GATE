@@ -19,6 +19,9 @@ class EpisodicSingleLinearLayerFineTuningSchemeConfig(LearnerConfig):
     optimizer_config: BiLevelOptimizerConfig = BiLevelOptimizerConfig()
     lr_scheduler_config: BiLevelLRSchedulerConfig = BiLevelLRSchedulerConfig()
     inner_loop_steps: int = 100
+    use_cosine_similarity: bool = True
+    use_weight_norm: bool = True
+    temperature: float = 10.0
 
 
 @dataclass
@@ -29,3 +32,6 @@ class EpisodicFullModelFineTuningSchemeConfig(LearnerConfig):
     optimizer_config: BiLevelOptimizerConfig = BiLevelOptimizerConfig()
     lr_scheduler_config: BiLevelLRSchedulerConfig = BiLevelLRSchedulerConfig()
     inner_loop_steps: int = 100
+    use_cosine_similarity: bool = True
+    use_weight_norm: bool = True
+    temperature: float = 10.0

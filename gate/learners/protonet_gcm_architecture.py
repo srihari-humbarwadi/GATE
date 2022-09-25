@@ -9,15 +9,7 @@ import gate.base.utils.loggers as loggers
 from gate.configs.datamodule.base import ShapeConfig
 from gate.configs.task.image_classification import TaskConfig
 from gate.learners.protonet import PrototypicalNetworkEpisodicTuningScheme
-from gate.learners.utils import (
-    inner_gaussian_product,
-    outer_gaussian_product,
-    prototypical_loss,
-    replace_with_counts,
-)
-import os
-from torchvision.utils import save_image
-import time
+from gate.learners.utils import get_accuracy, get_prototypes, prototypical_loss
 
 log = loggers.get_logger(__name__)
 
@@ -26,9 +18,7 @@ def precision_activation_function(x):
     return torch.exp(100 * torch.tanh(x / 100))
 
 
-class ConditionalGenerativeContrastiveModelling(
-    PrototypicalNetworkEpisodicTuningScheme
-):
+class PrototypicalNetworkGCMHead(PrototypicalNetworkEpisodicTuningScheme):
     def __init__(
         self,
         optimizer_config: Dict[str, Any],
@@ -43,7 +33,7 @@ class ConditionalGenerativeContrastiveModelling(
         mean_head_config: Dict[str, Any] = None,
         precision_head_config: Dict[str, Any] = None,
     ):
-        super(ConditionalGenerativeContrastiveModelling, self).__init__(
+        super(PrototypicalNetworkGCMHead, self).__init__(
             optimizer_config,
             lr_scheduler_config,
             fine_tune_all_layers,
@@ -65,7 +55,7 @@ class ConditionalGenerativeContrastiveModelling(
         input_shape_dict: Union[ShapeConfig, Dict, DottedDict],
         output_shape_dict: Union[ShapeConfig, Dict, DottedDict],
     ):
-        super(ConditionalGenerativeContrastiveModelling, self).build(
+        super(PrototypicalNetworkGCMHead, self).build(
             model,
             task_config,
             modality_config,
@@ -79,9 +69,7 @@ class ConditionalGenerativeContrastiveModelling(
             )
         }  # this should be b, f; or b, c, h, w
 
-        dummy_out = super(ConditionalGenerativeContrastiveModelling, self).forward(
-            dummy_x
-        )
+        dummy_out = super(PrototypicalNetworkGCMHead, self).forward(dummy_x)
         dummy_image_out = dummy_out["image"]
         dummy_features = {
             "image": dummy_image_out,
@@ -142,7 +130,7 @@ class ConditionalGenerativeContrastiveModelling(
 
     def forward(self, input_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
 
-        out = super(ConditionalGenerativeContrastiveModelling, self).forward(input_dict)
+        out = super(PrototypicalNetworkGCMHead, self).forward(input_dict)
         out_flattened = F.adaptive_avg_pool2d(out["image"], 1).view(
             out["image"].shape[0], -1
         )
@@ -164,9 +152,6 @@ class ConditionalGenerativeContrastiveModelling(
             out_precision = self.precision_head(out)["image"]
         else:
             out_precision = out_flattened
-
-        # NOTE FIXING PRECISION HERE
-        # out_precision = torch.ones_like(out_precision)
 
         learner_output_dict = {
             "mean": out_mean,
@@ -235,12 +220,6 @@ class ConditionalGenerativeContrastiveModelling(
             num_tasks, num_support_examples, -1
         )
 
-        # support_view_counts = replace_with_counts(support_set_targets)
-
-        # support_set_embedding_mean = support_set_embedding_mean * torch.sqrt(
-        #     2 * (support_view_counts + 1) / support_view_counts
-        # ).unsqueeze(-1).to(support_set_embedding_mean.device)
-
         num_tasks, num_query_examples = query_set_inputs["image"].shape[:2]
 
         query_set_inputs["image"] = query_set_inputs["image"].view(
@@ -248,6 +227,7 @@ class ConditionalGenerativeContrastiveModelling(
         )
         if query_set_inputs["view_information"] is not None:
             query_set_inputs["view_information"]=query_set_inputs["view_information"].view(-1, query_set_inputs["view_information"].shape[2])
+
 
         query_set_embedding = self.forward(query_set_inputs)["image"]
 
@@ -259,84 +239,23 @@ class ConditionalGenerativeContrastiveModelling(
             num_tasks, num_query_examples, -1
         )
 
-        # if phase_name == "validation" and not os.path.isfile("./test0.png"):
-        #     save_image(support_set_inputs["image"][0, :, :, :], "./support_test0.png")
-        #     save_image(support_set_inputs["image"][1, :, :, :], "./support_test1.png")
-        #     save_image(support_set_inputs["image"][2, :, :, :], "./support_test2.png")
-        #     save_image(support_set_inputs["image"][3, :, :, :], "./support_test3.png")
-        #     print('support')
-        #     print(support_set_inputs["view_information"][0:4,:])
-        #     save_image(query_set_inputs["image"][0, :, :, :], "./query_test0.png")
-        #     save_image(query_set_inputs["image"][1, :, :, :], "./query_test1.png")
-        #     save_image(query_set_inputs["image"][2, :, :, :], "./query_test2.png")
-        #     save_image(query_set_inputs["image"][3, :, :, :], "./query_test3.png")
-        #     print('query')
-        #     print(query_set_inputs["view_information"][0:4,:])
-        #     print("Waiting...")
-        #     time.sleep(10)
-
-        (
-            proto_mean,
-            proto_precision,
-            log_proto_normalisation,
-        ) = inner_gaussian_product(
-            support_set_embedding_mean,
-            support_set_embedding_precision,
-            support_set_targets,
-            num_classes,
+        prototypes = get_prototypes(
+            embeddings=support_set_embedding_mean,
+            targets=support_set_targets,
+            num_classes=int(torch.max(support_set_targets)) + 1,
         )
 
-        (
-            proto_query_product_means,
-            proto_query_product_precisions,
-            log_proto_query_product_normalisation,
-        ) = outer_gaussian_product(
-            query_set_embedding_mean,
-            query_set_embedding_precision,
-            proto_mean,
-            proto_precision,
-        )
-
-        # unique_targets, counts = support_set_targets.unique(
-        #     sorted=True, return_counts=True
-        # )
-
-        # views = counts.unsqueeze(0).unsqueeze(-1)
-        # log_proto_query_product_normalisation = (
-        #     log_proto_query_product_normalisation - 0.5 * torch.log(views / (views + 1))
-        # )
-
-        # NOTE: Could try exponentiating log normalisation here
-        computed_task_metrics_dict[f"{phase_name}/loss"] = F.cross_entropy(
-            log_proto_query_product_normalisation, query_set_targets
-        )
+        computed_task_metrics_dict = {
+            f"{phase_name}/loss": prototypical_loss(
+                prototypes, query_set_embedding_mean, query_set_targets
+            )
+        }
 
         opt_loss_list = [computed_task_metrics_dict[f"{phase_name}/loss"]]
 
-        _, predictions = log_proto_query_product_normalisation.max(1)
-
-        output_dict["predictions"] = predictions
-
         with torch.no_grad():
-            computed_task_metrics_dict[f"{phase_name}/accuracy"] = torch.mean(
-                predictions.eq(query_set_targets).float()
-            )
-            computed_task_metrics_dict[f"{phase_name}/support_precisions"] = torch.mean(
-                support_set_embedding_precision.detach().cpu()
-            )
-            computed_task_metrics_dict[f"{phase_name}/query_precisions"] = torch.mean(
-                query_set_embedding_precision.detach().cpu()
-            )
-            computed_task_metrics_dict[
-                f"{phase_name}/support_precisions_var"
-            ] = torch.var(support_set_embedding_precision.detach().cpu())
-            computed_task_metrics_dict[
-                f"{phase_name}/query_precisions_var"
-            ] = torch.var(query_set_embedding_precision.detach().cpu())
-            computed_task_metrics_dict[
-                f"{phase_name}/prototypical_loss"
-            ] = prototypical_loss(
-                proto_mean, query_set_embedding_mean, query_set_targets
+            computed_task_metrics_dict[f"{phase_name}/accuracy"] = get_accuracy(
+                prototypes, query_set_embedding_mean, query_set_targets
             )
 
         return (
