@@ -59,7 +59,6 @@ class FewShotDataModuleConfig:
     transform_eval: FewShotTransformConfig
     train_num_episodes: int = NUM_TRAIN_SAMPLES
     eval_num_episodes: int = 600
-
     _target_: str = get_module_import_path(FewShotDataModule)
 
 
@@ -77,7 +76,6 @@ class OmniglotFewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=OmniglotSupportSetTransformConfig(),
         query_set_input_transform=OmniglotQuerySetTransformConfig(),
     )
-    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
@@ -94,7 +92,6 @@ class OmniglotMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=OmniglotSupportSetTransformConfig(),
         query_set_input_transform=OmniglotQuerySetTransformConfig(),
     )
-    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
@@ -126,7 +123,6 @@ class CUB200MultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=CUB200SupportSetTransformConfig(),
         query_set_input_transform=CUB200QuerySetTransformConfig(),
     )
-    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
@@ -158,7 +154,6 @@ class AircraftMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=AircraftSupportSetTransformConfig(),
         query_set_input_transform=AircraftQuerySetTransformConfig(),
     )
-    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
@@ -190,7 +185,6 @@ class DTDMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=DTDSupportSetTransformConfig(),
         query_set_input_transform=DTDQuerySetTransformConfig(),
     )
-    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
@@ -222,7 +216,6 @@ class GermanTrafficSignsMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig
         support_set_input_transform=GermanTrafficSignsSupportSetTransformConfig(),
         query_set_input_transform=GermanTrafficSignsQuerySetTransformConfig(),
     )
-    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
@@ -254,7 +247,6 @@ class QuickDrawMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=QuickDrawSupportSetTransformConfig(),
         query_set_input_transform=QuickDrawQuerySetTransformConfig(),
     )
-    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
@@ -286,7 +278,6 @@ class VGGFlowersMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=VGGFlowersSupportSetTransformConfig(),
         query_set_input_transform=VGGFlowersQuerySetTransformConfig(),
     )
-    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
