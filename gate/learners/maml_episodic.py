@@ -374,9 +374,11 @@ class EpisodicMAML(LearnerModule):
                         output_dict[output_name].clone().detach().cpu(),
                         target_dict[output_name].clone().detach().cpu(),
                     )
-                    computed_metrics_dict[
-                        f"{phase_name}/episode_{episode_idx}/{set_name}/{metric_key}"
-                    ].append(metric_value.detach().cpu())
+
+                    if phase_name != "training":
+                        computed_metrics_dict[
+                            f"{phase_name}/episode_{episode_idx}/{set_name}/{metric_key}"
+                        ].append(metric_value.detach().cpu())
 
                     if step_idx == self.inner_loop_steps - 1:
                         computed_metrics_dict[
@@ -397,16 +399,18 @@ class EpisodicMAML(LearnerModule):
                     output_dict[output_name],
                     target_dict[output_name],
                 )
-                computed_metrics_dict[
-                    f"{phase_name}/episode_{episode_idx}/{set_name}/{metric_key}"
-                ].append(metric_value.detach().cpu())
+
+                if phase_name != "training":
+                    computed_metrics_dict[
+                        f"{phase_name}/episode_{episode_idx}/{set_name}/{metric_key}"
+                    ].append(metric_value.detach().cpu())
 
                 opt_loss_list.append(metric_value)
 
-                if step_idx == self.inner_loop_steps - 1:
-                    computed_metrics_dict[
-                        f"{phase_name}/{set_name}/{metric_key}"
-                    ].append(metric_value.detach().cpu())
+                if set_name == "query_set":
+                    computed_metrics_dict[f"{phase_name}/loss"].append(
+                        metric_value.detach().cpu()
+                    )
 
         return torch.stack(opt_loss_list).mean(), computed_metrics_dict
 
