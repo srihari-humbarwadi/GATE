@@ -239,7 +239,6 @@ class EpisodicMAML(LearnerModule):
 
             classifier_bias = self.output_layer_dict["image"].bias.repeat(
                 [max(support_set_target["image"]) + 1]
-
             )
 
             classifier_weights = nn.Parameter(classifier_weights, requires_grad=True)
@@ -296,17 +295,16 @@ class EpisodicMAML(LearnerModule):
 
                     inner_loop_optimizer.step(support_set_loss)
 
-                    log.info(f"Support set loss {support_set_loss}")
-                    for name, param in inner_loop_model.named_parameters():
-                        if param.grad is not None:
-                            log.info(
-                                f"Inner loop grad {name} "
-                                f"{torch.mean(param)} "
-                                f"{torch.mean(param.grad)}"
-                            )
-                        else:
-                            log.info(f"Inner loop grad {name} {torch.mean(param)}")
-
+                    # log.info(f"Support set loss {support_set_loss}")
+                    # for name, param in inner_loop_model.named_parameters():
+                    #     if param.grad is not None:
+                    #         log.info(
+                    #             f"Inner loop grad {name} "
+                    #             f"{torch.mean(param)} "
+                    #             f"{torch.mean(param.grad)}"
+                    #         )
+                    #     else:
+                    #         log.info(f"Inner loop grad {name} {torch.mean(param)}")
 
                 current_output_dict = self.forward(
                     query_set_input,
