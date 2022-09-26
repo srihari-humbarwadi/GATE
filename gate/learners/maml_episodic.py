@@ -268,31 +268,29 @@ class EpisodicMAML(LearnerModule):
                 track_higher_grads=track_higher_grads,
             ) as (inner_loop_model, inner_loop_optimizer):
 
-                with tqdm.tqdm(total=self.inner_loop_steps) as pbar:
-                    for step_idx in range(self.inner_loop_steps):
-                        current_output_dict = self.forward(
-                            support_set_input, model=inner_loop_model
-                        )
+                
+                for step_idx in range(self.inner_loop_steps):
+                    current_output_dict = self.forward(
+                        support_set_input, model=inner_loop_model
+                    )
 
-                        (
-                            support_set_loss,
-                            computed_task_metrics_dict,
-                        ) = self.compute_metrics(
-                            phase_name=phase_name,
-                            set_name="support_set",
-                            output_dict=current_output_dict,
-                            target_dict=support_set_target,
-                            task_metrics_dict=task_metrics_dict,
-                            learner_metrics_dict=self.learner_metrics_dict,
-                            episode_idx=self.episode_idx,
-                            step_idx=step_idx,
-                            computed_metrics_dict=computed_task_metrics_dict,
-                        )
+                    (
+                        support_set_loss,
+                        computed_task_metrics_dict,
+                    ) = self.compute_metrics(
+                        phase_name=phase_name,
+                        set_name="support_set",
+                        output_dict=current_output_dict,
+                        target_dict=support_set_target,
+                        task_metrics_dict=task_metrics_dict,
+                        learner_metrics_dict=self.learner_metrics_dict,
+                        episode_idx=self.episode_idx,
+                        step_idx=step_idx,
+                        computed_metrics_dict=computed_task_metrics_dict,
+                    )
 
-                        inner_loop_optimizer.step(support_set_loss)
+                    inner_loop_optimizer.step(support_set_loss)
 
-                        # pbar.update(1)
-                        # pbar.set_description(f"Support Set Loss: {support_set_loss}, ")
 
                 current_output_dict = self.forward(
                     query_set_input,
