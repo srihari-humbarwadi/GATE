@@ -3,9 +3,7 @@ import torch.nn.functional as F
 from rich import print
 
 
-def resize_custom(
-    x_image, target_image_shape, interpolation="bilinear", debug=False
-):
+def resize_custom(x_image, target_image_shape, interpolation="bilinear", debug=False):
     """
     Resize an image to a target size.
     Parameters

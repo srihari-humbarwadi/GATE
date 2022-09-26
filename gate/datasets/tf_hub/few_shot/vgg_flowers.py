@@ -14,9 +14,6 @@ log = get_logger(
 )
 
 
-#
-
-
 class VGGFlowersFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
     def __init__(
         self,
@@ -42,14 +39,11 @@ class VGGFlowersFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
     ):
         DATASET_NAME = "visual_domain_decathlon/vgg-flowers"
         split_counts = {
-            key: len(value)
-            for key, value in data_splits_dict["vgg_flowers"].items()
+            key: len(value) for key, value in data_splits_dict["vgg_flowers"].items()
         }
         super(VGGFlowersFewShotClassificationDataset, self).__init__(
             modality_config=DottedDict(image=True),
-            input_shape_dict=DottedDict(
-                image=dict(channels=3, height=84, width=84)
-            ),
+            input_shape_dict=DottedDict(image=dict(channels=3, height=84, width=84)),
             dataset_name=DATASET_NAME,
             dataset_root=dataset_root,
             split_name=split_name,
@@ -78,11 +72,75 @@ class VGGFlowersFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
                 FewShotSuperSplitSetOptions.TEST: split_counts["test"],
             },
             split_config=data_splits_dict["vgg_flowers"],
-            label_extractor_fn=lambda x: str(
-                int(bytes_to_string(x).split("/")[-2])
-            ),
+            label_extractor_fn=lambda x: str(int(bytes_to_string(x).split("/")[-2])),
             subset_split_name_list=["train", "validation"],
             min_num_classes_per_set=min_num_classes_per_set,
             min_num_samples_per_class=min_num_samples_per_class,
-            min_num_queries_per_class=min_num_queries_per_class
+            min_num_queries_per_class=min_num_queries_per_class,
+        )
+
+
+class VGGFlowersMultiViewFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
+    def __init__(
+        self,
+        dataset_root: Union[str, pathlib.Path],
+        split_name: str,
+        download: bool,
+        num_episodes: int,
+        min_num_classes_per_set: int,
+        min_num_samples_per_class: int,
+        min_num_queries_per_class: int,
+        num_classes_per_set: int,  # n_way
+        num_samples_per_class: int,  # n_shot
+        num_queries_per_class: int,
+        variable_num_samples_per_class: bool,
+        variable_num_queries_per_class: bool,
+        variable_num_classes_per_set: bool,
+        support_set_input_transform: Optional[Any],
+        query_set_input_transform: Optional[Any],
+        support_set_target_transform: Optional[Any] = None,
+        query_set_target_transform: Optional[Any] = None,
+        support_to_query_ratio: float = 0.75,
+        rescan_cache: bool = True,
+    ):
+        DATASET_NAME = "visual_domain_decathlon/vgg-flowers"
+        split_counts = {
+            key: len(value) for key, value in data_splits_dict["vgg_flowers"].items()
+        }
+        super(VGGFlowersMultiViewFewShotClassificationDataset, self).__init__(
+            modality_config=DottedDict(image=True),
+            input_shape_dict=DottedDict(image=dict(channels=3, height=84, width=84)),
+            dataset_name=DATASET_NAME,
+            dataset_root=dataset_root,
+            split_name=split_name,
+            download=download,
+            num_episodes=num_episodes,
+            num_classes_per_set=num_classes_per_set,
+            num_samples_per_class=num_samples_per_class,
+            num_queries_per_class=num_queries_per_class,
+            variable_num_samples_per_class=variable_num_samples_per_class,
+            variable_num_classes_per_set=variable_num_classes_per_set,
+            variable_num_queries_per_class=variable_num_queries_per_class,
+            support_to_query_ratio=support_to_query_ratio,
+            rescan_cache=rescan_cache,
+            input_target_annotation_keys=dict(
+                inputs="image",
+                targets="label",
+                target_annotations="name",
+            ),
+            support_set_input_transform=support_set_input_transform,
+            query_set_input_transform=query_set_input_transform,
+            support_set_target_transform=support_set_target_transform,
+            query_set_target_transform=query_set_target_transform,
+            split_percentage={
+                FewShotSuperSplitSetOptions.TRAIN: split_counts["train"],
+                FewShotSuperSplitSetOptions.VAL: split_counts["val"],
+                FewShotSuperSplitSetOptions.TEST: split_counts["test"],
+            },
+            split_config=data_splits_dict["vgg_flowers"],
+            label_extractor_fn=lambda x: str(int(bytes_to_string(x).split("/")[-2])),
+            subset_split_name_list=["train", "validation"],
+            min_num_classes_per_set=min_num_classes_per_set,
+            min_num_samples_per_class=min_num_samples_per_class,
+            min_num_queries_per_class=min_num_queries_per_class,
         )

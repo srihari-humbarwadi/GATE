@@ -13,7 +13,7 @@ from .timm_model_configs import (
     TimmImageResNet18PoolConfig,
     TimmImageResNet18PoolWithRemovedLayersConfig,
     TimmImageResNet18WithRemovedLayersConfig,
-    TimmImageResNet34Config
+    TimmImageResNet34Config,
 )
 
 

@@ -14,6 +14,13 @@ from gate.configs.datasets.few_shot_datasets import (
     OmniglotFewShotDatasetConfig,
     QuickDrawFewShotDatasetConfig,
     VGGFlowersFewShotDatasetConfig,
+    OmniglotMultiViewFewShotDatasetConfig,
+    CUB200MultiViewFewShotDatasetConfig,
+    AircraftMultiViewFewShotDatasetConfig,
+    DTDMultiViewFewShotDatasetConfig,
+    GermanTrafficSignsMultiViewFewShotDatasetConfig,
+    QuickDrawMultiViewFewShotDatasetConfig,
+    VGGFlowersMultiViewFewShotDatasetConfig,
 )
 from gate.configs.datasets.transforms import (
     AircraftQuerySetTransformConfig,
@@ -74,6 +81,23 @@ class OmniglotFewShotDataModuleConfig(FewShotDataModuleConfig):
 
 
 @dataclass
+class OmniglotMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
+    dataset_config: OmniglotFewShotDatasetConfig = (
+        OmniglotMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
+    )
+    data_loader_config: DataLoaderConfig = DataLoaderConfig()
+    transform_train: Any = FewShotTransformConfig(
+        support_set_input_transform=OmniglotSupportSetTransformConfig(),
+        query_set_input_transform=OmniglotQuerySetTransformConfig(),
+    )
+    transform_eval: Any = FewShotTransformConfig(
+        support_set_input_transform=OmniglotSupportSetTransformConfig(),
+        query_set_input_transform=OmniglotQuerySetTransformConfig(),
+    )
+    _target_: str = get_module_import_path(FewShotDataModule)
+
+
+@dataclass
 class CUB200FewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: CUB200FewShotDatasetConfig = CUB200FewShotDatasetConfig(
         dataset_root=DATASET_DIR
@@ -87,6 +111,22 @@ class CUB200FewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=CUB200SupportSetTransformConfig(),
         query_set_input_transform=CUB200QuerySetTransformConfig(),
     )
+
+
+class CUB200MultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
+    dataset_config: CUB200FewShotDatasetConfig = CUB200MultiViewFewShotDatasetConfig(
+        dataset_root=DATASET_DIR
+    )
+    data_loader_config: DataLoaderConfig = DataLoaderConfig()
+    transform_train: Any = FewShotTransformConfig(
+        support_set_input_transform=CUB200SupportSetTransformConfig(),
+        query_set_input_transform=CUB200QuerySetTransformConfig(),
+    )
+    transform_eval: Any = FewShotTransformConfig(
+        support_set_input_transform=CUB200SupportSetTransformConfig(),
+        query_set_input_transform=CUB200QuerySetTransformConfig(),
+    )
+    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
@@ -105,6 +145,22 @@ class AircraftFewShotDataModuleConfig(FewShotDataModuleConfig):
     )
 
 
+class AircraftMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
+    dataset_config: AircraftFewShotDatasetConfig = (
+        AircraftMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
+    )
+    data_loader_config: DataLoaderConfig = DataLoaderConfig()
+    transform_train: Any = FewShotTransformConfig(
+        support_set_input_transform=AircraftSupportSetTransformConfig(),
+        query_set_input_transform=AircraftQuerySetTransformConfig(),
+    )
+    transform_eval: Any = FewShotTransformConfig(
+        support_set_input_transform=AircraftSupportSetTransformConfig(),
+        query_set_input_transform=AircraftQuerySetTransformConfig(),
+    )
+    _target_: str = get_module_import_path(FewShotDataModule)
+
+
 @dataclass
 class DTDFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: DTDFewShotDatasetConfig = DTDFewShotDatasetConfig(
@@ -119,6 +175,22 @@ class DTDFewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=DTDSupportSetTransformConfig(),
         query_set_input_transform=DTDQuerySetTransformConfig(),
     )
+
+
+class DTDMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
+    dataset_config: DTDFewShotDatasetConfig = DTDMultiViewFewShotDatasetConfig(
+        dataset_root=DATASET_DIR
+    )
+    data_loader_config: DataLoaderConfig = DataLoaderConfig()
+    transform_train: Any = FewShotTransformConfig(
+        support_set_input_transform=DTDSupportSetTransformConfig(),
+        query_set_input_transform=DTDQuerySetTransformConfig(),
+    )
+    transform_eval: Any = FewShotTransformConfig(
+        support_set_input_transform=DTDSupportSetTransformConfig(),
+        query_set_input_transform=DTDQuerySetTransformConfig(),
+    )
+    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass
@@ -137,6 +209,22 @@ class GermanTrafficSignsFewShotDataModuleConfig(FewShotDataModuleConfig):
     )
 
 
+class GermanTrafficSignsMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
+    dataset_config: GermanTrafficSignsFewShotDatasetConfig = (
+        GermanTrafficSignsMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
+    )
+    data_loader_config: DataLoaderConfig = DataLoaderConfig()
+    transform_train: Any = FewShotTransformConfig(
+        support_set_input_transform=GermanTrafficSignsSupportSetTransformConfig(),
+        query_set_input_transform=GermanTrafficSignsQuerySetTransformConfig(),
+    )
+    transform_eval: Any = FewShotTransformConfig(
+        support_set_input_transform=GermanTrafficSignsSupportSetTransformConfig(),
+        query_set_input_transform=GermanTrafficSignsQuerySetTransformConfig(),
+    )
+    _target_: str = get_module_import_path(FewShotDataModule)
+
+
 @dataclass
 class QuickDrawFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: QuickDrawFewShotDatasetConfig = QuickDrawFewShotDatasetConfig(
@@ -153,6 +241,22 @@ class QuickDrawFewShotDataModuleConfig(FewShotDataModuleConfig):
     )
 
 
+class QuickDrawMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
+    dataset_config: QuickDrawFewShotDatasetConfig = (
+        QuickDrawMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
+    )
+    data_loader_config: DataLoaderConfig = DataLoaderConfig()
+    transform_train: Any = FewShotTransformConfig(
+        support_set_input_transform=QuickDrawSupportSetTransformConfig(),
+        query_set_input_transform=QuickDrawQuerySetTransformConfig(),
+    )
+    transform_eval: Any = FewShotTransformConfig(
+        support_set_input_transform=QuickDrawSupportSetTransformConfig(),
+        query_set_input_transform=QuickDrawQuerySetTransformConfig(),
+    )
+    _target_: str = get_module_import_path(FewShotDataModule)
+
+
 @dataclass
 class VGGFlowersFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: VGGFlowersFewShotDatasetConfig = VGGFlowersFewShotDatasetConfig(
@@ -167,6 +271,22 @@ class VGGFlowersFewShotDataModuleConfig(FewShotDataModuleConfig):
         support_set_input_transform=VGGFlowersSupportSetTransformConfig(),
         query_set_input_transform=VGGFlowersQuerySetTransformConfig(),
     )
+
+
+class VGGFlowersMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
+    dataset_config: VGGFlowersFewShotDatasetConfig = (
+        VGGFlowersMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
+    )
+    data_loader_config: DataLoaderConfig = DataLoaderConfig()
+    transform_train: Any = FewShotTransformConfig(
+        support_set_input_transform=VGGFlowersSupportSetTransformConfig(),
+        query_set_input_transform=VGGFlowersQuerySetTransformConfig(),
+    )
+    transform_eval: Any = FewShotTransformConfig(
+        support_set_input_transform=VGGFlowersSupportSetTransformConfig(),
+        query_set_input_transform=VGGFlowersQuerySetTransformConfig(),
+    )
+    _target_: str = get_module_import_path(FewShotDataModule)
 
 
 @dataclass

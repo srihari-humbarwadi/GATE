@@ -5,20 +5,38 @@ from gate.configs import get_module_import_path
 from gate.datasets.learn2learn_hub.few_shot.fungi import (
     FungiFewShotClassificationDataset,
 )
-from gate.datasets.tf_hub.few_shot.aircraft import AircraftFewShotClassificationDataset
-from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
-from gate.datasets.tf_hub.few_shot.cu_birds import CUB200FewShotClassificationDataset
-from gate.datasets.tf_hub.few_shot.dtd import DTDFewShotClassificationDataset
+from gate.datasets.tf_hub.few_shot.aircraft import (
+    AircraftFewShotClassificationDataset,
+    AircraftMultiViewFewShotClassificationDataset,
+)
+from gate.datasets.tf_hub.few_shot.base import (
+    FewShotClassificationDatasetTFDS,
+    MultiViewFewShotClassificationDatasetTFDS,
+)
+from gate.datasets.tf_hub.few_shot.cu_birds import (
+    CUB200FewShotClassificationDataset,
+    CUB200MultiViewFewShotClassificationDataset,
+)
+from gate.datasets.tf_hub.few_shot.dtd import (
+    DTDFewShotClassificationDataset,
+    DTDMultiViewFewShotClassificationDataset,
+)
 from gate.datasets.tf_hub.few_shot.german_traffic_signs import (
     GermanTrafficSignsFewShotClassificationDataset,
+    GermanTrafficSignsMultiViewFewShotClassificationDataset,
 )
 from gate.datasets.tf_hub.few_shot.mscoco import MSCOCOFewShotClassificationDataset
-from gate.datasets.tf_hub.few_shot.omniglot import OmniglotFewShotClassificationDataset
+from gate.datasets.tf_hub.few_shot.omniglot import (
+    OmniglotFewShotClassificationDataset,
+    OmniglotMultiViewFewShotClassificationDataset,
+)
 from gate.datasets.tf_hub.few_shot.quickdraw import (
     QuickDrawFewShotClassificationDataset,
+    QuickDrawMultiViewFewShotClassificationDataset,
 )
 from gate.datasets.tf_hub.few_shot.vgg_flowers import (
     VGGFlowersFewShotClassificationDataset,
+    VGGFlowersMultiViewFewShotClassificationDataset,
 )
 
 
@@ -33,13 +51,13 @@ class FewShotDatasetConfig:
     download: bool = True
     num_episodes: int = 600
 
-    #min_num_classes_per_set: int = 1 #default 5
-    #min_num_samples_per_class: int = 3 # default: 2
-    #min_num_queries_per_class: int = 2 # default 1
-    #num_classes_per_set: int = 5  # n_way, default 50
-    #num_samples_per_class: int = 3  # n_shot, default: 10
-    #num_queries_per_class: int = 2 # default 3
-    #variable_num_samples_per_class: bool = False
+    # min_num_classes_per_set: int = 1 #default 5
+    # min_num_samples_per_class: int = 3 # default: 2
+    # min_num_queries_per_class: int = 2 # default 1
+    # num_classes_per_set: int = 5  # n_way, default 50
+    # num_samples_per_class: int = 3  # n_shot, default: 10
+    # num_queries_per_class: int = 2 # default 3
+    # variable_num_samples_per_class: bool = False
     min_num_classes_per_set: int = 5
     min_num_samples_per_class: int = 2  # default: 2
     min_num_queries_per_class: int = 1
@@ -59,12 +77,28 @@ class FewShotDatasetConfig:
 
 
 @dataclass
+class MultiViewFewShotDatasetConfig(FewShotDatasetConfig):
+    _target_ = get_module_import_path(MultiViewFewShotClassificationDatasetTFDS)
+
+
+@dataclass
 class OmniglotFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
     """
 
     _target_: Any = get_module_import_path(OmniglotFewShotClassificationDataset)
+
+
+@dataclass
+class OmniglotMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
+    """
+    Class for configuring a few shot dataset
+    """
+
+    _target_: Any = get_module_import_path(
+        OmniglotMultiViewFewShotClassificationDataset
+    )
 
 
 @dataclass
@@ -77,6 +111,15 @@ class CUB200FewShotDatasetConfig(FewShotDatasetConfig):
 
 
 @dataclass
+class CUB200MultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
+    """
+    Class for configuring a few shot dataset
+    """
+
+    _target_: Any = get_module_import_path(CUB200MultiViewFewShotClassificationDataset)
+
+
+@dataclass
 class AircraftFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -86,12 +129,32 @@ class AircraftFewShotDatasetConfig(FewShotDatasetConfig):
 
 
 @dataclass
+class AircraftMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
+    """
+    Class for configuring a few shot dataset
+    """
+
+    _target_: Any = get_module_import_path(
+        AircraftMultiViewFewShotClassificationDataset
+    )
+
+
+@dataclass
 class DTDFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
     """
 
     _target_: Any = get_module_import_path(DTDFewShotClassificationDataset)
+
+
+@dataclass
+class DTDMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
+    """
+    Class for configuring a few shot dataset
+    """
+
+    _target_: Any = get_module_import_path(DTDMultiViewFewShotClassificationDataset)
 
 
 @dataclass
@@ -106,12 +169,33 @@ class GermanTrafficSignsFewShotDatasetConfig(FewShotDatasetConfig):
 
 
 @dataclass
+class GermanTrafficSignsMultiViewFewShotDatasetConfig(FewShotDatasetConfig):
+    """
+    Class for configuring a few shot dataset
+    """
+
+    _target_: Any = get_module_import_path(
+        GermanTrafficSignsMultiViewFewShotClassificationDataset
+    )
+
+
+@dataclass
 class VGGFlowersFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
     """
 
     _target_: Any = get_module_import_path(VGGFlowersFewShotClassificationDataset)
+
+
+class VGGFlowersMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
+    """
+    Class for configuring a few shot dataset
+    """
+
+    _target_: Any = get_module_import_path(
+        VGGFlowersMultiViewFewShotClassificationDataset
+    )
 
 
 @dataclass
@@ -121,6 +205,16 @@ class QuickDrawFewShotDatasetConfig(FewShotDatasetConfig):
     """
 
     _target_: Any = get_module_import_path(QuickDrawFewShotClassificationDataset)
+
+
+class QuickDrawMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
+    """
+    Class for configuring a few shot dataset
+    """
+
+    _target_: Any = get_module_import_path(
+        QuickDrawMultiViewFewShotClassificationDataset
+    )
 
 
 @dataclass

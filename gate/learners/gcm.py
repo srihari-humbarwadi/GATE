@@ -224,7 +224,9 @@ class ConditionalGenerativeContrastiveModelling(
             -1, *support_set_inputs["image"].shape[2:]
         )
         if support_set_inputs["view_information"] is not None:
-            support_set_inputs["view_information"]=support_set_inputs["view_information"].view(-1, support_set_inputs["view_information"].shape[2])
+            support_set_inputs["view_information"] = support_set_inputs[
+                "view_information"
+            ].view(-1, support_set_inputs["view_information"].shape[2])
 
         support_set_embedding = self.forward(support_set_inputs)["image"]
 
@@ -247,7 +249,9 @@ class ConditionalGenerativeContrastiveModelling(
             -1, *query_set_inputs["image"].shape[2:]
         )
         if query_set_inputs["view_information"] is not None:
-            query_set_inputs["view_information"]=query_set_inputs["view_information"].view(-1, query_set_inputs["view_information"].shape[2])
+            query_set_inputs["view_information"] = query_set_inputs[
+                "view_information"
+            ].view(-1, query_set_inputs["view_information"].shape[2])
 
         query_set_embedding = self.forward(query_set_inputs)["image"]
 

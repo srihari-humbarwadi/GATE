@@ -110,6 +110,7 @@ class PrototypicalNetworkGCMHeadConfig(LearnerConfig):
     mean_head_config: HeadConfig = HeadMLPConfig()
     precision_head_config: HeadConfig = HeadMLPConfig()
 
+
 @dataclass
 class MatchingNetworkGCMHeadConfig(LearnerConfig):
     _target_: str = get_module_import_path(MatchingNetworkGCMHead)

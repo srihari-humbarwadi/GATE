@@ -26,7 +26,7 @@ class FungiFewShotClassificationDataset(FewShotClassificationDatsetL2L):
         split_name: str,
         download: bool,
         num_episodes: int,
-         min_num_classes_per_set: int,
+        min_num_classes_per_set: int,
         min_num_samples_per_class: int,
         min_num_queries_per_class: int,
         num_classes_per_set: int,  # n_way
@@ -45,9 +45,7 @@ class FungiFewShotClassificationDataset(FewShotClassificationDatsetL2L):
         dataset_module_path = get_module_import_path(FGVCFungi)
         super(FungiFewShotClassificationDataset, self).__init__(
             modality_config=DottedDict(image=True),
-            input_shape_dict=DottedDict(
-                image=dict(channels=3, height=84, width=84)
-            ),
+            input_shape_dict=DottedDict(image=dict(channels=3, height=84, width=84)),
             dataset_name=dataset_module_path.split(".")[-1],
             dataset_root=dataset_root,
             split_name=split_name,

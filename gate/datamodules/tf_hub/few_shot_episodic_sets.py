@@ -23,9 +23,7 @@ class FewShotDataModule(DataModule):
         eval_num_episodes: int,
     ):
 
-        super(FewShotDataModule, self).__init__(
-            dataset_config, data_loader_config
-        )
+        super(FewShotDataModule, self).__init__(dataset_config, data_loader_config)
 
         self.data_loader_config = data_loader_config
 
@@ -152,7 +150,6 @@ class FewShotDataModule(DataModule):
 
         for batch in temp_dataloader:
             input_dict, target_dict = batch
-
 
             return input_dict, target_dict
 

@@ -20,19 +20,19 @@ log = loggers.get_logger(__name__)
 
 class MatchingNetworkGCMHead(PrototypicalNetworkGCMHead):
     def __init__(
-            self,
-            optimizer_config: Dict[str, Any],
-            lr_scheduler_config: Dict[str, Any],
-            fine_tune_all_layers: bool = False,
-            use_input_instance_norm: bool = False,
-            use_mean_head: bool = True,
-            use_precision_head: bool = True,
-            head_num_layers: int = 3,
-            head_num_hidden_filters: int = 512,
-            head_num_output_filters: int = 512,
-            mean_head_config: Dict[str, Any] = None,
-            precision_head_config: Dict[str, Any] = None,
-        ):
+        self,
+        optimizer_config: Dict[str, Any],
+        lr_scheduler_config: Dict[str, Any],
+        fine_tune_all_layers: bool = False,
+        use_input_instance_norm: bool = False,
+        use_mean_head: bool = True,
+        use_precision_head: bool = True,
+        head_num_layers: int = 3,
+        head_num_hidden_filters: int = 512,
+        head_num_output_filters: int = 512,
+        mean_head_config: Dict[str, Any] = None,
+        precision_head_config: Dict[str, Any] = None,
+    ):
         super(MatchingNetworkGCMHead, self).__init__(
             optimizer_config,
             lr_scheduler_config,
@@ -96,7 +96,9 @@ class MatchingNetworkGCMHead(PrototypicalNetworkGCMHead):
             -1, *support_set_inputs["image"].shape[2:]
         )
         if support_set_inputs["view_information"] is not None:
-            support_set_inputs["view_information"]=support_set_inputs["view_information"].view(-1, support_set_inputs["view_information"].shape[2])
+            support_set_inputs["view_information"] = support_set_inputs[
+                "view_information"
+            ].view(-1, support_set_inputs["view_information"].shape[2])
 
         support_set_embedding = self.forward(support_set_inputs)["image"]
 
@@ -113,8 +115,9 @@ class MatchingNetworkGCMHead(PrototypicalNetworkGCMHead):
             -1, *query_set_inputs["image"].shape[2:]
         )
         if query_set_inputs["view_information"] is not None:
-            query_set_inputs["view_information"]=query_set_inputs["view_information"].view(-1, query_set_inputs["view_information"].shape[2])
-
+            query_set_inputs["view_information"] = query_set_inputs[
+                "view_information"
+            ].view(-1, query_set_inputs["view_information"].shape[2])
 
         query_set_embedding = self.forward(query_set_inputs)["image"]
 

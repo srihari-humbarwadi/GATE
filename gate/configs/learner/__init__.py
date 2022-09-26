@@ -10,8 +10,7 @@ from .gcm_network import (
     ConditionalGenerativeContrastiveModellingMLPHeadConfig,
     ConditionalGenerativeContrastiveModellingResNetHeadConfig,
     PrototypicalNetworkGCMHeadConfig,
-    MatchingNetworkGCMHeadConfig
-
+    MatchingNetworkGCMHeadConfig,
 )
 from .learning_rate_scheduler_config import (
     CosineAnnealingLRConfig,
