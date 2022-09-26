@@ -110,6 +110,7 @@ class CUB200FewShotDataModuleConfig(FewShotDataModuleConfig):
     )
 
 
+@dataclass
 class CUB200MultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: CUB200MultiViewFewShotDatasetConfig = (
         CUB200MultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
@@ -142,6 +143,7 @@ class AircraftFewShotDataModuleConfig(FewShotDataModuleConfig):
     )
 
 
+@dataclass
 class AircraftMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: AircraftMultiViewFewShotDatasetConfig = (
         AircraftMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
@@ -173,6 +175,7 @@ class DTDFewShotDataModuleConfig(FewShotDataModuleConfig):
     )
 
 
+@dataclass
 class DTDMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: DTDMultiViewFewShotDatasetConfig = DTDMultiViewFewShotDatasetConfig(
         dataset_root=DATASET_DIR
@@ -204,6 +207,7 @@ class GermanTrafficSignsFewShotDataModuleConfig(FewShotDataModuleConfig):
     )
 
 
+@dataclass
 class GermanTrafficSignsMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: GermanTrafficSignsMultiViewFewShotDatasetConfig = (
         GermanTrafficSignsMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
@@ -235,6 +239,7 @@ class QuickDrawFewShotDataModuleConfig(FewShotDataModuleConfig):
     )
 
 
+@dataclass
 class QuickDrawMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: QuickDrawMultiViewFewShotDatasetConfig = (
         QuickDrawMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
@@ -266,6 +271,7 @@ class VGGFlowersFewShotDataModuleConfig(FewShotDataModuleConfig):
     )
 
 
+@dataclass
 class VGGFlowersMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: VGGFlowersMultiViewFewShotDatasetConfig = (
         VGGFlowersMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
