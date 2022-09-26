@@ -82,7 +82,7 @@ class OmniglotFewShotDataModuleConfig(FewShotDataModuleConfig):
 
 @dataclass
 class OmniglotMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: OmniglotFewShotDatasetConfig = (
+    dataset_config: OmniglotMultiViewFewShotDatasetConfig = (
         OmniglotMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
@@ -114,8 +114,8 @@ class CUB200FewShotDataModuleConfig(FewShotDataModuleConfig):
 
 
 class CUB200MultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: CUB200FewShotDatasetConfig = CUB200MultiViewFewShotDatasetConfig(
-        dataset_root=DATASET_DIR
+    dataset_config: CUB200MultiViewFewShotDatasetConfig = (
+        CUB200MultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
     transform_train: Any = FewShotTransformConfig(
@@ -146,7 +146,7 @@ class AircraftFewShotDataModuleConfig(FewShotDataModuleConfig):
 
 
 class AircraftMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: AircraftFewShotDatasetConfig = (
+    dataset_config: AircraftMultiViewFewShotDatasetConfig = (
         AircraftMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
@@ -178,7 +178,7 @@ class DTDFewShotDataModuleConfig(FewShotDataModuleConfig):
 
 
 class DTDMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: DTDFewShotDatasetConfig = DTDMultiViewFewShotDatasetConfig(
+    dataset_config: DTDMultiViewFewShotDatasetConfig = DTDMultiViewFewShotDatasetConfig(
         dataset_root=DATASET_DIR
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
@@ -210,7 +210,7 @@ class GermanTrafficSignsFewShotDataModuleConfig(FewShotDataModuleConfig):
 
 
 class GermanTrafficSignsMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: GermanTrafficSignsFewShotDatasetConfig = (
+    dataset_config: GermanTrafficSignsMultiViewFewShotDatasetConfig = (
         GermanTrafficSignsMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
@@ -242,7 +242,7 @@ class QuickDrawFewShotDataModuleConfig(FewShotDataModuleConfig):
 
 
 class QuickDrawMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: QuickDrawFewShotDatasetConfig = (
+    dataset_config: QuickDrawMultiViewFewShotDatasetConfig = (
         QuickDrawMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
@@ -274,7 +274,7 @@ class VGGFlowersFewShotDataModuleConfig(FewShotDataModuleConfig):
 
 
 class VGGFlowersMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
-    dataset_config: VGGFlowersFewShotDatasetConfig = (
+    dataset_config: VGGFlowersMultiViewFewShotDatasetConfig = (
         VGGFlowersMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
