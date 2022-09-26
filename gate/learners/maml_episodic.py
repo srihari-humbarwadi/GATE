@@ -298,10 +298,14 @@ class EpisodicMAML(LearnerModule):
 
                     log.info(f"Support set loss {support_set_loss}")
                     for name, param in inner_loop_model.named_parameters():
-                        log.info(
-                            f"Inner loop model param {name} {torch.sum(param)} "
-                            f"{torch.sum(param.grad)}"
-                        )
+                        if param.grad is not None:
+                            log.info(
+                                f"Inner loop grad {name} "
+                                f"{torch.mean(param)} "
+                                f"{torch.mean(param.grad)}"
+                            )
+                        else:
+                            log.info(f"Inner loop grad {name} {torch.mean(param)}")
 
 
                 current_output_dict = self.forward(
