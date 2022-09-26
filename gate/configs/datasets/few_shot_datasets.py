@@ -36,8 +36,8 @@ class FewShotDatasetConfig:
     min_num_samples_per_class: int = 2  # default: 2
     min_num_queries_per_class: int = 1
     num_classes_per_set: int = 50  # n_way
-    num_samples_per_class: int = 10  # n_shot, default: 10
-    num_queries_per_class: int = 1
+    num_samples_per_class: int = 10  # n support shot, default: 10
+    num_queries_per_class: int = 10  # n_query, default: 10
     variable_num_samples_per_class: bool = True
     variable_num_queries_per_class: bool = False
     variable_num_classes_per_set: bool = True
