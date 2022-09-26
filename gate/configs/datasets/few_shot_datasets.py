@@ -51,6 +51,13 @@ class FewShotDatasetConfig:
     download: bool = True
     num_episodes: int = 600
 
+    # min_num_classes_per_set: int = 1 #default 5
+    # min_num_samples_per_class: int = 3 # default: 2
+    # min_num_queries_per_class: int = 2 # default 1
+    # num_classes_per_set: int = 5  # n_way, default 50
+    # num_samples_per_class: int = 3  # n_shot, default: 10
+    # num_queries_per_class: int = 2 # default 3
+    # variable_num_samples_per_class: bool = False
     min_num_classes_per_set: int = 5
     min_num_samples_per_class: int = 2  # default: 2
     min_num_queries_per_class: int = 1
@@ -71,6 +78,7 @@ class FewShotDatasetConfig:
 
 @dataclass
 class MultiViewFewShotDatasetConfig(FewShotDatasetConfig):
+    dataset_root = str = ".gate/datasets"
     min_num_classes_per_set: int = 1  # default 5
     min_num_samples_per_class: int = 3  # default: 2
     min_num_queries_per_class: int = 2  # default 1
@@ -169,7 +177,7 @@ class GermanTrafficSignsFewShotDatasetConfig(FewShotDatasetConfig):
 
 
 @dataclass
-class GermanTrafficSignsMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
+class GermanTrafficSignsMultiViewFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
     """
