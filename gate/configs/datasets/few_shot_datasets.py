@@ -71,6 +71,7 @@ class FewShotDatasetConfig:
 
 @dataclass
 class MultiViewFewShotDatasetConfig(FewShotDatasetConfig):
+    dataset_root = str = ".gate/datasets"
     min_num_classes_per_set: int = 1  # default 5
     min_num_samples_per_class: int = 3  # default: 2
     min_num_queries_per_class: int = 2  # default 1
