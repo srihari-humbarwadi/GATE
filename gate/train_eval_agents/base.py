@@ -73,7 +73,6 @@ class TrainingEvaluationAgent(LightningModule):
             output_shape_dict=self.output_shape_dict,
         )
 
-
         # output_dict, _, _ = self.learner.step(
         #     batch=(input_dummy_dict, target_dummy_dict), batch_idx=0, phase_name="training"
         # )

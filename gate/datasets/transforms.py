@@ -15,6 +15,7 @@ from gate.datasets.tf_hub.few_shot.base import CardinalityType
 def channels_first(x):
     return x.transpose([2, 0, 1])
 
+
 class RandomApply(nn.Module):
     def __init__(self, fn, p):
         super().__init__()
@@ -25,6 +26,7 @@ class RandomApply(nn.Module):
         if random.random() > self.p:
             return x
         return self.fn(x)
+
 
 class SuperClassExistingLabels(torch.nn.Module):
     def __init__(self, num_classes_to_group: Union[int, Tuple[int, int]]):
@@ -256,7 +258,7 @@ class MultipleRandomCropResizeCustom(RandomCropResizeCustom):
     ):
         super().__init__(size, padding, pad_if_needed, fill, padding_mode)
         self.num_augmentations = num_augmentations
-        self.min_num_augmentations= min_num_augmentations
+        self.min_num_augmentations = min_num_augmentations
 
     def forward(self, img):
 
@@ -265,11 +267,15 @@ class MultipleRandomCropResizeCustom(RandomCropResizeCustom):
             "crop_coordinates": [],
             "cardinality-type": CardinalityType.one_to_many,
         }
-        if self.min_num_augmentations!=-1:
-            idx=torch.randint(0, self.num_augmentations-self.min_num_augmentations, size=(1,)).item()
-            num_augmentations = list(range(self.min_num_augmentations, self.num_augmentations))[idx]
+        if self.min_num_augmentations != -1:
+            idx = torch.randint(
+                0, self.num_augmentations - self.min_num_augmentations, size=(1,)
+            ).item()
+            num_augmentations = list(
+                range(self.min_num_augmentations, self.num_augmentations)
+            )[idx]
         else:
-            num_augmentations=self.num_augmentations
+            num_augmentations = self.num_augmentations
         for _ in range(num_augmentations):
             single_img = super().forward(img=img)
             multiple_img["image"].append(single_img["image"])

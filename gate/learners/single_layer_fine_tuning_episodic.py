@@ -34,12 +34,8 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         self.output_layer_dict = torch.nn.ModuleDict()
         self.input_layer_dict = torch.nn.ModuleDict()
         self.optimizer_config = optimizer_config.outer_loop_optimizer_config
-        self.lr_scheduler_config = (
-            lr_scheduler_config.outer_loop_lr_scheduler_config
-        )
-        self.inner_loop_optimizer_config = (
-            optimizer_config.inner_loop_optimizer_config
-        )
+        self.lr_scheduler_config = lr_scheduler_config.outer_loop_lr_scheduler_config
+        self.inner_loop_optimizer_config = optimizer_config.inner_loop_optimizer_config
         self.inner_loop_lr_scheduler_config = (
             lr_scheduler_config.inner_loop_lr_scheduler_config
         )
@@ -87,12 +83,8 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         for modality_name, is_supported in self.modality_config.items():
             if is_supported:
                 input_dummy_x = torch.randn(
-                    [2]
-                    + list(
-                        self.input_shape_dict[modality_name]["shape"].values()
-                    )
+                    [2] + list(self.input_shape_dict[modality_name]["shape"].values())
                 )
-
 
                 model_features = self.model.forward({modality_name: input_dummy_x})[
                     modality_name
@@ -104,7 +96,6 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                 self.feature_embedding_shape_dict = {
                     "image": model_features_flatten.shape[1]
                 }
-
 
         log.info(
             f"Built {self.__class__.__name__} "
@@ -154,10 +145,11 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
 
                 if self.use_cosine_similarity:
                     model_features_flatten = F.normalize(model_features_flatten, dim=-1)
-                
-                if "view_information" in batch:
-                    model_features_flatten = torch.cat((model_features_flatten, batch["view_information"]), dim=1)
 
+                if "view_information" in batch:
+                    model_features_flatten = torch.cat(
+                        (model_features_flatten, batch["view_information"]), dim=1
+                    )
 
                 model_logits = head_modules[modality_name](model_features_flatten)
 
@@ -195,16 +187,16 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         computed_task_metrics_dict = defaultdict(list)
         opt_loss_list = []
         input_dict, target_dict = batch
-        
-        support_set_inputs = {"image":input_dict["image"]["support_set"].to(
-            torch.cuda.current_device()
-        )}
+
+        support_set_inputs = {
+            "image": input_dict["image"]["support_set"].to(torch.cuda.current_device())
+        }
         support_set_targets = target_dict["image"]["support_set"].to(
             torch.cuda.current_device()
         )
-        query_set_inputs = {"image":input_dict["image"]["query_set"].to(
-            torch.cuda.current_device()
-        )}
+        query_set_inputs = {
+            "image": input_dict["image"]["query_set"].to(torch.cuda.current_device())
+        }
         query_set_targets = target_dict["image"]["query_set"].to(
             torch.cuda.current_device()
         )
@@ -218,7 +210,8 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                 dim=2,
             )
             support_set_inputs["view_information"] = support_set_view_information.to(
-            torch.cuda.current_device())
+                torch.cuda.current_device()
+            )
 
         if "query_set_extras" in input_dict["image"]:
             query_set_view_information = torch.cat(
@@ -229,7 +222,8 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                 dim=2,
             )
             query_set_inputs["view_information"] = query_set_view_information.to(
-            torch.cuda.current_device())
+                torch.cuda.current_device()
+            )
 
         episodic_optimizer = None
         output_dict = defaultdict(list)
@@ -238,25 +232,28 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
             support_set_target,
             query_set_input,
             query_set_target,
-        ) in enumerate(zip(
-            support_set_inputs["image"],
-            support_set_targets,
-            query_set_inputs["image"],
-            query_set_targets,
-        )):
+        ) in enumerate(
+            zip(
+                support_set_inputs["image"],
+                support_set_targets,
+                query_set_inputs["image"],
+                query_set_targets,
+            )
+        ):
 
             support_set_input = dict(image=support_set_input)
             support_set_target = dict(image=support_set_target)
             query_set_input = dict(image=query_set_input)
             query_set_target = dict(image=query_set_target)
 
-
             if "view_information" in support_set_inputs:
-                support_set_input["view_information"] = support_set_inputs["view_information"][idx]
+                support_set_input["view_information"] = support_set_inputs[
+                    "view_information"
+                ][idx]
             if "view_information" in query_set_inputs:
-                query_set_input["view_information"] = query_set_inputs["view_information"][idx]
-
-
+                query_set_input["view_information"] = query_set_inputs[
+                    "view_information"
+                ][idx]
 
             self.inner_loop_model.load_state_dict(self.model.state_dict())
             self.inner_loop_model.to(support_set_input["image"].device)
@@ -264,7 +261,9 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
 
             for key, value in self.feature_embedding_shape_dict.items():
                 self.output_layer_dict[key] = torch.nn.Linear(
-                    in_features=value+support_set_input["view_information"].shape[1] if "view_information" in support_set_input else value,
+                    in_features=value + support_set_input["view_information"].shape[1]
+                    if "view_information" in support_set_input
+                    else value,
                     out_features=int(torch.max(support_set_target[key]) + 1),
                     bias=False,
                 )
@@ -273,7 +272,6 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                     self.output_layer_dict[key] = torch.nn.utils.weight_norm(
                         self.output_layer_dict[key]
                     )
-
 
             self.output_layer_dict.train()
             non_feature_embedding_params = list(self.output_layer_dict.parameters())
@@ -412,7 +410,6 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                             f"{phase_name}/{set_name}_{metric_key}"
                         ].append(metric_value.detach().cpu())
 
-
         for (
             metric_key,
             metric_function,
@@ -426,7 +423,6 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                 computed_metrics_dict[
                     f"{phase_name}/episode_{episode_idx}/{set_name}_{metric_key}"
                 ].append(metric_value.detach().cpu())
-
 
                 opt_loss_list.append(metric_value)
 

@@ -25,16 +25,12 @@ class TaskModule(torch.nn.Module):
                 f"least one entry of metric_name: metric_class format, "
                 f"where a metric_class can be a torchmetric or a nn.Module based metric"
             )
-        self.task_metrics_dict = torch.nn.ModuleDict(
-            defaultdict(torch.nn.ModuleDict)
-        )
+        self.task_metrics_dict = torch.nn.ModuleDict(defaultdict(torch.nn.ModuleDict))
 
         for metric_name, metric_class in task_metrics_dict.items():
             self.task_metrics_dict[metric_name] = metric_class()
 
-    def data_flow(
-        self, batch_dict: Dict[str, Any], batch_idx: int
-    ) -> Dict[str, Any]:
+    def data_flow(self, batch_dict: Dict[str, Any], batch_idx: int) -> Dict[str, Any]:
         raise NotImplementedError(
             f"{self.__class__.__name__} does not implement this necessary method."
         )

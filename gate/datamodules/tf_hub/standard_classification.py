@@ -22,9 +22,7 @@ class OmniglotDataModule(PreSplitDataModule):
             data_loader_config=data_loader_config,
             transform_train=transform_train,
             transform_eval=transform_eval,
-            split_name_to_phase_dict=dict(
-                train="train", val="small1", test="test"
-            ),
+            split_name_to_phase_dict=dict(train="train", val="small1", test="test"),
         )
 
 
@@ -41,9 +39,7 @@ class CIFAR10DataModule(PreSplitDataModule):
             data_loader_config=data_loader_config,
             transform_train=transform_train,
             transform_eval=transform_eval,
-            split_name_to_phase_dict=dict(
-                train="train", val="test", test="test"
-            ),
+            split_name_to_phase_dict=dict(train="train", val="test", test="test"),
         )
 
 
@@ -60,7 +56,5 @@ class CIFAR100DataModule(PreSplitDataModule):
             data_loader_config=data_loader_config,
             transform_train=transform_train,
             transform_eval=transform_eval,
-            split_name_to_phase_dict=dict(
-                train="train", val="test", test="test"
-            ),
+            split_name_to_phase_dict=dict(train="train", val="test", test="test"),
         )

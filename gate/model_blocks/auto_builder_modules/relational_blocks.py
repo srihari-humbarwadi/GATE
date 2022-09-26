@@ -7,9 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def check_spatial_size_maybe_avg_pool(
-    x: torch.Tensor, avg_pool_output_size: int
-):
+def check_spatial_size_maybe_avg_pool(x: torch.Tensor, avg_pool_output_size: int):
     """
     Receives a tensor x, and a kernel size and checks spatial dimensions, potentially avg pooling if the size is not as expected
     :param x: A tensor
@@ -64,9 +62,7 @@ def generate_spatial_coordinate_tensor(x: torch.Tensor, spatial_length: int):
         .unsqueeze(2)
     )  # n, n
 
-    coord_tensor = torch.cat([coord_tensor_x, coord_tensor_y], dim=2).view(
-        -1, 2
-    )
+    coord_tensor = torch.cat([coord_tensor_x, coord_tensor_y], dim=2).view(-1, 2)
 
     coord_tensor = coord_tensor.unsqueeze(0) - int(np.sqrt(spatial_length) / 2)
 
@@ -219,23 +215,17 @@ class PatchBatchRelationalModule(nn.Module):
         b, spatial_length, c = out_img.shape
 
         if self.use_coordinates:
-            self.coord_tensor_dict[
-                x.shape
-            ] = generate_spatial_coordinate_tensor(
+            self.coord_tensor_dict[x.shape] = generate_spatial_coordinate_tensor(
                 x=out_img, spatial_length=spatial_length
             ).float()
 
-            self.coord_tensor_dict[x.shape] = self.coord_tensor_dict[
-                x.shape
-            ].to(x.device)
-
-            out_img = torch.cat(
-                [out_img, self.coord_tensor_dict[x.shape]], dim=2
+            self.coord_tensor_dict[x.shape] = self.coord_tensor_dict[x.shape].to(
+                x.device
             )
 
-        pair_features = generate_pair_tensor(
-            x=out_img, spatial_length=spatial_length
-        )
+            out_img = torch.cat([out_img, self.coord_tensor_dict[x.shape]], dim=2)
+
+        pair_features = generate_pair_tensor(x=out_img, spatial_length=spatial_length)
 
         pair_features = pair_features.view(
             pair_features.shape[0],
@@ -271,8 +261,7 @@ class PatchBatchRelationalModule(nn.Module):
         out = self.output_layer.forward(out)
 
         logging.debug(
-            f"Built {self.__class__.__name__} with output volume shape "
-            f"{out.shape}"
+            f"Built {self.__class__.__name__} with output volume shape " f"{out.shape}"
         )
 
     def forward(self, x_img):
@@ -323,13 +312,9 @@ class PatchBatchRelationalModule(nn.Module):
                 x_img.shape
             ].to(out_img.device)
 
-            out_img = torch.cat(
-                [out_img, self.coord_tensor_dict[x_img.shape]], dim=2
-            )
+            out_img = torch.cat([out_img, self.coord_tensor_dict[x_img.shape]], dim=2)
 
-        pair_features = generate_pair_tensor(
-            x=out_img, spatial_length=spatial_length
-        )
+        pair_features = generate_pair_tensor(x=out_img, spatial_length=spatial_length)
 
         pair_features = pair_features.view(
             pair_features.shape[0],

@@ -51,30 +51,14 @@ class CLIP(ModelModule):
         )
 
         self.model_input_description_dict = {
-            "RN50": dict(
-                input_shape=(3, 224, 224), input_type=torch.FloatTensor
-            ),
-            "RN101": dict(
-                input_shape=(3, 224, 224), input_type=torch.FloatTensor
-            ),
-            "RN50x4": dict(
-                input_shape=(3, 288, 288), input_type=torch.FloatTensor
-            ),
-            "RN50x16": dict(
-                input_shape=(3, 384, 384), input_type=torch.FloatTensor
-            ),
-            "RN50x64": dict(
-                input_shape=(3, 448, 448), input_type=torch.FloatTensor
-            ),
-            "ViT-B/32": dict(
-                input_shape=(3, 224, 224), input_type=torch.HalfTensor
-            ),
-            "ViT-B/16": dict(
-                input_shape=(3, 224, 224), input_type=torch.HalfTensor
-            ),
-            "ViT-L/14": dict(
-                input_shape=(3, 224, 224), input_type=torch.HalfTensor
-            ),
+            "RN50": dict(input_shape=(3, 224, 224), input_type=torch.FloatTensor),
+            "RN101": dict(input_shape=(3, 224, 224), input_type=torch.FloatTensor),
+            "RN50x4": dict(input_shape=(3, 288, 288), input_type=torch.FloatTensor),
+            "RN50x16": dict(input_shape=(3, 384, 384), input_type=torch.FloatTensor),
+            "RN50x64": dict(input_shape=(3, 448, 448), input_type=torch.FloatTensor),
+            "ViT-B/32": dict(input_shape=(3, 224, 224), input_type=torch.HalfTensor),
+            "ViT-B/16": dict(input_shape=(3, 224, 224), input_type=torch.HalfTensor),
+            "ViT-L/14": dict(input_shape=(3, 224, 224), input_type=torch.HalfTensor),
         }[self.model_name_to_download]
 
         self.image_shape = self.model_input_description_dict["input_shape"]
@@ -161,9 +145,7 @@ class CLIP(ModelModule):
         # expects b, c, w, h input_shape
         # print("Pre", x_image.shape)
         if x_image.shape[1:] != self.image_shape:
-            x_image = resize_custom(
-                x_image, target_image_shape=self.image_shape
-            )
+            x_image = resize_custom(x_image, target_image_shape=self.image_shape)
         # print("Post", x_image.shape)
         x_image = normalize(x_image, mean=self.mean, std=self.std)
 
