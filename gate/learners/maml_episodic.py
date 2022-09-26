@@ -269,11 +269,12 @@ class EpisodicMAML(LearnerModule):
                 track_higher_grads=track_higher_grads,
             ) as (inner_loop_model, inner_loop_optimizer):
 
-                
+
                 for step_idx in range(self.inner_loop_steps):
                     current_output_dict = self.forward(
                         support_set_input, model=inner_loop_model
                     )
+
 
                     (
                         support_set_loss,
@@ -292,13 +293,12 @@ class EpisodicMAML(LearnerModule):
 
                     inner_loop_optimizer.step(support_set_loss)
 
-
                 current_output_dict = self.forward(
                     query_set_input,
                     model=inner_loop_model,
                 )
 
-                (query_set_loss, computed_task_metrics_dict,) = self.compute_metrics(
+                query_set_loss, computed_task_metrics_dict = self.compute_metrics(
                     phase_name=phase_name,
                     set_name="query_set",
                     output_dict=current_output_dict,
@@ -320,7 +320,7 @@ class EpisodicMAML(LearnerModule):
         for key, value in output_dict.items():
             output_dict[key] = torch.stack(value, dim=0)
 
-        return DottedDict(
+        return dict(
             output_dict=output_dict,
             computed_task_metrics_dict=computed_task_metrics_dict,
             opt_loss=torch.mean(torch.stack(opt_loss_list)),
@@ -408,14 +408,16 @@ class EpisodicMAML(LearnerModule):
             phase_name="training",
         )
 
-        step_dict.computed_task_metrics_dict["training/opt_loss"] = step_dict.opt_loss
-        step_dict.output_dict["loss"] = step_dict.opt_loss
+        step_dict["computed_task_metrics_dict"]["training/opt_loss"] = step_dict[
+            "opt_loss"
+        ]
+        step_dict["output_dict"]["loss"] = step_dict["opt_loss"]
 
         optimizers.zero_grad()
-        top_level_pl_module.manual_backward(step_dict.opt_loss)
+        top_level_pl_module.manual_backward(step_dict["opt_loss"])
         optimizers.step()
 
-        return step_dict.opt_loss, step_dict.computed_task_metrics_dict
+        return step_dict["opt_loss"], step_dict["computed_task_metrics_dict"]
 
     def validation_step(
         self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
@@ -428,10 +430,12 @@ class EpisodicMAML(LearnerModule):
             phase_name="validation",
         )
 
-        step_dict.computed_task_metrics_dict["validation/opt_loss"] = step_dict.opt_loss
-        step_dict.output_dict["loss"] = step_dict.opt_loss
+        step_dict["computed_task_metrics_dict"]["validation/opt_loss"] = step_dict[
+            "opt_loss"
+        ]
+        step_dict["output_dict"]["loss"] = step_dict["opt_loss"]
 
-        return step_dict.opt_loss, step_dict.computed_task_metrics_dict
+        return step_dict["opt_loss"], step_dict["computed_task_metrics_dict"]
 
     def test_step(self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None):
         step_dict = self.step(
@@ -441,11 +445,15 @@ class EpisodicMAML(LearnerModule):
             phase_name="test",
         )
 
-        step_dict.computed_task_metrics_dict["test/opt_loss"] = step_dict.opt_loss
-        step_dict.output_dict["loss"] = step_dict.opt_loss
+        step_dict["computed_task_metrics_dict"]["test/opt_loss"] = step_dict["opt_loss"]
+        step_dict["output_dict"]["loss"] = step_dict["opt_loss"]
 
-        return step_dict.opt_loss, step_dict.computed_task_metrics_dict
+        return step_dict["opt_loss"], step_dict["computed_task_metrics_dict"]
 
     def predict_step(self, batch: Any, batch_idx: int, **kwargs):
-        input_dict = batch
-        return self.forward(input_dict)
+        return self.step(
+            batch=batch,
+            batch_idx=batch_idx,
+            task_metrics_dict=None,
+            phase_name="predict",
+        )

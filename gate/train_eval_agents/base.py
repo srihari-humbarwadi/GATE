@@ -132,7 +132,7 @@ class TrainingEvaluationAgent(LightningModule):
         # sourcery skip: boolean-if-exp-identity
         logger = get_wandb_logger(trainer=self.trainer)
         for metric_key, computed_value in computed_task_metrics_dict.items():
-            log.info(f"Collecting metric {metric_key}")
+
             if computed_value is not None:
                 # log.info(
                 #     f"metric_key: {metric_key}, "
