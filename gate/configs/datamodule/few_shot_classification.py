@@ -114,6 +114,7 @@ class CUB200MultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: CUB200MultiViewFewShotDatasetConfig = (
         CUB200MultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
     )
+
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
     transform_train: Any = FewShotTransformConfig(
         support_set_input_transform=CUB200SupportSetTransformConfig(),
