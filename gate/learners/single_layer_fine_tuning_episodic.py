@@ -34,8 +34,12 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         self.output_layer_dict = torch.nn.ModuleDict()
         self.input_layer_dict = torch.nn.ModuleDict()
         self.optimizer_config = optimizer_config.outer_loop_optimizer_config
-        self.lr_scheduler_config = lr_scheduler_config.outer_loop_lr_scheduler_config
-        self.inner_loop_optimizer_config = optimizer_config.inner_loop_optimizer_config
+        self.lr_scheduler_config = (
+            lr_scheduler_config.outer_loop_lr_scheduler_config
+        )
+        self.inner_loop_optimizer_config = (
+            optimizer_config.inner_loop_optimizer_config
+        )
         self.inner_loop_lr_scheduler_config = (
             lr_scheduler_config.inner_loop_lr_scheduler_config
         )
@@ -83,8 +87,12 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         for modality_name, is_supported in self.modality_config.items():
             if is_supported:
                 input_dummy_x = torch.randn(
-                    [2] + list(self.input_shape_dict[modality_name]["shape"].values())
+                    [2]
+                    + list(
+                        self.input_shape_dict[modality_name]["shape"].values()
+                    )
                 )
+
 
                 model_features = self.model.forward({modality_name: input_dummy_x})[
                     modality_name
@@ -96,6 +104,7 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                 self.feature_embedding_shape_dict = {
                     "image": model_features_flatten.shape[1]
                 }
+
 
         log.info(
             f"Built {self.__class__.__name__} "
@@ -265,6 +274,7 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                         self.output_layer_dict[key]
                     )
 
+
             self.output_layer_dict.train()
             non_feature_embedding_params = list(self.output_layer_dict.parameters())
 
@@ -384,6 +394,7 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
             dict: The computed metrics.
         """
         opt_loss_list = []
+
         if task_metrics_dict is not None:
             for metric_key, metric_function in task_metrics_dict.items():
                 for output_name, output_value in output_dict.items():
@@ -401,6 +412,7 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                             f"{phase_name}/{set_name}_{metric_key}"
                         ].append(metric_value.detach().cpu())
 
+
         for (
             metric_key,
             metric_function,
@@ -410,9 +422,11 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
                     output_dict[output_name],
                     target_dict[output_name],
                 )
+
                 computed_metrics_dict[
                     f"{phase_name}/episode_{episode_idx}/{set_name}_{metric_key}"
                 ].append(metric_value.detach().cpu())
+
 
                 opt_loss_list.append(metric_value)
 

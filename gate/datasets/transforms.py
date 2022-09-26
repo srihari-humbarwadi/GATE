@@ -26,7 +26,6 @@ class RandomApply(nn.Module):
             return x
         return self.fn(x)
 
-
 class SuperClassExistingLabels(torch.nn.Module):
     def __init__(self, num_classes_to_group: Union[int, Tuple[int, int]]):
         super().__init__()
@@ -178,6 +177,7 @@ class RandomCropResizeCustom(torch.nn.Module):
         self.pad_if_needed = pad_if_needed
         self.fill = fill
         self.padding_mode = padding_mode
+
         self.augment = nn.Sequential(
             RandomApply(transforms.ColorJitter(0.8, 0.8, 0.8, 0.2), p=0.3),
             transforms.RandomGrayscale(p=0.2),

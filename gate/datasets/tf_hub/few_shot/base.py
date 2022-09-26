@@ -128,6 +128,7 @@ def meta_augment_task(support_inputs: Dict, support_labels:Tensor, query_inputs:
     return new_support_inputs, new_support_labels, new_query_inputs, new_query_labels
 
 
+
 class FewShotClassificationDatasetTFDS(Dataset):
     def __init__(
         self,
@@ -1141,6 +1142,7 @@ class FewShotClassificationMetaDatasetTFDS(Dataset):
         }
 
         # This is done once for all classes such that query set is balanced
+
         class_to_num_available_samples = {
             class_name: len(self.current_class_to_address_dict[class_name])
             for class_name in select_classes_for_set
@@ -1176,6 +1178,7 @@ class FewShotClassificationMetaDatasetTFDS(Dataset):
                             class_to_num_available_samples[class_name],
                             available_support_set_size,
                             max_per_class_support_set_size,
+
                         )
                         - num_query_samples_per_class,
                     )
@@ -1235,6 +1238,7 @@ class FewShotClassificationMetaDatasetTFDS(Dataset):
 
                 query_set_inputs.extend(data_inputs[num_support_samples_per_class:])
                 query_set_labels.extend(data_labels[num_support_samples_per_class:])
+
             else:
                 support_set_inputs.extend(data_inputs[:-1])
                 support_set_labels.extend(data_labels[:-1])
@@ -1293,6 +1297,7 @@ class FewShotClassificationMetaDatasetTFDS(Dataset):
             if isinstance(query_set_labels, list)
             else query_set_labels
         )
+
 
         log.info(
             f"Size of support set: {support_set_inputs.shape}, "
@@ -1609,7 +1614,6 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
                         self.min_num_samples_per_class,
                         self.num_samples_per_class,
                     )
-                )
             else:
                 num_samples_per_class = self.num_samples_per_class
 
@@ -1686,8 +1690,8 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
 
             data_labels = [data_labels[i] for i in shuffled_idx]
 
+
             assert len(data_labels) == num_samples_per_class + num_queries_per_class
-            
 
             support_set_inputs.extend(data_inputs[:num_samples_per_class])
             support_set_labels.extend(data_labels[:num_samples_per_class])

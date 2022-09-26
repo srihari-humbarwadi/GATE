@@ -10,6 +10,8 @@ from .gcm_network import (
     ConditionalGenerativeContrastiveModellingMLPHeadConfig,
     ConditionalGenerativeContrastiveModellingResNetHeadConfig,
     PrototypicalNetworkGCMHeadConfig,
+    MatchingNetworkGCMHeadConfig
+
 )
 from .learning_rate_scheduler_config import (
     CosineAnnealingLRConfig,
@@ -22,6 +24,7 @@ from .linear_layer_fine_tuning import (
 )
 from .optimizer_config import AdamOptimizerConfig, BiLevelOptimizerConfig
 from .prototypical_network import EpisodicPrototypicalNetworkConfig
+from .matching_network import EpisodicMatchingNetworkConfig
 from .episodic_maml import (
     EpisodicMAMLSingleLinearLayerConfig,
     EpisodicMAMLFullModelConfig,
@@ -111,6 +114,12 @@ def add_learner_configs(config_store: ConfigStore):
 
     config_store.store(
         group=LEARNER_CONFIGS,
+        name="EpisodicMatchingNetwork",
+        node=EpisodicMatchingNetworkConfig,
+    )
+
+    config_store.store(
+        group=LEARNER_CONFIGS,
         name="EpisodicSingleLinearLayerFineTuning",
         node=EpisodicSingleLinearLayerFineTuningSchemeConfig,
     )
@@ -149,6 +158,12 @@ def add_learner_configs(config_store: ConfigStore):
         group=LEARNER_CONFIGS,
         name="PrototypicalNetworkGCMHead",
         node=PrototypicalNetworkGCMHeadConfig,
+    )
+
+    config_store.store(
+        group=LEARNER_CONFIGS,
+        name="MatchingNetworkGCMHead",
+        node=MatchingNetworkGCMHeadConfig,
     )
 
     return config_store

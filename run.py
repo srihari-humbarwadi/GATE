@@ -32,9 +32,8 @@ dotenv.load_dotenv(override=True, verbose=True)
 install(show_locals=False, word_wrap=True, width=350)
 log = get_logger(__name__)
 
-
 from gate.configs.config import collect_config_store
-
+from gate.configs.config import collect_config_store
 
 config_store = collect_config_store()
 

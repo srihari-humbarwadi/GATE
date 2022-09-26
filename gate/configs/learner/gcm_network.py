@@ -14,6 +14,8 @@ from gate.configs.learner.optimizer_config import (
 )
 from gate.learners.gcm import ConditionalGenerativeContrastiveModelling
 from gate.learners.protonet_gcm_architecture import PrototypicalNetworkGCMHead
+from gate.learners.matchingnet_gcm_architecture import MatchingNetworkGCMHead
+
 from gate.model_blocks.auto_builder_modules.gcm_blocks import (
     HeadConv,
     HeadMLP,
@@ -96,6 +98,21 @@ class ConditionalGenerativeContrastiveModellingResNetHeadConfig(
 @dataclass
 class PrototypicalNetworkGCMHeadConfig(LearnerConfig):
     _target_: str = get_module_import_path(PrototypicalNetworkGCMHead)
+    fine_tune_all_layers: bool = True
+    use_input_instance_norm: bool = True
+    use_mean_head: bool = True
+    use_precision_head: bool = True
+    head_num_layers: int = 3
+    head_num_hidden_filters: int = 512
+    head_num_output_filters: int = 512
+    optimizer_config: BaseOptimizerConfig = AdamOptimizerConfig(lr=2e-5)
+    lr_scheduler_config: LRSchedulerConfig = CosineAnnealingLRConfig()
+    mean_head_config: HeadConfig = HeadMLPConfig()
+    precision_head_config: HeadConfig = HeadMLPConfig()
+
+@dataclass
+class MatchingNetworkGCMHeadConfig(LearnerConfig):
+    _target_: str = get_module_import_path(MatchingNetworkGCMHead)
     fine_tune_all_layers: bool = True
     use_input_instance_norm: bool = True
     use_mean_head: bool = True
