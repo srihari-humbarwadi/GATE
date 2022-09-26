@@ -169,7 +169,7 @@ class GermanTrafficSignsFewShotDatasetConfig(FewShotDatasetConfig):
 
 
 @dataclass
-class GermanTrafficSignsMultiViewFewShotDatasetConfig(FewShotDatasetConfig):
+class GermanTrafficSignsMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
     """
