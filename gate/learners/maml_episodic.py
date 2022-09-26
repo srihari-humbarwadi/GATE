@@ -145,15 +145,20 @@ class EpisodicMAML(LearnerModule):
                 for key, value in self.feature_embedding_shape_dict.items():
                     self.output_layer_dict[key] = nn.ModuleDict(
                         {
-                            "pre_pred_layer": torch.nn.Linear(
+                            "inner_layer_0": torch.nn.Linear(
                                 in_features=value,
+                                out_features=512,
+                                bias=True,
+                            ),
+                            "inner_layer_1": torch.nn.Linear(
+                                in_features=512,
                                 out_features=512,
                                 bias=True,
                             ),
                             "pred_layer": torch.nn.Linear(
                                 in_features=512,
                                 out_features=1,
-                                bias=True,
+                                bias=False,
                             ),
                         }
                     )
@@ -271,9 +276,15 @@ class EpisodicMAML(LearnerModule):
             if episodic_optimizer:
                 del episodic_optimizer
 
-            pre_classifier = DynamicWeightLinear(
-                weights=self.output_layer_dict["image"]["pre_pred_layer"].weight,
-                bias=self.output_layer_dict["image"]["pre_pred_layer"].bias,
+            post_processing_0 = DynamicWeightLinear(
+                weights=self.output_layer_dict["image"]["inner_layer_0"].weight,
+                bias=self.output_layer_dict["image"]["inner_layer_0"].bias,
+                use_cosine_similarity=self.use_cosine_similarity,
+            )
+
+            post_processing_1 = DynamicWeightLinear(
+                weights=self.output_layer_dict["image"]["inner_layer_1"].weight,
+                bias=self.output_layer_dict["image"]["inner_layer_1"].bias,
                 use_cosine_similarity=self.use_cosine_similarity,
             )
 
@@ -287,11 +298,14 @@ class EpisodicMAML(LearnerModule):
                 torch.nn.Sequential(
                     self.model,
                     self.pooling_layer,
-                    pre_classifier,
+                    post_processing_0,
+                    post_processing_1,
                     classifer,
                 )
                 if self.fine_tune_all_layers
-                else torch.nn.Sequential(self.pooling_layer, pre_classifier, classifer)
+                else torch.nn.Sequential(
+                    self.pooling_layer, post_processing_0, post_processing_1, classifer
+                )
             )
             inner_loop_params = model.parameters()
 
