@@ -48,17 +48,19 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
 
         self.num_episodes = num_episodes
 
-        assert min_num_samples_per_class < num_samples_per_class, (
-            f"min_num_samples_per_class {min_num_samples_per_class} "
-            f"must be less than "
-            f"num_samples_per_class {num_samples_per_class}"
-        )
+        if variable_num_samples_per_class:
+            assert min_num_samples_per_class < num_samples_per_class, (
+                f"min_num_samples_per_class {min_num_samples_per_class} "
+                f"must be less than "
+                f"num_samples_per_class {num_samples_per_class}"
+            )
 
-        assert min_num_classes_per_set < num_classes_per_set, (
-            f"min_num_classes_per_set {min_num_classes_per_set} "
-            f"must be less than "
-            f"num_classes_per_set {num_classes_per_set}"
-        )
+        if variable_num_classes_per_set:
+            assert min_num_classes_per_set < num_classes_per_set, (
+                f"min_num_classes_per_set {min_num_classes_per_set} "
+                f"must be less than "
+                f"num_classes_per_set {num_classes_per_set}"
+            )
 
         self.min_num_classes_per_set = min_num_classes_per_set
         self.min_num_samples_per_class = min_num_samples_per_class

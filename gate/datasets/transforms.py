@@ -1,16 +1,30 @@
 from typing import Tuple, Union
 
 import torch
+import torch.nn as nn
 import torchvision.transforms.functional as F
+from torchvision import transforms
 from torchvision.transforms.transforms import _setup_size
 from torchvision.utils import _log_api_usage_once, save_image
 import os
+import random
 
 from gate.datasets.tf_hub.few_shot.base import CardinalityType
 
 
 def channels_first(x):
     return x.transpose([2, 0, 1])
+
+class RandomApply(nn.Module):
+    def __init__(self, fn, p):
+        super().__init__()
+        self.fn = fn
+        self.p = p
+
+    def forward(self, x):
+        if random.random() > self.p:
+            return x
+        return self.fn(x)
 
 
 class SuperClassExistingLabels(torch.nn.Module):
@@ -164,6 +178,12 @@ class RandomCropResizeCustom(torch.nn.Module):
         self.pad_if_needed = pad_if_needed
         self.fill = fill
         self.padding_mode = padding_mode
+        self.augment = nn.Sequential(
+            RandomApply(transforms.ColorJitter(0.8, 0.8, 0.8, 0.2), p=0.3),
+            transforms.RandomGrayscale(p=0.2),
+            transforms.RandomHorizontalFlip(),
+            RandomApply(transforms.GaussianBlur((3, 3), (1.0, 2.0)), p=0.2),
+        )
 
     def forward(self, img):
         """
@@ -202,6 +222,7 @@ class RandomCropResizeCustom(torch.nn.Module):
 
         cropped_image = F.crop(img, i, j, h, w)
         resized_image = F.resize(cropped_image, size=(height, width))
+        resized_image = self.augment(resized_image)
 
         if img is dict:
             img["image"] = resized_image

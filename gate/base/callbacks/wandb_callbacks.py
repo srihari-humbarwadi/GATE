@@ -248,7 +248,6 @@ class LogF1PrecRecHeatmap(Callback):
             self.preds.clear()
             self.targets.clear()
 
-
 class LogGrads(Callback):
     """Logs a validation batch and their predictions to wandb.
     Example adapted from:

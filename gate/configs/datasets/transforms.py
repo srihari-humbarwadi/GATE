@@ -449,8 +449,8 @@ class RandomCropResizeCustomTransform:
 @dataclass
 class MultipleRandomCropResizeCustomTransform:
     _target_: Any = get_module_import_path(MultipleRandomCropResizeCustom)
-    num_augmentations: int = 8
-    size: Optional[List[int]] = None
+    num_augmentations: int = 20
+    size: Optional[List[int]] = (14, 14)
     padding: Optional[List[int]] = None
     pad_if_needed: bool = False
     fill: float = 0

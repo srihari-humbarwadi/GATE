@@ -145,6 +145,10 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
 
                 if self.use_cosine_similarity:
                     model_features_flatten = F.normalize(model_features_flatten, dim=-1)
+                
+                if "view_information" in batch:
+                    model_features_flatten = torch.cat((model_features_flatten, batch["view_information"]), dim=1)
+
 
                 model_logits = head_modules[modality_name](model_features_flatten)
 
@@ -182,36 +186,68 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
         computed_task_metrics_dict = defaultdict(list)
         opt_loss_list = []
         input_dict, target_dict = batch
-        support_set_inputs = input_dict["image"]["support_set"].to(
+        
+        support_set_inputs = {"image":input_dict["image"]["support_set"].to(
             torch.cuda.current_device()
-        )
+        )}
         support_set_targets = target_dict["image"]["support_set"].to(
             torch.cuda.current_device()
         )
-        query_set_inputs = input_dict["image"]["query_set"].to(
+        query_set_inputs = {"image":input_dict["image"]["query_set"].to(
             torch.cuda.current_device()
-        )
+        )}
         query_set_targets = target_dict["image"]["query_set"].to(
             torch.cuda.current_device()
         )
+
+        if "support_set_extras" in input_dict["image"]:
+            support_set_view_information = torch.cat(
+                [
+                    input_dict["image"]["support_set_extras"][key]
+                    for key in input_dict["image"]["support_set_extras"].keys()
+                ],
+                dim=2,
+            )
+            support_set_inputs["view_information"] = support_set_view_information.to(
+            torch.cuda.current_device())
+
+        if "query_set_extras" in input_dict["image"]:
+            query_set_view_information = torch.cat(
+                [
+                    input_dict["image"]["query_set_extras"][key]
+                    for key in input_dict["image"]["query_set_extras"].keys()
+                ],
+                dim=2,
+            )
+            query_set_inputs["view_information"] = query_set_view_information.to(
+            torch.cuda.current_device())
+
         episodic_optimizer = None
         output_dict = defaultdict(list)
-        for (
+        for idx, (
             support_set_input,
             support_set_target,
             query_set_input,
             query_set_target,
-        ) in zip(
-            support_set_inputs,
+        ) in enumerate(zip(
+            support_set_inputs["image"],
             support_set_targets,
-            query_set_inputs,
+            query_set_inputs["image"],
             query_set_targets,
-        ):
+        )):
 
             support_set_input = dict(image=support_set_input)
             support_set_target = dict(image=support_set_target)
             query_set_input = dict(image=query_set_input)
             query_set_target = dict(image=query_set_target)
+
+
+            if "view_information" in support_set_inputs:
+                support_set_input["view_information"] = support_set_inputs["view_information"][idx]
+            if "view_information" in query_set_inputs:
+                query_set_input["view_information"] = query_set_inputs["view_information"][idx]
+
+
 
             self.inner_loop_model.load_state_dict(self.model.state_dict())
             self.inner_loop_model.to(support_set_input["image"].device)
@@ -219,7 +255,7 @@ class EpisodicLinearLayerFineTuningScheme(LearnerModule):
 
             for key, value in self.feature_embedding_shape_dict.items():
                 self.output_layer_dict[key] = torch.nn.Linear(
-                    in_features=value,
+                    in_features=value+support_set_input["view_information"].shape[1] if "view_information" in support_set_input else value,
                     out_features=int(torch.max(support_set_target[key]) + 1),
                     bias=False,
                 )
