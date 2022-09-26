@@ -291,8 +291,8 @@ class EpisodicMAML(LearnerModule):
 
                         inner_loop_optimizer.step(support_set_loss)
 
-                        pbar.update(1)
-                        pbar.set_description(f"Support Set Loss: {support_set_loss}, ")
+                        # pbar.update(1)
+                        # pbar.set_description(f"Support Set Loss: {support_set_loss}, ")
 
                 current_output_dict = self.forward(
                     query_set_input,

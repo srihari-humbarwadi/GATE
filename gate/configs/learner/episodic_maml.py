@@ -10,9 +10,6 @@ from gate.configs.learner.optimizer_config import (
     AdamOptimizerConfig,
 )
 from gate.learners.maml_episodic import EpisodicMAML
-from gate.learners.single_layer_fine_tuning_episodic import (
-    EpisodicLinearLayerFineTuningScheme,
-)
 
 
 @dataclass
