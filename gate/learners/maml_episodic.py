@@ -43,6 +43,24 @@ class DynamicWeightLinear(nn.Module):
         return {"image": F.linear(x, self.weight, self.bias)}
 
 
+class AdaptivePool2DFlatten(nn.Module):
+    def __init__(self, pool_type: str = "avg", output_size: int = 1):
+        super().__init__()
+        self.pool_type = pool_type
+        self.output_size = output_size
+
+    def forward(self, x):
+        x = x["image"]
+        if self.pool_type == "avg":
+            x = F.adaptive_avg_pool2d(x, self.output_size)
+        elif self.pool_type == "max":
+            x = F.adaptive_max_pool2d(x, self.output_size)
+        else:
+            raise ValueError(f"Unknown pool type {self.pool_type}")
+
+        return {"image": x.view(x.shape[0], -1)}
+
+
 class EpisodicMAML(LearnerModule):
     def __init__(
         self,
@@ -116,11 +134,12 @@ class EpisodicMAML(LearnerModule):
                     modality_name
                 ]
 
-                model_features_flatten = model_features.view(
-                    (model_features.shape[0], -1)
-                )
+                self.pooling_layer = AdaptivePool2DFlatten(output_size=2)
+
+                model_features_pooled_flatten = self.pooling_layer(model_features)
+
                 self.feature_embedding_shape_dict = {
-                    "image": model_features_flatten.shape[1]
+                    "image": model_features_pooled_flatten.shape[1]
                 }
 
                 for key, value in self.feature_embedding_shape_dict.items():
@@ -267,18 +286,22 @@ class EpisodicMAML(LearnerModule):
             model = (
                 torch.nn.Sequential(
                     self.model,
+                    self.pooling_layer,
                     pre_classifier,
                     classifer,
                 )
                 if self.fine_tune_all_layers
-                else torch.nn.Sequential(pre_classifier, classifer)
+                else torch.nn.Sequential(self.pooling_layer, pre_classifier, classifer)
             )
             inner_loop_params = model.parameters()
 
             if batch_idx == 0:
+            
+                log.info(f"Inner loop params:")
                 for name, param in model.named_parameters():
                     if param.requires_grad:
-                        print(name, param.data.shape)
+                        log.info(f"{name}, {param.data.shape}")
+
 
 
             episodic_optimizer = hydra.utils.instantiate(
