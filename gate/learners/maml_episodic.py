@@ -301,6 +301,8 @@ class EpisodicMAML(LearnerModule):
                         query_set_input[modality_name] = self.model.forward(
                             {modality_name: query_set_input[modality_name]}
                         )[modality_name]
+            
+            log.info(f"support_set_input {support_set_input}")
 
             with higher.innerloop_ctx(
                 model,
