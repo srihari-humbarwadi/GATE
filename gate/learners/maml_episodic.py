@@ -151,10 +151,6 @@ class EpisodicMAML(LearnerModule):
             f"{[item.shape for name, item in output_dict.items()]}"
         )
 
-    def reset_parameters(self):
-        self.output_layer_dict.reset_parameters()
-        self.input_layer_dict.reset_parameters()
-
     def get_learner_only_params(self):
 
         yield from list(self.input_layer_dict.parameters()) + list(
@@ -277,8 +273,13 @@ class EpisodicMAML(LearnerModule):
                 if self.fine_tune_all_layers
                 else torch.nn.Sequential(pre_classifier, classifer)
             )
-
             inner_loop_params = model.parameters()
+
+            if batch_idx == 0:
+                for name, param in model.named_parameters():
+                    if param.requires_grad:
+                        print(name, param.data.shape)
+
 
             episodic_optimizer = hydra.utils.instantiate(
                 config=self.inner_loop_optimizer_config,
@@ -292,14 +293,13 @@ class EpisodicMAML(LearnerModule):
                     if is_supported:
                         support_set_input[modality_name] = self.model.forward(
                             {modality_name: support_set_input[modality_name]}
-                        )[modality_name]
+                        )[modality_name].detach()
 
                         query_set_input[modality_name] = self.model.forward(
                             {modality_name: query_set_input[modality_name]}
-                        )[modality_name]
-            log.info(
-                f"support_set_input {[(key, item.shape) for key, item in support_set_input.items()]}"
-            )
+                        )[modality_name].detach()
+
+
             with higher.innerloop_ctx(
                 model,
                 episodic_optimizer,

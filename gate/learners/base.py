@@ -82,14 +82,15 @@ class LearnerModule(nn.Module):
         if params is None:
             params = self.parameters()
 
+        if named_params is None:
+            named_params = self.named_parameters()
+
         self.optimizer = hydra.utils.instantiate(
             config=self.optimizer_config, params=params
         )
 
         if named_params is not None:
             log.info("Printing optimizer learnable weights 🏋")
-
-            log.info("------------------------------------------------------")
             for name, param in named_params:
                 if param.requires_grad:
                     log.info(f"{name} {param.shape}")
@@ -104,9 +105,7 @@ class LearnerModule(nn.Module):
 
         del self.lr_scheduler_config.batch_size
         del self.lr_scheduler_config.num_train_samples
-        learning_scheduler_update_interval = (
-            self.lr_scheduler_config.update_interval
-        )
+        learning_scheduler_update_interval = self.lr_scheduler_config.update_interval
         del self.lr_scheduler_config.update_interval
 
         lr_scheduler = hydra.utils.instantiate(
@@ -124,9 +123,7 @@ class LearnerModule(nn.Module):
                 "interval": learning_scheduler_update_interval,
             }
 
-        log.info(
-            f"\noptimizer: {self.optimizer} \n" f"lr_scheduler: {lr_scheduler}"
-        )
+        log.info(f"\noptimizer: {self.optimizer} \n" f"lr_scheduler: {lr_scheduler}")
 
         return self.optimizer_dict
 
