@@ -238,7 +238,8 @@ class EpisodicMAML(LearnerModule):
             )
 
             classifier_bias = self.output_layer_dict["image"].bias.repeat(
-                [max(support_set_target["image"]) + 1, 1]
+                [max(support_set_target["image"]) + 1]
+
             )
 
             classifier_weights = nn.Parameter(classifier_weights, requires_grad=True)
@@ -273,12 +274,10 @@ class EpisodicMAML(LearnerModule):
                 track_higher_grads=track_higher_grads,
             ) as (inner_loop_model, inner_loop_optimizer):
 
-
                 for step_idx in range(self.inner_loop_steps):
                     current_output_dict = self.forward(
                         support_set_input, model=inner_loop_model
                     )
-
 
                     (
                         support_set_loss,
