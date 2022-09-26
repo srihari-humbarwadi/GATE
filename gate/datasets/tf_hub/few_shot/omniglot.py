@@ -6,7 +6,10 @@ from dotted_dict import DottedDict
 from gate.base.utils.loggers import get_logger
 from gate.datasets.data_utils import FewShotSuperSplitSetOptions
 from gate.datasets.tf_hub import bytes_to_string
-from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
+from gate.datasets.tf_hub.few_shot.base import (
+    FewShotClassificationDatasetTFDS,
+    MultiViewFewShotClassificationDatasetTFDS,
+)
 
 log = get_logger(
     __name__,
