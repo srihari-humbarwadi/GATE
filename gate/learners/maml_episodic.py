@@ -261,12 +261,22 @@ class EpisodicMAML(LearnerModule):
                 bias=classifier_bias,
                 use_cosine_similarity=self.use_cosine_similarity,
             )
-            full_model = torch.nn.Sequential(
-                self.model, self.output_layer_dict["image"]["pre_pred_layer"], classifer
+
+            model = (
+                torch.nn.Sequential(
+                    self.model,
+                    self.output_layer_dict["image"]["pre_pred_layer"],
+                    classifer,
+                )
+                if self.fine_tune_all_layers
+                else torch.nn.Sequential(
+                    self.output_layer_dict["image"]["pre_pred_layer"], classifer
+                )
+
             )
 
             inner_loop_params = (
-                full_model.parameters()
+                model.parameters()
                 if self.fine_tune_all_layers
                 else list(
                     self.output_layer_dict["image"]["pre_pred_layer"].parameters()
@@ -280,8 +290,20 @@ class EpisodicMAML(LearnerModule):
             )
 
             track_higher_grads = True if train else False
+
+            if not self.fine_tune_all_layers:
+                for modality_name, is_supported in self.modality_config.items():
+                    if is_supported:
+                        support_set_input[modality_name] = self.model.forward(
+                            {modality_name: support_set_input[modality_name]}
+                        )[modality_name]
+
+                        query_set_input[modality_name] = self.model.forward(
+                            {modality_name: query_set_input[modality_name]}
+                        )[modality_name]
+
             with higher.innerloop_ctx(
-                full_model,
+                model,
                 episodic_optimizer,
                 copy_initial_weights=False,
                 track_higher_grads=track_higher_grads,
