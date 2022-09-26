@@ -130,13 +130,13 @@ class EpisodicMAML(LearnerModule):
                     [2] + list(self.input_shape_dict[modality_name]["shape"].values())
                 )
 
-                model_features = self.model.forward({modality_name: input_dummy_x})[
-                    modality_name
-                ]
+                model_features = self.model.forward({modality_name: input_dummy_x})
 
                 self.pooling_layer = AdaptivePool2DFlatten(output_size=2)
 
-                model_features_pooled_flatten = self.pooling_layer(model_features)
+                model_features_pooled_flatten = self.pooling_layer(model_features)[
+                    modality_name
+                ]
 
                 self.feature_embedding_shape_dict = {
                     "image": model_features_pooled_flatten.shape[1]
@@ -147,11 +147,11 @@ class EpisodicMAML(LearnerModule):
                         {
                             "pre_pred_layer": torch.nn.Linear(
                                 in_features=value,
-                                out_features=value,
+                                out_features=512,
                                 bias=True,
                             ),
                             "pred_layer": torch.nn.Linear(
-                                in_features=value,
+                                in_features=512,
                                 out_features=1,
                                 bias=True,
                             ),
@@ -302,8 +302,6 @@ class EpisodicMAML(LearnerModule):
                     if param.requires_grad:
                         log.info(f"{name}, {param.data.shape}")
 
-
-
             episodic_optimizer = hydra.utils.instantiate(
                 config=self.inner_loop_optimizer_config,
                 params=inner_loop_params,
@@ -321,7 +319,6 @@ class EpisodicMAML(LearnerModule):
                         query_set_input[modality_name] = self.model.forward(
                             {modality_name: query_set_input[modality_name]}
                         )[modality_name].detach()
-
 
             with higher.innerloop_ctx(
                 model,
