@@ -256,6 +256,12 @@ class EpisodicMAML(LearnerModule):
             if episodic_optimizer:
                 del episodic_optimizer
 
+            pre_classifier = DynamicWeightLinear(
+                weights=self.output_layer_dict["image"]["pre_pred_layer"].weight,
+                bias=self.output_layer_dict["image"]["pre_pred_layer"].bias,
+                use_cosine_similarity=self.use_cosine_similarity,
+            )
+
             classifer = DynamicWeightLinear(
                 weights=classifier_weights,
                 bias=classifier_bias,
@@ -265,24 +271,14 @@ class EpisodicMAML(LearnerModule):
             model = (
                 torch.nn.Sequential(
                     self.model,
-                    self.output_layer_dict["image"]["pre_pred_layer"],
+                    pre_classifier,
                     classifer,
                 )
                 if self.fine_tune_all_layers
-                else torch.nn.Sequential(
-                    self.output_layer_dict["image"]["pre_pred_layer"], classifer
-                )
-
+                else torch.nn.Sequential(pre_classifier, classifer)
             )
 
-            inner_loop_params = (
-                model.parameters()
-                if self.fine_tune_all_layers
-                else list(
-                    self.output_layer_dict["image"]["pre_pred_layer"].parameters()
-                )
-                + list(classifer.parameters())
-            )
+            inner_loop_params = model.parameters()
 
             episodic_optimizer = hydra.utils.instantiate(
                 config=self.inner_loop_optimizer_config,
@@ -301,9 +297,9 @@ class EpisodicMAML(LearnerModule):
                         query_set_input[modality_name] = self.model.forward(
                             {modality_name: query_set_input[modality_name]}
                         )[modality_name]
-            
-            log.info(f"support_set_input {support_set_input}")
-
+            log.info(
+                f"support_set_input {[(key, item.shape) for key, item in support_set_input.items()]}"
+            )
             with higher.innerloop_ctx(
                 model,
                 episodic_optimizer,
