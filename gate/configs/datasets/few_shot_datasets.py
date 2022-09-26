@@ -51,13 +51,6 @@ class FewShotDatasetConfig:
     download: bool = True
     num_episodes: int = 600
 
-    # min_num_classes_per_set: int = 1 #default 5
-    # min_num_samples_per_class: int = 3 # default: 2
-    # min_num_queries_per_class: int = 2 # default 1
-    # num_classes_per_set: int = 5  # n_way, default 50
-    # num_samples_per_class: int = 3  # n_shot, default: 10
-    # num_queries_per_class: int = 2 # default 3
-    # variable_num_samples_per_class: bool = False
     min_num_classes_per_set: int = 5
     min_num_samples_per_class: int = 2  # default: 2
     min_num_queries_per_class: int = 1
@@ -66,14 +59,13 @@ class FewShotDatasetConfig:
     num_queries_per_class: int = 10  # n_query, default: 10
     variable_num_samples_per_class: bool = True
     variable_num_queries_per_class: bool = False
-    # TODO: Add a config default for 1-3 num query variable sampling
     variable_num_classes_per_set: bool = True
     support_set_input_transform: Any = None
     query_set_input_transform: Any = None
     support_set_target_transform: Any = None
     query_set_target_transform: Any = None
     rescan_cache: bool = False
-    _target_: Any = FewShotClassificationDatasetTFDS
+    _target_: Any = get_module_import_path(FewShotClassificationDatasetTFDS)
 
 
 @dataclass
@@ -86,7 +78,8 @@ class MultiViewFewShotDatasetConfig(FewShotDatasetConfig):
     num_samples_per_class: int = 3  # n_shot, default: 10
     num_queries_per_class: int = 2  # default 3
     variable_num_samples_per_class: bool = False
-    _target_ = get_module_import_path(MultiViewFewShotClassificationDatasetTFDS)
+    _target_ = Any = get_module_import_path(MultiViewFewShotClassificationDatasetTFDS)
+    # TODO: Add a config default for 1-3 num query variable sampling
 
 
 @dataclass
