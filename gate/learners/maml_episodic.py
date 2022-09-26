@@ -70,6 +70,7 @@ class EpisodicMAML(LearnerModule):
         self.inner_loop_steps = inner_loop_steps
         self.use_cosine_similarity = use_cosine_similarity
         self.use_weight_norm = use_weight_norm
+        self.manual_optimization = manual_optimization
         self.temperature = nn.Parameter(torch.tensor(temperature), requires_grad=True)
 
         self.learner_metrics_dict = {"loss": F.cross_entropy}
@@ -369,10 +370,10 @@ class EpisodicMAML(LearnerModule):
                             f"{phase_name}/{set_name}/{metric_key}"
                         ].append(metric_value.detach().cpu())
 
-                        if "query" in metric_key and "accuracy" in metric_key:
-                            computed_metrics_dict[
-                                f"{phase_name}/{set_name}_accuracy"
-                            ].append(metric_value.detach().cpu())
+                    if set_name == "query_set":
+                        computed_metrics_dict[f"{phase_name}/accuracy"].append(
+                            metric_value.detach().cpu()
+                        )
 
         for (
             metric_key,
