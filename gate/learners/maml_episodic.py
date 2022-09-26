@@ -266,12 +266,9 @@ class EpisodicMAML(LearnerModule):
                 "pred_layer"
             ].weight.repeat([max(support_set_target["image"]) + 1, 1])
 
-            classifier_bias = self.output_layer_dict["image"]["pred_layer"].bias.repeat(
-                [max(support_set_target["image"]) + 1]
-            )
+            classifier_bias = None
 
             classifier_weights = nn.Parameter(classifier_weights, requires_grad=True)
-            classifier_bias = nn.Parameter(classifier_bias, requires_grad=True)
 
             if episodic_optimizer:
                 del episodic_optimizer
