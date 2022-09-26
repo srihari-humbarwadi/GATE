@@ -296,7 +296,7 @@ class EpisodicMAML(LearnerModule):
             inner_loop_params = model.parameters()
 
             if batch_idx == 0:
-            
+
                 log.info(f"Inner loop params:")
                 for name, param in model.named_parameters():
                     if param.requires_grad:
