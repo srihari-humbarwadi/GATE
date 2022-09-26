@@ -418,7 +418,7 @@ class EpisodicMAML(LearnerModule):
                         target_dict[output_name].clone().detach().cpu(),
                     )
 
-                    if phase_name != "training":
+                    if phase_name != "training" and step_idx % 100 == 0:
                         computed_metrics_dict[
                             f"{phase_name}/episode_{episode_idx}/{set_name}/{metric_key}"
                         ].append(metric_value.detach().cpu())
