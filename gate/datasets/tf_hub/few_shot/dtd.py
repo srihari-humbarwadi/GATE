@@ -132,7 +132,7 @@ class DTDMultiViewFewShotClassificationDataset(
         rescan_cache: bool = True,
     ):
         DATASET_NAME = "dtd"
-        super(DTDFewShotClassificationDataset, self).__init__(
+        super(MultiViewFewShotClassificationDatasetTFDS, self).__init__(
             modality_config=DottedDict(image=True),
             input_shape_dict=DottedDict(image=dict(channels=3, height=84, width=84)),
             dataset_name=DATASET_NAME,

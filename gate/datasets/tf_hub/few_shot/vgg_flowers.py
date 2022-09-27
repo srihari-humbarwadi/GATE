@@ -7,7 +7,10 @@ from gate.base.utils.loggers import get_logger
 from gate.configs.datasets.data_splits_config import data_splits_dict
 from gate.datasets.data_utils import FewShotSuperSplitSetOptions
 from gate.datasets.tf_hub import bytes_to_string
-from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
+from gate.datasets.tf_hub.few_shot.base import (
+    FewShotClassificationDatasetTFDS,
+    MultiViewFewShotClassificationDatasetTFDS,
+)
 
 log = get_logger(
     __name__,
@@ -80,7 +83,9 @@ class VGGFlowersFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
         )
 
 
-class VGGFlowersMultiViewFewShotClassificationDataset(FewShotClassificationDatasetTFDS):
+class VGGFlowersMultiViewFewShotClassificationDataset(
+    MultiViewFewShotClassificationDatasetTFDS
+):
     def __init__(
         self,
         dataset_root: Union[str, pathlib.Path],
