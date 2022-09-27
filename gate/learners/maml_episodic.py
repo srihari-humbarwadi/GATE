@@ -242,6 +242,7 @@ class EpisodicMAML(LearnerModule):
         computed_task_metrics_dict = defaultdict(list)
         opt_loss_list = []
         input_dict, target_dict = batch
+        log.info(f"{input_dict}")
         support_set_inputs = input_dict["image"]["support_set"].to(
             torch.cuda.current_device()
         )
