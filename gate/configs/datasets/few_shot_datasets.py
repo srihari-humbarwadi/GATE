@@ -204,6 +204,7 @@ class VGGFlowersFewShotDatasetConfig(FewShotDatasetConfig):
     _target_: Any = get_module_import_path(VGGFlowersFewShotClassificationDataset)
 
 
+@dataclass
 class VGGFlowersMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
