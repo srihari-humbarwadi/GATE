@@ -31,14 +31,24 @@ class DynamicWeightLinear(nn.Module):
         self.weight = weights
         self.bias = bias
         self.use_cosine_similarity = use_cosine_similarity
+        self.include_crop_coordinates = False
 
     def forward(self, x):
         x = x["image"]
+
+        if isinstance(x, dict):
+            x = x["features"]
+            crop_coordinates = x["crop_coordinates"]
+            self.include_crop_coordinates = True
+
         if len(x.shape) > 2:
             x = x.view(x.shape[0], -1)
 
         if self.use_cosine_similarity:
             x = F.normalize(x, dim=-1)
+
+        if self.include_crop_coordinates:
+            x = torch.cat([x, crop_coordinates], dim=-1)
 
         return {"image": F.linear(x, self.weight, self.bias)}
 
@@ -73,6 +83,7 @@ class EpisodicMAML(LearnerModule):
         temperature: float = 10.0,
         inner_loop_steps: int = 5,
         manual_optimization: bool = True,
+        include_coordinate_information: bool = False,
     ):
         super(EpisodicMAML, self).__init__()
         self.output_layer_dict = torch.nn.ModuleDict()
@@ -90,6 +101,7 @@ class EpisodicMAML(LearnerModule):
         self.use_weight_norm = use_weight_norm
         self.manual_optimization = manual_optimization
         self.temperature = nn.Parameter(torch.tensor(temperature), requires_grad=True)
+        self.include_coordinate_information = include_coordinate_information
 
         self.learner_metrics_dict = {"loss": F.cross_entropy}
 
@@ -146,7 +158,9 @@ class EpisodicMAML(LearnerModule):
                     self.output_layer_dict[key] = nn.ModuleDict(
                         {
                             "inner_layer_0": torch.nn.Linear(
-                                in_features=value,
+                                in_features=value + 4
+                                if self.include_coordinate_information
+                                else value,
                                 out_features=512,
                                 bias=True,
                             ),
@@ -323,13 +337,29 @@ class EpisodicMAML(LearnerModule):
             if not self.fine_tune_all_layers:
                 for modality_name, is_supported in self.modality_config.items():
                     if is_supported:
-                        support_set_input[modality_name] = self.model.forward(
+                        support_set_features = self.model.forward(
                             {modality_name: support_set_input[modality_name]}
                         )[modality_name].detach()
 
-                        query_set_input[modality_name] = self.model.forward(
+                        query_set_features = self.model.forward(
                             {modality_name: query_set_input[modality_name]}
                         )[modality_name].detach()
+
+                        if self.include_coordinate_information:
+                            support_set_input[modality_name] = {
+                                "features": support_set_features,
+                                "crop_coordinates": support_set_input[
+                                    "crop_coordinates"
+                                ],
+                            }
+
+                            query_set_input[modality_name] = {
+                                "features": query_set_features,
+                                "crop_coordinates": query_set_input["crop_coordinates"],
+                            }
+                        else:
+                            support_set_input[modality_name] = support_set_features
+                            query_set_input[modality_name] = query_set_features
 
             with higher.innerloop_ctx(
                 model,
