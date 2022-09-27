@@ -53,7 +53,6 @@ OmegaConf.register_new_resolver(
 
 @dataclass
 class Config:
-    _self_: Any = MISSING
     callbacks: Any = MISSING
     logger: Any = MISSING
     model: Any = MISSING
