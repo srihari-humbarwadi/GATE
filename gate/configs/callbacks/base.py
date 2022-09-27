@@ -79,7 +79,7 @@ class LogGrads:
 @dataclass
 class LogConfigInformation:
     _target_: str = get_module_import_path(LogConfigInformation)
-    config: Optional[Dict] = None
+    config_dict: Optional[Dict] = None
 
 
 model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(
