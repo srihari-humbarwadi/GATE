@@ -15,6 +15,8 @@ from rich.traceback import install
 from wandb.util import generate_id
 
 from gate.base.utils.loggers import get_logger
+from gate.configs import get_module_import_path
+from gate.configs.callbacks import LogConfigInformation
 from gate.datamodules.base import DataModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 
@@ -101,13 +103,19 @@ def train_eval(config: DictConfig):
     if "callbacks" in config:
         for _, cb_conf in config.callbacks.items():
             if "_target_" in cb_conf:
-                if "LogConfigInformation" in cb_conf["_target_"]:
-                    cb_conf["config"] = dict(
-                        OmegaConf.to_container(config, resolve=True)
+                if (
+                    cb_conf["_target_"].split(".")[-1]
+                    == get_module_import_path(LogConfigInformation).split(".")[-1]
+                ):
+                    log.info(
+                        f"Instantiating config collection callback <{cb_conf._target_}>"
                     )
-                    log.info(f"Instantiating callback <{cb_conf._target_}>")
+                    cb_conf["config"] = OmegaConf.to_container(config, resolve=True)
                     callbacks.append(
-                        hydra.utils.instantiate(cb_conf, _recursive_=False)
+                        hydra.utils.instantiate(
+                            cb_conf,
+                            _recursive_=False,
+                        )
                     )
                 else:
                     log.info(f"Instantiating callback <{cb_conf._target_}>")
