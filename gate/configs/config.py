@@ -26,6 +26,7 @@ from gate.configs.trainer import add_trainer_configs
 log = get_logger(__name__)
 
 defaults = [
+    {"_self_": None},
     {"callbacks": "wandb"},
     {"logger": "wandb"},
     {"model": "timm-image-resnet18"},
@@ -38,7 +39,6 @@ defaults = [
     {"additional_input_transforms": "base"},
     {"additional_target_transforms": "base"},
     {"hydra": "custom_logging_path"},
-    {"_self_": None},
 ]
 
 overrides = []
@@ -53,6 +53,7 @@ OmegaConf.register_new_resolver(
 
 @dataclass
 class Config:
+    _self_ = None
     callbacks: Any = MISSING
     logger: Any = MISSING
     model: Any = MISSING
