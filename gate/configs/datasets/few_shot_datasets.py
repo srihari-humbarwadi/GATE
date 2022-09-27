@@ -81,7 +81,7 @@ class FewShotDatasetConfig:
 
 @dataclass
 class MultiViewFewShotDatasetConfig:
-    dataset_root = str = ".gate/datasets"
+    dataset_root: str
     split_name: Optional[str] = None
     download: bool = True
     num_episodes: int = 600
