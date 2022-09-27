@@ -101,10 +101,7 @@ def train_eval(config: DictConfig):
     if "callbacks" in config:
         for _, cb_conf in config.callbacks.items():
             if "_target_" in cb_conf:
-                if (
-                    cb_conf["_target_"]
-                    == "tali.base.callbacks.wandb_callbacks.LogConfigInformation"
-                ):
+                if "LogConfigInformation" in cb_conf["_target_"]:
                     cb_conf["config"] = dict(config)
                     log.info(f"Instantiating callback <{cb_conf._target_}>")
                     callbacks.append(
