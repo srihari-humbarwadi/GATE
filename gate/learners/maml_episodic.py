@@ -342,7 +342,7 @@ class EpisodicMAML(LearnerModule):
 
             if batch_idx == 0:
 
-                log.info(f"Inner loop params:")
+                log.info("Inner loop params:")
                 for name, param in model.named_parameters():
                     if param.requires_grad:
                         log.info(f"{name}, {param.data.shape}")
@@ -352,7 +352,7 @@ class EpisodicMAML(LearnerModule):
                 params=inner_loop_params,
             )
 
-            track_higher_grads = True if train else False
+            track_higher_grads = bool(train)
 
             if not self.fine_tune_all_layers:
                 for modality_name, is_supported in self.modality_config.items():
