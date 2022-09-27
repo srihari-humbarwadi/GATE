@@ -59,6 +59,14 @@ TimmImageResNet18PoolWithRemovedLayersConfig = TimmImageModelWithRemovedLayersCo
     global_pool=True,
 )
 
+TimmImageResNet18FewShotLearning = TimmImageModelWithRemovedLayersConfig(
+    model_name_to_download="resnet18",
+    pretrained=True,
+    input_shape_dict=input_size_dict_224_image,
+    list_of_layer_prefix_to_remove=["layer3", "layer4", "fc", "global_pool"],
+    global_pool=False,
+)
+
 TimmImageResNet34Config = TimmImageModelConfig(
     model_name_to_download="resnet34d",
     pretrained=True,
