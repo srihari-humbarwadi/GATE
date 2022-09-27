@@ -31,24 +31,15 @@ class DynamicWeightLinear(nn.Module):
         self.weight = weights
         self.bias = bias
         self.use_cosine_similarity = use_cosine_similarity
-        self.include_crop_coordinates = False
 
     def forward(self, x):
         x = x["image"]
-
-        if isinstance(x, dict):
-            x = x["features"]
-            crop_coordinates = x["crop_coordinates"]
-            self.include_crop_coordinates = True
 
         if len(x.shape) > 2:
             x = x.view(x.shape[0], -1)
 
         if self.use_cosine_similarity:
             x = F.normalize(x, dim=-1)
-
-        if self.include_crop_coordinates:
-            x = torch.cat([x, crop_coordinates], dim=-1)
 
         return {"image": F.linear(x, self.weight, self.bias)}
 
@@ -58,15 +49,25 @@ class AdaptivePool2DFlatten(nn.Module):
         super().__init__()
         self.pool_type = pool_type
         self.output_size = output_size
+        self.include_crop_coordinates = False
 
     def forward(self, x):
         x = x["image"]
+
+        if isinstance(x, dict):
+            crop_coordinates = x["crop_coordinates"]
+            x = x["features"]
+            self.include_crop_coordinates = True
+
         if self.pool_type == "avg":
             x = F.adaptive_avg_pool2d(x, self.output_size)
         elif self.pool_type == "max":
             x = F.adaptive_max_pool2d(x, self.output_size)
         else:
             raise ValueError(f"Unknown pool type {self.pool_type}")
+
+        if self.include_crop_coordinates:
+            x = torch.cat([x.view(x.shape[0], -1), crop_coordinates], dim=-1)
 
         return {"image": x.view(x.shape[0], -1)}
 
