@@ -1,8 +1,11 @@
+import multiprocessing
 import pathlib
+from concurrent.futures import ProcessPoolExecutor
 from typing import Any, Callable, Dict, Optional
 
 import h5py
 import hydra
+import torch
 from PIL.Image import Image
 from omegaconf import DictConfig
 from torchvision.transforms import transforms
@@ -13,6 +16,12 @@ from gate.datasets.data_utils import get_class_to_idx_dict, store_dict_as_hdf5
 from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
 
 logger = get_logger(__name__)
+
+
+def data_load(item):
+    image, label = item
+
+    return transforms.ToTensor()(image).int8, label
 
 
 class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
@@ -124,11 +133,16 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
 
         dataset_new = []
 
-        logger.info(f"Loading dataset into memory")
+        logger.info(
+            f"Loading the {split_name} set of the {dataset_name} dataset into memory 💿"
+        )
         with tqdm(total=len(dataset)) as pbar:
-            for image, label in dataset:
-                dataset_new.append((transforms.ToTensor()(image), label))
-                pbar.update(1)
+            with ProcessPoolExecutor(
+                max_workers=multiprocessing.cpu_count()
+            ) as executor:
+                for i, (image, label) in enumerate(executor.map(data_load, dataset)):
+                    dataset_new.append((image, label))
+                    pbar.update(1)
 
         self.subsets = [dataset_new]
 
