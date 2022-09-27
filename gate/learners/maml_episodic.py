@@ -366,7 +366,6 @@ class EpisodicMAML(LearnerModule):
                         )[modality_name].detach()
 
                         if self.include_coordinate_information:
-                            log.info(f"{support_set_input}")
                             support_set_input[modality_name] = {
                                 "features": support_set_features,
                                 "crop_coordinates": support_set_crop_coordinates[idx],
