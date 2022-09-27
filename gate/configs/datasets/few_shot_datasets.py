@@ -195,6 +195,7 @@ class GermanTrafficSignsMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetCon
     )
 
 
+@dataclass
 class VGGFlowersFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
