@@ -7,7 +7,7 @@ import hydra
 import pytorch_lightning
 import torch
 import wandb
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, Trainer, seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
@@ -102,7 +102,9 @@ def train_eval(config: DictConfig):
         for _, cb_conf in config.callbacks.items():
             if "_target_" in cb_conf:
                 if "LogConfigInformation" in cb_conf["_target_"]:
-                    cb_conf["config"] = dict(config)
+                    cb_conf["config"] = dict(
+                        OmegaConf.to_container(config, resolve=True)
+                    )
                     log.info(f"Instantiating callback <{cb_conf._target_}>")
                     callbacks.append(
                         hydra.utils.instantiate(cb_conf, _recursive_=False)
