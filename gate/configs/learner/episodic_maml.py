@@ -26,6 +26,7 @@ class EpisodicMAMLSingleLinearLayerConfig(LearnerConfig):
     use_weight_norm: bool = False
     temperature: float = 10.0
     manual_optimization: bool = True
+    include_coordinate_information: bool = False
 
 
 @dataclass
@@ -42,3 +43,4 @@ class EpisodicMAMLFullModelConfig(LearnerConfig):
     use_weight_norm: bool = False
     temperature: float = 10.0
     manual_optimization: bool = True
+    include_coordinate_information: bool = False
