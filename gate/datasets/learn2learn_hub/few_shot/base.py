@@ -131,20 +131,22 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
             download=download,
         )
 
-        dataset_new = []
+        # dataset_new = []
+        #
+        # logger.info(
+        #     f"Loading the {split_name} set of the {dataset_name} dataset into memory 💿"
+        # )
+        # with tqdm(total=len(dataset)) as pbar:
+        #     with ProcessPoolExecutor(
+        #         max_workers=multiprocessing.cpu_count()
+        #     ) as executor:
+        #         for i, (image, label) in enumerate(executor.map(data_load, dataset)):
+        #             dataset_new.append((image, label))
+        #             pbar.update(1)
+        #
+        # self.subsets = [dataset_new]
 
-        logger.info(
-            f"Loading the {split_name} set of the {dataset_name} dataset into memory 💿"
-        )
-        with tqdm(total=len(dataset)) as pbar:
-            with ProcessPoolExecutor(
-                max_workers=multiprocessing.cpu_count()
-            ) as executor:
-                for i, (image, label) in enumerate(executor.map(data_load, dataset)):
-                    dataset_new.append((image, label))
-                    pbar.update(1)
-
-        self.subsets = [dataset_new]
+        self.subsets = [dataset]
 
         self.class_to_address_dict = get_class_to_idx_dict(
             self.subsets,
