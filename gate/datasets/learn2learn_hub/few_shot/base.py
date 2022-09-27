@@ -21,7 +21,7 @@ logger = get_logger(__name__)
 def data_load(item):
     image, label = item
 
-    return transforms.ToTensor()(image).int8, label
+    return transforms.ToTensor()(image).to(torch.uint8), label
 
 
 class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
