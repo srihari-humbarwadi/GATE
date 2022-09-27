@@ -46,8 +46,6 @@ class FewShotDatasetConfig:
     Class for configuring a few shot dataset
     """
 
-    _target_: Any
-
     dataset_root: str
     split_name: Optional[str] = None
     download: bool = True
@@ -82,8 +80,6 @@ class FewShotDatasetConfig:
 
 @dataclass
 class MultiViewFewShotDatasetConfig:
-    _target_: Any
-
     dataset_root: str
     split_name: Optional[str] = None
     download: bool = True
