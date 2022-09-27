@@ -121,13 +121,6 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
             download=download,
         )
 
-        self.subsets = [dataset]
-
-        self.class_to_address_dict = get_class_to_idx_dict(
-            self.subsets,
-            class_name_key=1,
-            label_extractor_fn=None,
-        )
         dataset_new = []
 
         logger.info(f"Loading dataset into memory")
@@ -137,6 +130,12 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
                 pbar.update(1)
 
         self.subsets = [dataset_new]
+
+        self.class_to_address_dict = get_class_to_idx_dict(
+            self.subsets,
+            class_name_key=1,
+            label_extractor_fn=None,
+        )
 
         self.label_extractor_fn = label_extractor_fn
         dataset_root = (
