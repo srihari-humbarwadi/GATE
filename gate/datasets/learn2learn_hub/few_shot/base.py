@@ -125,7 +125,7 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
 
         logger.info(f"Loading dataset into memory")
         with tqdm(total=len(dataset)) as pbar:
-            for image, label in self.subsets[0]:
+            for image, label in dataset:
                 dataset_new.append((image, label))
                 pbar.update(1)
 
