@@ -110,7 +110,9 @@ def train_eval(config: DictConfig):
                     log.info(
                         f"Instantiating config collection callback <{cb_conf._target_}>"
                     )
-                    cb_conf["config"] = OmegaConf.to_container(config, resolve=True)
+                    cb_conf["config_dict"] = OmegaConf.to_container(
+                        config, resolve=True
+                    )
                     callbacks.append(
                         hydra.utils.instantiate(
                             cb_conf,
