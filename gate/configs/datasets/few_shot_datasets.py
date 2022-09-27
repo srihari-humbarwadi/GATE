@@ -107,7 +107,6 @@ class MultiViewFewShotDatasetConfig:
     # TODO: Add a config default for 1-3 num query variable sampling
 
 
-@dataclass
 class OmniglotFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -116,7 +115,6 @@ class OmniglotFewShotDatasetConfig(FewShotDatasetConfig):
     _target_: Any = get_module_import_path(OmniglotFewShotClassificationDataset)
 
 
-@dataclass
 class OmniglotMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -127,7 +125,6 @@ class OmniglotMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     )
 
 
-@dataclass
 class CUB200FewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -136,7 +133,6 @@ class CUB200FewShotDatasetConfig(FewShotDatasetConfig):
     _target_: Any = get_module_import_path(CUB200FewShotClassificationDataset)
 
 
-@dataclass
 class CUB200MultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -145,7 +141,6 @@ class CUB200MultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     _target_: Any = get_module_import_path(CUB200MultiViewFewShotClassificationDataset)
 
 
-@dataclass
 class AircraftFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -154,7 +149,6 @@ class AircraftFewShotDatasetConfig(FewShotDatasetConfig):
     _target_: Any = get_module_import_path(AircraftFewShotClassificationDataset)
 
 
-@dataclass
 class AircraftMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -165,7 +159,6 @@ class AircraftMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     )
 
 
-@dataclass
 class DTDFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -174,7 +167,6 @@ class DTDFewShotDatasetConfig(FewShotDatasetConfig):
     _target_: Any = get_module_import_path(DTDFewShotClassificationDataset)
 
 
-@dataclass
 class DTDMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -183,7 +175,6 @@ class DTDMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     _target_: Any = get_module_import_path(DTDMultiViewFewShotClassificationDataset)
 
 
-@dataclass
 class GermanTrafficSignsFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -194,8 +185,7 @@ class GermanTrafficSignsFewShotDatasetConfig(FewShotDatasetConfig):
     )
 
 
-@dataclass
-class GermanTrafficSignsMultiViewFewShotDatasetConfig(FewShotDatasetConfig):
+class GermanTrafficSignsMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
     """
@@ -205,7 +195,6 @@ class GermanTrafficSignsMultiViewFewShotDatasetConfig(FewShotDatasetConfig):
     )
 
 
-@dataclass
 class VGGFlowersFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -224,7 +213,6 @@ class VGGFlowersMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     )
 
 
-@dataclass
 class QuickDrawFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -243,7 +231,6 @@ class QuickDrawMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
     )
 
 
-@dataclass
 class FungiFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
@@ -252,7 +239,6 @@ class FungiFewShotDatasetConfig(FewShotDatasetConfig):
     _target_: Any = get_module_import_path(FungiFewShotClassificationDataset)
 
 
-@dataclass
 class MSCOCOFewShotDatasetConfig(FewShotDatasetConfig):
     """
     Class for configuring a few shot dataset
