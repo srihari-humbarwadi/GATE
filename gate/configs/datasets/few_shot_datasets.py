@@ -46,6 +46,8 @@ class FewShotDatasetConfig:
     Class for configuring a few shot dataset
     """
 
+    _target_: Any
+
     dataset_root: str
     split_name: Optional[str] = None
     download: bool = True
@@ -76,11 +78,12 @@ class FewShotDatasetConfig:
     query_set_target_transform: Any = None
 
     rescan_cache: bool = False
-    _target_: Any = get_module_import_path(FewShotClassificationDatasetTFDS)
 
 
 @dataclass
 class MultiViewFewShotDatasetConfig:
+    _target_: Any
+
     dataset_root: str
     split_name: Optional[str] = None
     download: bool = True
@@ -104,7 +107,7 @@ class MultiViewFewShotDatasetConfig:
     query_set_target_transform: Any = None
 
     rescan_cache: bool = False
-    _target_: Any = get_module_import_path(MultiViewFewShotClassificationDatasetTFDS)
+
     # TODO: Add a config default for 1-3 num query variable sampling
 
 
