@@ -48,7 +48,7 @@ class DataLoaderConfig:
     train_batch_size: int = BATCH_SIZE
     val_batch_size: int = BATCH_SIZE
     test_batch_size: int = BATCH_SIZE
-    num_workers: int = int(multiprocessing.cpu_count() / 4)
+    num_workers: int = int(multiprocessing.cpu_count())
     pin_memory: bool = True
     train_drop_last: bool = False
     eval_drop_last: bool = False

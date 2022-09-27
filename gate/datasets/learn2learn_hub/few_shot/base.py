@@ -3,10 +3,15 @@ from typing import Any, Callable, Dict, Optional
 
 import h5py
 import hydra
+from PIL.Image import Image
 from omegaconf import DictConfig
+from tqdm import tqdm
 
+from gate.base.utils.loggers import get_logger
 from gate.datasets.data_utils import get_class_to_idx_dict, store_dict_as_hdf5
 from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
+
+logger = get_logger(__name__)
 
 
 class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
@@ -105,11 +110,12 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
         self.split_name = split_name
 
         dataset_config = {"_target_": dataset_module_path}
+        split_names_mapper = {"train": "train", "val": "validation", "test": "test"}
 
         dataset = hydra.utils.instantiate(
             config=dataset_config,
             root=self.dataset_root,
-            mode="all",
+            mode=split_names_mapper[self.split_name],
             transform=None,
             target_transform=None,
             download=download,
@@ -122,6 +128,15 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
             class_name_key=1,
             label_extractor_fn=None,
         )
+        dataset_new = []
+
+        logger.info(f"Loading dataset into memory")
+        with tqdm(total=len(dataset)) as pbar:
+            for image, label in self.subsets[0]:
+                dataset_new.append((image, label))
+                pbar.update(1)
+
+        self.subsets = [dataset_new]
 
         self.label_extractor_fn = label_extractor_fn
         dataset_root = (
