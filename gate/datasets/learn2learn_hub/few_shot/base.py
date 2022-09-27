@@ -5,6 +5,7 @@ import h5py
 import hydra
 from PIL.Image import Image
 from omegaconf import DictConfig
+from torchvision.transforms import transforms
 from tqdm import tqdm
 
 from gate.base.utils.loggers import get_logger
@@ -126,7 +127,7 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
         logger.info(f"Loading dataset into memory")
         with tqdm(total=len(dataset)) as pbar:
             for image, label in dataset:
-                dataset_new.append((image, label))
+                dataset_new.append((transforms.ToTensor()(image), label))
                 pbar.update(1)
 
         self.subsets = [dataset_new]
