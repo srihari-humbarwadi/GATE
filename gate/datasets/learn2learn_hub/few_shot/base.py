@@ -1,6 +1,6 @@
 import multiprocessing
 import pathlib
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from typing import Any, Callable, Dict, Optional
 
 import h5py
@@ -137,7 +137,7 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
             f"Loading the {split_name} set of the {dataset_name} dataset into memory 💿"
         )
         with tqdm(total=len(dataset)) as pbar:
-            with ProcessPoolExecutor(
+            with ThreadPoolExecutor(
                 max_workers=multiprocessing.cpu_count()
             ) as executor:
                 for i, (image, label) in enumerate(executor.map(data_load, dataset)):
