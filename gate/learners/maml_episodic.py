@@ -242,16 +242,32 @@ class EpisodicMAML(LearnerModule):
         computed_task_metrics_dict = defaultdict(list)
         opt_loss_list = []
         input_dict, target_dict = batch
-        log.info(f"{input_dict}")
+
         support_set_inputs = input_dict["image"]["support_set"].to(
             torch.cuda.current_device()
         )
+
+        if "support_set_extras" in input_dict["image"]:
+            support_set_crop_coordinates = input_dict["image"]["support_set_extras"][
+                "crop_coordinates"
+            ].to(torch.cuda.current_device())
+        else:
+            support_set_crop_coordinates = None
+
         support_set_targets = target_dict["image"]["support_set"].to(
             torch.cuda.current_device()
         )
         query_set_inputs = input_dict["image"]["query_set"].to(
             torch.cuda.current_device()
         )
+
+        if "query_set_extras" in input_dict["image"]:
+            query_set_crop_coordinates = input_dict["image"]["query_set_extras"][
+                "crop_coordinates"
+            ].to(torch.cuda.current_device())
+        else:
+            query_set_crop_coordinates = None
+
         query_set_targets = target_dict["image"]["query_set"].to(
             torch.cuda.current_device()
         )
@@ -260,16 +276,18 @@ class EpisodicMAML(LearnerModule):
 
         episodic_optimizer = None
         output_dict = defaultdict(list)
-        for (
+        for idx, (
             support_set_input,
             support_set_target,
             query_set_input,
             query_set_target,
-        ) in zip(
-            support_set_inputs,
-            support_set_targets,
-            query_set_inputs,
-            query_set_targets,
+        ) in enumerate(
+            zip(
+                support_set_inputs,
+                support_set_targets,
+                query_set_inputs,
+                query_set_targets,
+            )
         ):
 
             support_set_input = dict(image=support_set_input)
@@ -350,14 +368,12 @@ class EpisodicMAML(LearnerModule):
                             log.info(f"{support_set_input}")
                             support_set_input[modality_name] = {
                                 "features": support_set_features,
-                                "crop_coordinates": support_set_input[
-                                    "crop_coordinates"
-                                ],
+                                "crop_coordinates": support_set_crop_coordinates[idx],
                             }
 
                             query_set_input[modality_name] = {
                                 "features": query_set_features,
-                                "crop_coordinates": query_set_input["crop_coordinates"],
+                                "crop_coordinates": query_set_crop_coordinates[idx],
                             }
                         else:
                             support_set_input[modality_name] = support_set_features
