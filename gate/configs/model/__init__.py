@@ -14,6 +14,7 @@ from .timm_model_configs import (
     TimmImageResNet18PoolWithRemovedLayersConfig,
     TimmImageResNet18WithRemovedLayersConfig,
     TimmImageResNet34Config,
+    TimmImageResNet18FewShotLearning,
 )
 
 
@@ -64,6 +65,12 @@ def add_model_configs(config_store: ConfigStore):
         group="model",
         name="timm-image-resnet18-pool-removed-layers",
         node=TimmImageResNet18PoolWithRemovedLayersConfig,
+    )
+
+    config_store.store(
+        group="model",
+        name="resnet18-few-shot-learning",
+        node=TimmImageResNet18FewShotLearning,
     )
 
     config_store.store(
