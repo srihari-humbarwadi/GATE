@@ -140,7 +140,7 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
         )
         with tqdm(total=len(dataset)) as pbar:
             with ThreadPoolExecutor(
-                max_workers=multiprocessing.cpu_count()
+                max_workers=int(multiprocessing.cpu_count() / 2)
             ) as executor:
                 for i, (image, label) in enumerate(executor.map(data_load, dataset)):
                     dataset_new.append((image, label))
