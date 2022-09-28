@@ -144,7 +144,7 @@ def add_datamodule_configs(config_store: ConfigStore):
 
     config_store.store(
         group="datamodule",
-        name="FungiMultiViewFewShotDataModuleConfig",
+        name="FungiMultiViewFewShotClassification",
         node=FungiMultiViewFewShotDataModuleConfig,
     )
 
