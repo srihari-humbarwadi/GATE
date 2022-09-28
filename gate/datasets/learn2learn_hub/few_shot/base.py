@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Optional
 
 import h5py
 import hydra
+import numpy as np
 import torch
 from PIL.Image import Image
 from omegaconf import DictConfig
@@ -20,8 +21,7 @@ logger = get_logger(__name__)
 
 def data_load(item):
     image, label = item
-
-    return transforms.ToTensor()(image).to(torch.uint8), label
+    return np.array(image, dtype=np.intc), label
 
 
 class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
