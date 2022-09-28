@@ -4,6 +4,7 @@ from typing import Any, Optional
 from gate.configs import get_module_import_path
 from gate.datasets.learn2learn_hub.few_shot.fungi import (
     FungiFewShotClassificationDataset,
+    FungiMultiViewFewShotClassificationDataset,
 )
 from gate.datasets.tf_hub.few_shot.aircraft import (
     AircraftFewShotClassificationDataset,
@@ -252,6 +253,15 @@ class FungiFewShotDatasetConfig(FewShotDatasetConfig):
     """
 
     _target_: Any = get_module_import_path(FungiFewShotClassificationDataset)
+
+
+@dataclass
+class FungiMultiViewFewShotDatasetConfig(MultiViewFewShotDatasetConfig):
+    """
+    Class for configuring a few shot dataset
+    """
+
+    _target_: Any = get_module_import_path(FungiMultiViewFewShotClassificationDataset)
 
 
 @dataclass

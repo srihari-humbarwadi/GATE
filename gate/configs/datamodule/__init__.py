@@ -24,6 +24,7 @@ from .few_shot_classification import (
     DTDMultiViewFewShotDataModuleConfig,
     GermanTrafficSignsMultiViewFewShotDataModuleConfig,
     VGGFlowersMultiViewFewShotDataModuleConfig,
+    FungiMultiViewFewShotDataModuleConfig,
 )
 from .standard_classification import (
     CIFAR10DataModuleConfig,
@@ -139,6 +140,12 @@ def add_datamodule_configs(config_store: ConfigStore):
         group="datamodule",
         name="FungiFewShotClassification",
         node=FungiFewShotDataModuleConfig,
+    )
+
+    config_store.store(
+        group="datamodule",
+        name="FungiMultiViewFewShotDataModuleConfig",
+        node=FungiMultiViewFewShotDataModuleConfig,
     )
 
     config_store.store(

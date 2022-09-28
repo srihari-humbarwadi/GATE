@@ -21,6 +21,7 @@ from gate.configs.datasets.few_shot_datasets import (
     GermanTrafficSignsMultiViewFewShotDatasetConfig,
     QuickDrawMultiViewFewShotDatasetConfig,
     VGGFlowersMultiViewFewShotDatasetConfig,
+    FungiMultiViewFewShotDatasetConfig,
 )
 from gate.configs.datasets.transforms import (
     AircraftQuerySetTransformConfig,
@@ -291,6 +292,22 @@ class VGGFlowersMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
 class FungiFewShotDataModuleConfig(FewShotDataModuleConfig):
     dataset_config: FungiFewShotDatasetConfig = FungiFewShotDatasetConfig(
         dataset_root=DATASET_DIR
+    )
+    data_loader_config: DataLoaderConfig = DataLoaderConfig()
+    transform_train: Any = FewShotTransformConfig(
+        support_set_input_transform=FungiSupportSetTransformConfig(),
+        query_set_input_transform=FungiQuerySetTransformConfig(),
+    )
+    transform_eval: Any = FewShotTransformConfig(
+        support_set_input_transform=FungiSupportSetTransformConfig(),
+        query_set_input_transform=FungiQuerySetTransformConfig(),
+    )
+
+
+@dataclass
+class FungiMultiViewFewShotDataModuleConfig(FewShotDataModuleConfig):
+    dataset_config: FungiMultiViewFewShotDatasetConfig = (
+        FungiMultiViewFewShotDatasetConfig(dataset_root=DATASET_DIR)
     )
     data_loader_config: DataLoaderConfig = DataLoaderConfig()
     transform_train: Any = FewShotTransformConfig(
