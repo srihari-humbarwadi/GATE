@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 def data_load(item):
     image, label = item
 
-    return np.array(image, dtype=np.uint8), label
+    return np.array(image), label
 
 
 class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
