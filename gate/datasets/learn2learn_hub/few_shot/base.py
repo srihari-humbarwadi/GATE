@@ -1,15 +1,12 @@
 import multiprocessing
 import pathlib
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Callable, Dict, Optional
 
 import h5py
 import hydra
-import numpy as np
-import torch
-from PIL.Image import Image
 from omegaconf import DictConfig
-from timm.data import ToTensor
+
 from torchvision.transforms import transforms
 from tqdm import tqdm
 
@@ -32,7 +29,6 @@ fungi_preprocess = transforms.Compose(
 def data_load(item):
     image, label = item
     image = fungi_preprocess(image)
-    # print(image.shape, type(image))
 
     return image, label
 
@@ -222,7 +218,7 @@ class MultiViewFewShotClassificationDatsetL2L(
         rescan_cache: bool = True,
         label_extractor_fn: Optional[Callable] = None,
     ):
-        super(MultiViewFewShotClassificationDatsetL2L, self).__init__()
+        super(MultiViewFewShotClassificationDatasetTFDS, self).__init__()
 
         self.dataset_name = dataset_name
         self.dataset_root = dataset_root
