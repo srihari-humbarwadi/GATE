@@ -178,8 +178,8 @@ def fungi_support_set_transforms(
 ):
     return compose_with_additional_transforms(
         [
-            transforms.Resize(size=(84, 84)),
-            transforms.ToTensor(),
+            # transforms.Resize(size=(84, 84)),
+            # transforms.ToTensor(),
         ],
         additional_transforms=additional_transforms,
     )
@@ -190,8 +190,8 @@ def fungi_query_set_transforms(
 ):
     return compose_with_additional_transforms(
         [
-            transforms.Resize(size=(84, 84)),
-            transforms.ToTensor(),
+            # transforms.Resize(size=(84, 84)),
+            # transforms.ToTensor(),
         ],
         additional_transforms=additional_transforms,
     )
