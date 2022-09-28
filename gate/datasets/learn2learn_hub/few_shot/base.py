@@ -9,6 +9,7 @@ import numpy as np
 import torch
 from PIL.Image import Image
 from omegaconf import DictConfig
+from timm.data import ToTensor
 from torchvision.transforms import transforms
 from tqdm import tqdm
 
@@ -21,7 +22,8 @@ logger = get_logger(__name__)
 
 def data_load(item):
     image, label = item
-    return np.array(image, dtype=np.intc), label
+
+    return np.array(image, dtype=np.uint8), label
 
 
 class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
