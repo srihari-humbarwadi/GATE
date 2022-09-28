@@ -18,12 +18,19 @@ from gate.datasets.data_utils import get_class_to_idx_dict, store_dict_as_hdf5
 from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
 
 logger = get_logger(__name__)
+fungi_preprocess = transforms.Compose(
+    [
+        transforms.Resize(size=(84, 84)),
+        transforms.ToTensor(),
+    ]
+)
 
 
 def data_load(item):
     image, label = item
+    image = fungi_preprocess(image)
 
-    return np.array(image), label
+    return image, label
 
 
 class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
@@ -145,6 +152,8 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
             for i, (image, label) in enumerate(dataset):
                 dataset_new.append((image, label))
                 pbar.update(1)
+                if i == 1000:
+                    break
 
         self.subsets = [dataset_new]
 
