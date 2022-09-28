@@ -28,7 +28,8 @@ fungi_preprocess = transforms.Compose(
 
 def data_load(item):
     image, label = item
-    image = fungi_preprocess(image)
+    image = fungi_preprocess(image).cpu().numpy()
+    print(image.shape)
 
     return image, label
 
