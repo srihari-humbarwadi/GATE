@@ -148,14 +148,15 @@ class LinearLayerFineTuningScheme(LearnerModule):
 
         output_dict = self.forward(input_dict)
 
-        for metric_key, metric_function in task_metrics_dict.items():
-            for output_name, output_value in output_dict.items():
-                computed_task_metrics_dict[
-                    f"{phase_name}/{metric_key}"
-                ] = metric_function(
-                    output_dict[output_name],
-                    target_dict[output_name],
-                )
+        if task_metrics_dict is not None:
+            for metric_key, metric_function in task_metrics_dict.items():
+                for output_name, output_value in output_dict.items():
+                    computed_task_metrics_dict[
+                        f"{phase_name}/{metric_key}"
+                    ] = metric_function(
+                        output_dict[output_name],
+                        target_dict[output_name],
+                    )
 
         for metric_key, metric_function in self.learner_metrics_dict.items():
             for output_name, output_value in output_dict.items():
