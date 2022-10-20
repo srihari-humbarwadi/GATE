@@ -112,10 +112,6 @@ class LinearLayerFineTuningScheme(LearnerModule):
         for modality_name, is_supported in self.modality_config.items():
             if is_supported:
                 current_input = batch[modality_name]
-                if self.use_input_instance_norm:
-                    current_input = self.input_layer_dict[
-                        f"{modality_name}_input_adaptor"
-                    ](current_input)
 
                 model_features = self.model.forward({modality_name: current_input})[
                     modality_name
