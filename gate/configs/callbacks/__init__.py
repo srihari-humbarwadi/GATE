@@ -4,7 +4,7 @@ from hydra.core.config_store import ConfigStore
 
 from .base import (
     LearningRateMonitor,
-    LogConfigInformation,
+    log_config_information,
     ModelSummaryConfig,
     RichProgressBar,
     UploadCodeAsArtifact,
@@ -28,7 +28,7 @@ wandb_callbacks = dict(
     progress_bar=RichProgressBar(),
     lr_monitor=LearningRateMonitor,
     code_upload=UploadCodeAsArtifact(),
-    log_config=LogConfigInformation(),
+    log_config=log_config_information(),
 )
 
 

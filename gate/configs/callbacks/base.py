@@ -2,6 +2,8 @@ from dataclasses import MISSING, dataclass
 from datetime import timedelta
 from typing import Dict, Optional
 
+from hydra_zen import builds
+
 from gate.base.callbacks.wandb_callbacks import (LogConfigInformation,
                                                  UploadCodeAsArtifact)
 from gate.configs import get_module_import_path
@@ -56,11 +58,7 @@ class UploadCodeAsArtifact:
     code_dir: str = "${code_dir}"
 
 
-@dataclass
-class LogConfigInformation:
-    _target_: str = get_module_import_path(LogConfigInformation)
-    exp_config: Optional[Dict] = None
-
+log_config_information = builds(LogConfigInformation, populate_full_signature=True)
 
 
 model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional, Dict
 
 import wandb
 from gate.base.utils.loggers import get_logger
@@ -65,9 +66,13 @@ class LogConfigInformation(Callback):
         https://wandb.ai/wandb/wandb-lightning/reports/Image-Classification-using-PyTorch-Lightning--VmlldzoyODk1NzY
     """
 
-    def __init__(self, exp_config):
+    def __init__(self, exp_config: Optional[Dict] = None):
         super().__init__()
         self.done = False
+
+        if exp_config is None:
+            exp_config = {}
+
         self.exp_config = exp_config
 
     @rank_zero_only
