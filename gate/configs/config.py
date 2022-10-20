@@ -7,8 +7,11 @@ from gate.configs.callbacks import add_lightning_callback_configs
 from gate.configs.datamodule import add_datamodule_configs
 from gate.configs.datasets import add_transform_configs
 from gate.configs.hydra import add_hydra_configs
-from gate.configs.learner import (add_learner_configs, add_learning_scheduler_configs,
-                                  add_optimizer_configs)
+from gate.configs.learner import (
+    add_learner_configs,
+    add_learning_scheduler_configs,
+    add_optimizer_configs,
+)
 from gate.configs.logger import add_logger_configs
 from gate.configs.mode import add_mode_configs
 from gate.configs.model import add_model_configs
@@ -79,7 +82,8 @@ class Config:
     batch_size: Optional[int] = None
     # seed for random number generators in learn2learn_hub, numpy and python.random
     seed: int = 0
-    num_train_samples: int = 25000
+    num_train_samples: int = 100000
+    num_steps_val_check_interval: int = 500
     # top level argument that sets all the downstream configs to run an
     # experiment on this many iterations
 

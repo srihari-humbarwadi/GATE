@@ -96,9 +96,6 @@ def print_config(
     tree = generate_config_tree(config, resolve=resolve)
     rich.print(tree)
 
-    with open("config_tree.log", "w") as fp:
-        rich.print(tree, file=fp)
-
 
 @rank_zero_only
 def log_hyperparameters(

@@ -6,6 +6,7 @@ from gate.configs import get_module_import_path
 from gate.configs.string_variables import (
     CURRENT_EXPERIMENT_DIR,
     NUM_TRAIN_SAMPLES,
+    NUM_STEPS_VAL_CHECK_INTERVAL,
 )
 
 
@@ -18,7 +19,7 @@ class BaseTrainer:
     default_root_dir: str = CURRENT_EXPERIMENT_DIR
     progress_bar_refresh_rate: int = 1
     enable_progress_bar: bool = True
-    val_check_interval: float = 0.02
+    val_check_interval: int = NUM_STEPS_VAL_CHECK_INTERVAL
     max_steps: int = NUM_TRAIN_SAMPLES
     log_every_n_steps: int = 1
     precision: int = 32

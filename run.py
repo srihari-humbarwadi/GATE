@@ -28,35 +28,12 @@ from gate.configs.config import collect_config_store
 config_store = collect_config_store()
 
 
-def print_config_store_options(config_store: DictConfig):
-    style = "dim"
-    tree = Tree("CONFIG", style=style, guide_style=style)
-
-    for key, value in config_store.repo.items():
-        branch = tree.add(key, style=style, guide_style=style)
-
-        branch_content = str(value)
-        if isinstance(value, DictConfig):
-            branch_content = OmegaConf.to_yaml(dict(value))
-
-        branch.add(rich.syntax.Syntax(branch_content, "yaml"))
-
-    rich.print(tree)
-
-    with open("config_store_tree.log", "w") as fp:
-        rich.print(tree, file=fp)
-
-
 @hydra.main(version_base=None, config_name="config")
 def main(config: DictConfig):
     # Imports can be nested inside @hydra.main to optimize tab completion
     # https://github.com/facebookresearch/hydra/issues/934
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    print_config_store_options(config_store)
 
     from gate.train_eval import train_eval
-
-    os.environ["WANDB_PROGRAM"] = config.code_dir
 
     extras(config)
 
