@@ -1,7 +1,6 @@
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 import torchmetrics
-
 from gate.tasks.base import TaskModule
 
 

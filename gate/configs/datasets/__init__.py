@@ -1,11 +1,8 @@
+from gate.configs.datasets.transforms import (MultipleRandomCropResizeCustomTransform,
+                                              RandomCropResizeCustomTransform,
+                                              RandomMaskCustomTransform,
+                                              SuperClassExistingLabelsTransform)
 from hydra.core.config_store import ConfigStore
-
-from gate.configs.datasets.transforms import (
-    RandomCropResizeCustomTransform,
-    MultipleRandomCropResizeCustomTransform,
-    RandomMaskCustomTransform,
-    SuperClassExistingLabelsTransform,
-)
 
 
 def add_transform_configs(config_store: ConfigStore):

@@ -1,9 +1,8 @@
 from dataclasses import MISSING, dataclass, field
 from typing import List
 
-from torch.optim import Adam, AdamW
-
 from gate.configs import get_module_import_path
+from torch.optim import Adam, AdamW
 
 
 @dataclass

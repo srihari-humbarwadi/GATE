@@ -1,16 +1,13 @@
-from typing import Callable, List
+from typing import List
 
 import timm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from dotted_dict import DottedDict
-from omegaconf import DictConfig
-
 from gate.base.utils.loggers import get_logger
 from gate.configs.datamodule.base import ShapeConfig
-from gate.model_blocks.auto_builder_modules.gcm_blocks import HeadResNetBlock
 from gate.models.base import ModelModule
+from omegaconf import DictConfig
 
 log = get_logger()
 
@@ -167,21 +164,19 @@ class TimmImageModelConfigurableDepth(TimmImageModel):
         self.list_of_layer_prefix_to_remove = list_of_layer_prefix_to_remove
 
     def build(self, batch_dict):
-        if isinstance(self.input_shape_dict, ShapeConfig):
-            self.input_shape_dict = self.input_shape_dict.__dict__
-
-        if "image" in self.input_shape_dict:
-            self.build_image(self.input_shape_dict)
+        if "image" in batch_dict:
+            self.build_image(batch_dict["image"].shape)
 
         self.is_built = True
 
         log.info(f"{self.__class__.__name__} built")
 
     def build_image(self, input_shape):
+        image_input_dummy = torch.zeros(input_shape)
+        if isinstance(self.input_shape_dict, ShapeConfig):
+            self.input_shape_dict = self.input_shape_dict.__dict__
+
         self.image_shape = list(self.input_shape_dict["image"]["shape"].values())
-
-        image_input_dummy = torch.zeros([2] + self.image_shape)
-
         self.resnet_image_embedding = timm.create_model(
             self.model_name_to_download, pretrained=self.pretrained
         )

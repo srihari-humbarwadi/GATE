@@ -2,13 +2,10 @@ import multiprocessing
 
 import hydra.utils
 import pytest
-
 from gate.base.utils.loggers import get_logger
 from gate.configs.datamodule import OmniglotDataModuleConfig
 from gate.configs.datamodule.base import DataLoaderConfig
-from gate.configs.datamodule.standard_classification import (
-    OmniglotTrainTransformConfig,
-)
+from gate.configs.datamodule.standard_classification import OmniglotTrainTransformConfig
 from gate.configs.datasets.standard_classification import OmniglotDatasetConfig
 
 log = get_logger(__name__, set_default_handler=True)

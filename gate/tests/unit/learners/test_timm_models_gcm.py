@@ -2,15 +2,11 @@ import hydra.utils
 import pytest
 import torch
 from dotted_dict import DottedDict
-
 from gate.base.utils.loggers import get_logger
-from gate.configs.learner import (
-    CosineAnnealingLRConfig,
-    PrototypicalNetworkEpisodicConfig,
-)
+from gate.configs.learner import (CosineAnnealingLRConfig,
+                                  PrototypicalNetworkEpisodicConfig)
 from gate.configs.task.image_classification import ImageClassificationTaskConfig
 from gate.learners.gcm import ConditionalGenerativeContrastiveModelling
-from gate.learners.protonet import PrototypicalNetworkEpisodicTuningScheme
 from gate.models.timm_hub import TimmImageModel
 
 log = get_logger(__name__, set_default_handler=True)

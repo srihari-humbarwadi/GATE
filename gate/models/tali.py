@@ -7,12 +7,12 @@ import torch
 import torch.nn as nn
 import wandb
 from dotted_dict import DottedDict
-from tali.models.systems import ModusPrime
-
 from gate.base.utils.loggers import get_logger
 from gate.base.utils.model_utils import resize_custom
 from gate.configs.datamodule.base import ShapeConfig
 from gate.models.base import ModelModule
+
+from tali.models.systems import ModusPrime
 
 log = get_logger()
 

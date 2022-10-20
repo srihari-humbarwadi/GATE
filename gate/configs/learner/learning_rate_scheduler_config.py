@@ -1,15 +1,10 @@
-from typing import Optional
-
 from dataclasses import dataclass
-
-from torch.optim.lr_scheduler import (
-    CosineAnnealingLR,
-    CosineAnnealingWarmRestarts,
-    ReduceLROnPlateau,
-)
+from typing import Optional
 
 from gate.configs import get_module_import_path
 from gate.configs.string_variables import BATCH_SIZE, MaxDurationTypes
+from torch.optim.lr_scheduler import (CosineAnnealingLR, CosineAnnealingWarmRestarts,
+                                      ReduceLROnPlateau)
 
 
 @dataclass

@@ -1,11 +1,10 @@
 from dataclasses import MISSING, dataclass
 from typing import Any, Dict
 
-#
-from omegaconf import DictConfig
-
 from gate.configs import get_module_import_path
 from gate.tasks.standard_classification import ImageClassificationTaskModule
+#
+from omegaconf import DictConfig
 
 # ------------------------------------------------------------------------------
 # task configs

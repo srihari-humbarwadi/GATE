@@ -1,15 +1,13 @@
+import random
 from typing import Tuple, Union
 
 import torch
 import torch.nn as nn
 import torchvision.transforms.functional as F
+from gate.datasets.tf_hub.few_shot.base import CardinalityType
 from torchvision import transforms
 from torchvision.transforms.transforms import _setup_size
-from torchvision.utils import _log_api_usage_once, save_image
-import os
-import random
-
-from gate.datasets.tf_hub.few_shot.base import CardinalityType
+from torchvision.utils import _log_api_usage_once
 
 
 def channels_first(x):

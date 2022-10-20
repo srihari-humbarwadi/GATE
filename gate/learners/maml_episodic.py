@@ -1,19 +1,16 @@
 from collections import defaultdict
-from copy import deepcopy
-from typing import Any, Dict, Union, Optional
+from typing import Any, Dict, Optional, Union
 
+import gate.base.utils.loggers as loggers
 import higher
 import hydra
 import torch
 import torch.nn.functional as F
-import tqdm
 from dotted_dict import DottedDict
-from torch import nn
-
-import gate.base.utils.loggers as loggers
 from gate.configs.datamodule.base import ShapeConfig
 from gate.configs.task.image_classification import TaskConfig
 from gate.learners.base import LearnerModule
+from torch import nn
 
 log = loggers.get_logger(
     __name__,
@@ -34,7 +31,6 @@ class DynamicWeightLinear(nn.Module):
 
     def forward(self, x):
         x = x["image"]
-
         if len(x.shape) > 2:
             x = x.view(x.shape[0], -1)
 
@@ -49,25 +45,15 @@ class AdaptivePool2DFlatten(nn.Module):
         super().__init__()
         self.pool_type = pool_type
         self.output_size = output_size
-        self.include_crop_coordinates = False
 
     def forward(self, x):
         x = x["image"]
-
-        if isinstance(x, dict):
-            crop_coordinates = x["crop_coordinates"]
-            x = x["features"]
-            self.include_crop_coordinates = True
-
         if self.pool_type == "avg":
             x = F.adaptive_avg_pool2d(x, self.output_size)
         elif self.pool_type == "max":
             x = F.adaptive_max_pool2d(x, self.output_size)
         else:
             raise ValueError(f"Unknown pool type {self.pool_type}")
-
-        if self.include_crop_coordinates:
-            x = torch.cat([x.view(x.shape[0], -1), crop_coordinates], dim=-1)
 
         return {"image": x.view(x.shape[0], -1)}
 
@@ -84,7 +70,6 @@ class EpisodicMAML(LearnerModule):
         temperature: float = 10.0,
         inner_loop_steps: int = 5,
         manual_optimization: bool = True,
-        include_coordinate_information: bool = False,
     ):
         super(EpisodicMAML, self).__init__()
         self.output_layer_dict = torch.nn.ModuleDict()
@@ -102,7 +87,6 @@ class EpisodicMAML(LearnerModule):
         self.use_weight_norm = use_weight_norm
         self.manual_optimization = manual_optimization
         self.temperature = nn.Parameter(torch.tensor(temperature), requires_grad=True)
-        self.include_coordinate_information = include_coordinate_information
 
         self.learner_metrics_dict = {"loss": F.cross_entropy}
 
@@ -158,22 +142,15 @@ class EpisodicMAML(LearnerModule):
                 for key, value in self.feature_embedding_shape_dict.items():
                     self.output_layer_dict[key] = nn.ModuleDict(
                         {
-                            "inner_layer_0": torch.nn.Linear(
-                                in_features=value + 4
-                                if self.include_coordinate_information
-                                else value,
-                                out_features=512,
-                                bias=True,
-                            ),
-                            "inner_layer_1": torch.nn.Linear(
-                                in_features=512,
+                            "pre_pred_layer": torch.nn.Linear(
+                                in_features=value,
                                 out_features=512,
                                 bias=True,
                             ),
                             "pred_layer": torch.nn.Linear(
                                 in_features=512,
                                 out_features=1,
-                                bias=False,
+                                bias=True,
                             ),
                         }
                     )
@@ -243,32 +220,15 @@ class EpisodicMAML(LearnerModule):
         computed_task_metrics_dict = defaultdict(list)
         opt_loss_list = []
         input_dict, target_dict = batch
-
         support_set_inputs = input_dict["image"]["support_set"].to(
             torch.cuda.current_device()
         )
-
-        if "support_set_extras" in input_dict["image"]:
-            support_set_crop_coordinates = input_dict["image"]["support_set_extras"][
-                "crop_coordinates"
-            ].to(torch.cuda.current_device())
-        else:
-            support_set_crop_coordinates = None
-
         support_set_targets = target_dict["image"]["support_set"].to(
             torch.cuda.current_device()
         )
         query_set_inputs = input_dict["image"]["query_set"].to(
             torch.cuda.current_device()
         )
-
-        if "query_set_extras" in input_dict["image"]:
-            query_set_crop_coordinates = input_dict["image"]["query_set_extras"][
-                "crop_coordinates"
-            ].to(torch.cuda.current_device())
-        else:
-            query_set_crop_coordinates = None
-
         query_set_targets = target_dict["image"]["query_set"].to(
             torch.cuda.current_device()
         )
@@ -277,18 +237,16 @@ class EpisodicMAML(LearnerModule):
 
         episodic_optimizer = None
         output_dict = defaultdict(list)
-        for idx, (
+        for (
             support_set_input,
             support_set_target,
             query_set_input,
             query_set_target,
-        ) in enumerate(
-            zip(
-                support_set_inputs,
-                support_set_targets,
-                query_set_inputs,
-                query_set_targets,
-            )
+        ) in zip(
+            support_set_inputs,
+            support_set_targets,
+            query_set_inputs,
+            query_set_targets,
         ):
 
             support_set_input = dict(image=support_set_input)
@@ -300,22 +258,19 @@ class EpisodicMAML(LearnerModule):
                 "pred_layer"
             ].weight.repeat([max(support_set_target["image"]) + 1, 1])
 
-            classifier_bias = None
+            classifier_bias = self.output_layer_dict["image"]["pred_layer"].bias.repeat(
+                [max(support_set_target["image"]) + 1]
+            )
 
             classifier_weights = nn.Parameter(classifier_weights, requires_grad=True)
+            classifier_bias = nn.Parameter(classifier_bias, requires_grad=True)
 
             if episodic_optimizer:
                 del episodic_optimizer
 
-            post_processing_0 = DynamicWeightLinear(
-                weights=self.output_layer_dict["image"]["inner_layer_0"].weight,
-                bias=self.output_layer_dict["image"]["inner_layer_0"].bias,
-                use_cosine_similarity=self.use_cosine_similarity,
-            )
-
-            post_processing_1 = DynamicWeightLinear(
-                weights=self.output_layer_dict["image"]["inner_layer_1"].weight,
-                bias=self.output_layer_dict["image"]["inner_layer_1"].bias,
+            pre_classifier = DynamicWeightLinear(
+                weights=self.output_layer_dict["image"]["pre_pred_layer"].weight,
+                bias=self.output_layer_dict["image"]["pre_pred_layer"].bias,
                 use_cosine_similarity=self.use_cosine_similarity,
             )
 
@@ -329,14 +284,11 @@ class EpisodicMAML(LearnerModule):
                 torch.nn.Sequential(
                     self.model,
                     self.pooling_layer,
-                    post_processing_0,
-                    post_processing_1,
+                    pre_classifier,
                     classifer,
                 )
                 if self.fine_tune_all_layers
-                else torch.nn.Sequential(
-                    self.pooling_layer, post_processing_0, post_processing_1, classifer
-                )
+                else torch.nn.Sequential(self.pooling_layer, pre_classifier, classifer)
             )
             inner_loop_params = model.parameters()
 
@@ -357,27 +309,13 @@ class EpisodicMAML(LearnerModule):
             if not self.fine_tune_all_layers:
                 for modality_name, is_supported in self.modality_config.items():
                     if is_supported:
-                        support_set_features = self.model.forward(
+                        support_set_input[modality_name] = self.model.forward(
                             {modality_name: support_set_input[modality_name]}
                         )[modality_name].detach()
 
-                        query_set_features = self.model.forward(
+                        query_set_input[modality_name] = self.model.forward(
                             {modality_name: query_set_input[modality_name]}
                         )[modality_name].detach()
-
-                        if self.include_coordinate_information:
-                            support_set_input[modality_name] = {
-                                "features": support_set_features,
-                                "crop_coordinates": support_set_crop_coordinates[idx],
-                            }
-
-                            query_set_input[modality_name] = {
-                                "features": query_set_features,
-                                "crop_coordinates": query_set_crop_coordinates[idx],
-                            }
-                        else:
-                            support_set_input[modality_name] = support_set_features
-                            query_set_input[modality_name] = query_set_features
 
             with higher.innerloop_ctx(
                 model,

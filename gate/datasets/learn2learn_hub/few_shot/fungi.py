@@ -1,18 +1,12 @@
 import pathlib
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
 from dotted_dict import DottedDict
-from learn2learn.vision.datasets import FGVCFungi
-from omegaconf import DictConfig
-
 from gate.base.utils.loggers import get_logger
 from gate.configs import get_module_import_path
-from gate.configs.datasets.data_splits_config import data_splits_dict
-from gate.datasets.data_utils import FewShotSuperSplitSetOptions
-from gate.datasets.learn2learn_hub.few_shot.base import (
-    FewShotClassificationDatsetL2L,
-)
+from gate.datasets.learn2learn_hub.few_shot.base import FewShotClassificationDatsetL2L
 from gate.datasets.tf_hub import bytes_to_string
+from learn2learn.vision.datasets import FGVCFungi
 
 log = get_logger(
     __name__,

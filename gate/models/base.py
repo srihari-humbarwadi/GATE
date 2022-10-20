@@ -1,10 +1,5 @@
-from typing import Union
-
 import torch.nn as nn
-from dotted_dict import DottedDict
 from omegaconf import DictConfig
-
-from gate.configs.datamodule.base import ShapeConfig
 
 
 class MissingModalityForward(Exception):

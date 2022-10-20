@@ -3,29 +3,21 @@ from typing import Any, Dict, Optional
 
 from gate.configs import get_module_import_path
 from gate.configs.datamodule.base import DataLoaderConfig
-from gate.configs.datasets.standard_classification import (
-    DatasetConfig,
-    OmniglotDatasetConfig,
-)
-from gate.configs.datasets.transforms import (
-    cifar10_eval_transforms,
-    cifar10_train_transforms,
-    cifar100_eval_transforms,
-    cifar100_train_transforms,
-    omniglot_transform_config,
-    stl10_eval_transforms,
-    stl10_train_transforms,
-)
+from gate.configs.datasets.standard_classification import (DatasetConfig,
+                                                           OmniglotDatasetConfig)
+from gate.configs.datasets.transforms import (cifar10_eval_transforms,
+                                              cifar10_train_transforms,
+                                              cifar100_eval_transforms,
+                                              cifar100_train_transforms,
+                                              omniglot_transform_config,
+                                              stl10_eval_transforms,
+                                              stl10_train_transforms)
 from gate.configs.string_variables import DATASET_DIR
-from gate.datamodules.tf_hub.standard_classification import (
-    CIFAR10DataModule,
-    CIFAR100DataModule,
-    OmniglotDataModule,
-)
-from gate.datasets.tf_hub.standard.cifar import (
-    CIFAR10ClassificationDataset,
-    CIFAR100ClassificationDataset,
-)
+from gate.datamodules.tf_hub.standard_classification import (CIFAR10DataModule,
+                                                             CIFAR100DataModule,
+                                                             OmniglotDataModule)
+from gate.datasets.tf_hub.standard.cifar import (CIFAR10ClassificationDataset,
+                                                 CIFAR100ClassificationDataset)
 
 
 @dataclass

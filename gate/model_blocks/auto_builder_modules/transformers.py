@@ -8,11 +8,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from clip.model import LayerNorm, Transformer
 from einops import rearrange, repeat
-
 from gate.model_blocks.auto_builder_modules.conv_blocks import (
-    ClassificationModel,
-    SqueezeExciteConv1dBNLeakyReLU,
-)
+    ClassificationModel, SqueezeExciteConv1dBNLeakyReLU)
 
 
 class FCCNetwork(nn.Module):

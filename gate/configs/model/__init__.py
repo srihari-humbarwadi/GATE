@@ -1,21 +1,13 @@
 from hydra.core.config_store import ConfigStore
 
-from .clip_model_config import (
-    CLIPModelGenericPretrainedConfig,
-    CLIPModelGenericScratchConfig,
-)
-from .tali_model_config import (
-    TALIModelGenericPretrainedConfig,
-    TALIModelGenericScratchConfig,
-)
-from .timm_model_configs import (
-    TimmImageResNet18Config,
-    TimmImageResNet18PoolConfig,
-    TimmImageResNet18PoolWithRemovedLayersConfig,
-    TimmImageResNet18WithRemovedLayersConfig,
-    TimmImageResNet34Config,
-    TimmImageResNet18FewShotLearning,
-)
+from .clip_model_config import (CLIPModelGenericPretrainedConfig,
+                                CLIPModelGenericScratchConfig)
+from .tali_model_config import (TALIModelGenericPretrainedConfig,
+                                TALIModelGenericScratchConfig)
+from .timm_model_configs import (TimmImageResNet18Config, TimmImageResNet18PoolConfig,
+                                 TimmImageResNet18PoolWithRemovedLayersConfig,
+                                 TimmImageResNet18WithRemovedLayersConfig,
+                                 TimmImageResNet34Config)
 
 
 def add_model_configs(config_store: ConfigStore):
@@ -65,12 +57,6 @@ def add_model_configs(config_store: ConfigStore):
         group="model",
         name="timm-image-resnet18-pool-removed-layers",
         node=TimmImageResNet18PoolWithRemovedLayersConfig,
-    )
-
-    config_store.store(
-        group="model",
-        name="resnet18-few-shot-learning",
-        node=TimmImageResNet18FewShotLearning,
     )
 
     config_store.store(

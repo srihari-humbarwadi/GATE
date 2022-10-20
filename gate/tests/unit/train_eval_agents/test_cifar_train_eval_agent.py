@@ -2,23 +2,17 @@ import multiprocessing
 
 import hydra
 import pytest
-import torch
 from dotted_dict import DottedDict
-
 from gate.base.utils.loggers import get_logger
 from gate.configs.datamodule import CIFAR10DataModuleConfig
 from gate.configs.datamodule.base import DataLoaderConfig
 from gate.configs.datasets.standard_classification import CIFAR10DatasetConfig
 from gate.configs.datasets.transforms import cifar10_train_transforms
-from gate.configs.learner import (
-    CosineAnnealingLRConfig,
-    FullModelFineTuningSchemeConfig,
-    SingleLinearLayerFineTuningSchemeConfig,
-)
+from gate.configs.learner import (CosineAnnealingLRConfig,
+                                  FullModelFineTuningSchemeConfig,
+                                  SingleLinearLayerFineTuningSchemeConfig)
 from gate.configs.model.timm_model_configs import TimmImageResNet18Config
 from gate.configs.task.image_classification import ImageClassificationTaskConfig
-from gate.models.timm_hub import TimmImageModel
-from gate.tasks.standard_classification import ImageClassificationTaskModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 
 log = get_logger(__name__, set_default_handler=True)

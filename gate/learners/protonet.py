@@ -1,10 +1,9 @@
 from typing import Any, Dict, Union
 
+import gate.base.utils.loggers as loggers
 import torch
 import torch.nn.functional as F
 from dotted_dict import DottedDict
-
-import gate.base.utils.loggers as loggers
 from gate.configs.datamodule.base import ShapeConfig
 from gate.configs.task.image_classification import TaskConfig
 from gate.learners.base import LearnerModule

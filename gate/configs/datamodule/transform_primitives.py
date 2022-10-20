@@ -2,15 +2,12 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import hydra
-from omegaconf import DictConfig, ListConfig
-from torchvision.transforms import transforms
-
 from gate.configs import get_module_import_path
 from gate.configs.datamodule.base import TransformConfig
-from gate.configs.string_variables import (
-    ADDITIONAL_INPUT_TRANSFORMS,
-    ADDITIONAL_TARGET_TRANSFORMS,
-)
+from gate.configs.string_variables import (ADDITIONAL_INPUT_TRANSFORMS,
+                                           ADDITIONAL_TARGET_TRANSFORMS)
+from omegaconf import DictConfig, ListConfig
+from torchvision.transforms import transforms
 
 
 def compose_with_additional_transforms(

@@ -1,22 +1,13 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
-
-import hydra.utils
-from omegaconf import DictConfig, ListConfig
-from torchvision.transforms import transforms
+from typing import Any, List, Optional
 
 from gate.configs import get_module_import_path
 from gate.configs.datamodule.transform_primitives import (
-    InputTransformConfig,
-    TargetTransformConfig,
-    compose_with_additional_transforms,
-)
-from gate.datasets.transforms import (
-    RandomCropResizeCustom,
-    MultipleRandomCropResizeCustom,
-    RandomMaskCustom,
-    SuperClassExistingLabels,
-)
+    InputTransformConfig, TargetTransformConfig, compose_with_additional_transforms)
+from gate.datasets.transforms import (MultipleRandomCropResizeCustom,
+                                      RandomCropResizeCustom, RandomMaskCustom,
+                                      SuperClassExistingLabels)
+from torchvision.transforms import transforms
 
 
 def omniglot_support_set_transforms(

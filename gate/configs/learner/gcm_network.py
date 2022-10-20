@@ -1,26 +1,17 @@
-from dataclasses import MISSING, dataclass
-from tkinter.tix import Tree
-from typing import Any, Callable, Dict, Optional
+from dataclasses import dataclass
+from typing import Any, Optional
 
 from gate.configs import get_module_import_path
 from gate.configs.learner.learning_rate_scheduler_config import (
-    CosineAnnealingLRConfig,
-    LRSchedulerConfig,
-)
+    CosineAnnealingLRConfig, LRSchedulerConfig)
 from gate.configs.learner.linear_layer_fine_tuning import LearnerConfig
-from gate.configs.learner.optimizer_config import (
-    AdamOptimizerConfig,
-    BaseOptimizerConfig,
-)
+from gate.configs.learner.optimizer_config import (AdamOptimizerConfig,
+                                                   BaseOptimizerConfig)
 from gate.learners.gcm import ConditionalGenerativeContrastiveModelling
-from gate.learners.protonet_gcm_architecture import PrototypicalNetworkGCMHead
 from gate.learners.matchingnet_gcm_architecture import MatchingNetworkGCMHead
-
-from gate.model_blocks.auto_builder_modules.gcm_blocks import (
-    HeadConv,
-    HeadMLP,
-    HeadResNetBlock,
-)
+from gate.learners.protonet_gcm_architecture import PrototypicalNetworkGCMHead
+from gate.model_blocks.auto_builder_modules.gcm_blocks import (HeadConv, HeadMLP,
+                                                               HeadResNetBlock)
 
 
 @dataclass

@@ -1,26 +1,19 @@
-import copy
-import pathlib
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional
 
-import h5py
 import hydra
 import numpy as np
 import tensorflow_datasets as tfds
 import torch
 from dotted_dict import DottedDict
+from gate.base.utils.loggers import get_logger
+from gate.datasets.data_utils import (FewShotSuperSplitSetOptions,
+                                      get_class_to_idx_dict,
+                                      get_class_to_image_idx_and_bbox)
 from omegaconf import DictConfig
 from torch import Tensor
 from torch.utils.data import Dataset
 from tqdm import tqdm
-
-from gate.base.utils.loggers import get_logger
-from gate.datasets.data_utils import (
-    FewShotSuperSplitSetOptions,
-    get_class_to_idx_dict,
-    get_class_to_image_idx_and_bbox,
-    store_dict_as_hdf5,
-)
 
 log = get_logger(
     __name__,
@@ -70,59 +63,22 @@ def apply_target_transforms(targets, transforms):
     return targets
 
 
-def special_cardinality_housekeeping(inputs: Dict, labels: List[int]):
 
-    if "cardinality-type" in inputs:
-        if inputs["cardinality-type"][0] == CardinalityType.one_to_many:
-            new_inputs = []
-            new_labels = []
-            for idx, (image, coord) in enumerate(
-                zip(inputs["image"], inputs["crop_coordinates"])
-            ):
-                cardinality = len(image)
-                copy_input_dict = copy.deepcopy(inputs)
-                copy_input_dict["image"] = torch.stack(image, dim=0)
-                copy_input_dict["crop_coordinates"] = torch.stack(coord, dim=0)
-                # copy_input_dict["image_id"] = torch.tensor([idx] * cardinality)
-                new_inputs.append(copy_input_dict)
-                new_labels.extend([labels[idx]] * cardinality)
-            new_inputs = list_of_dicts_to_dict_of_lists(new_inputs)
-            # print(len(new_inputs["image"]))
-            # print(new_inputs["image"][0].shape)
-            new_inputs["image"] = torch.cat(new_inputs["image"], dim=0)
-            new_inputs["crop_coordinates"] = torch.cat(
-                new_inputs["crop_coordinates"], dim=0
-            )  # .reshape(-1, *new_inputs["crop_coordinates"][0].shape[1:])
-            # new_inputs["image_id"] = torch.cat(new_inputs["image_id"], dim=0).reshape(-1,1)
-            new_labels = torch.stack(new_labels, dim=0)
-            # new_labels = labels.repeat_interleave(cardinality)
-            return new_inputs, new_labels
-        else:
-            return inputs, labels
-    else:
-        return inputs, labels
+def meta_augment_task(support_inputs: Dict, support_labels:Tensor, query_inputs: Dict, query_labels:Tensor, num_query_views=1):
 
-
-def meta_augment_task(
-    support_inputs: Dict,
-    support_labels: Tensor,
-    query_inputs: Dict,
-    query_labels: Tensor,
-    num_query_views: int = 1,
-):
-
-    num_query_views = 2
+    #print(f"a: {len(support_inputs['image'])}")
+    #print(f"b: {len(support_inputs['image'][0])}")
+    num_query_views=2
 
     inputs = {
-        "image": support_inputs["image"] + query_inputs["image"],
-        "crop_coordinates": support_inputs["crop_coordinates"]
-        + query_inputs["crop_coordinates"],
-        "cardinality-type": CardinalityType.one_to_many,
+        "image":support_inputs["image"]+query_inputs["image"],
+        "crop_coordinates":support_inputs["crop_coordinates"]+query_inputs["crop_coordinates"],
+        "cardinality-type":CardinalityType.one_to_many
     }
-    labels = torch.cat((support_labels, query_labels), dim=0)
+    labels=torch.cat((support_labels, query_labels), dim=0)
     new_support_inputs = []
     new_query_inputs = []
-    new_support_labels = []
+    new_support_labels=[]
     new_query_labels = []
     for idx, (image, coord) in enumerate(
         zip(inputs["image"], inputs["crop_coordinates"])
@@ -132,28 +88,24 @@ def meta_augment_task(
         query_input_dict = {}
         support_input_dict["image"] = torch.stack(image[:-num_query_views], dim=0)
         query_input_dict["image"] = torch.stack(image[-num_query_views:], dim=0)
-        support_input_dict["crop_coordinates"] = torch.stack(
-            coord[:-num_query_views], dim=0
-        )
-        query_input_dict["crop_coordinates"] = torch.stack(
-            coord[-num_query_views:], dim=0
-        )
+        support_input_dict["crop_coordinates"] = torch.stack(coord[:-num_query_views], dim=0)
+        query_input_dict["crop_coordinates"] = torch.stack(coord[-num_query_views:], dim=0)
         support_input_dict["cardinality-type"] = CardinalityType.one_to_many
         query_input_dict["cardinality-type"] = CardinalityType.one_to_many
-        # support_labels_list = [labels[idx].item()] * (num_views-num_query_views)
-        # query_labels_list = [labels[idx].item()]*num_query_views
-        support_labels_list = [idx] * (num_views - num_query_views)
-        query_labels_list = [idx] * num_query_views
+        #support_labels_list = [labels[idx].item()] * (num_views-num_query_views)
+        #query_labels_list = [labels[idx].item()]*num_query_views
+        support_labels_list = [idx] * (num_views-num_query_views)
+        query_labels_list = [idx]*num_query_views
         new_support_inputs.append(support_input_dict)
         new_support_labels.extend(support_labels_list)
         new_query_inputs.append(query_input_dict)
         new_query_labels.extend(query_labels_list)
     new_support_inputs = list_of_dicts_to_dict_of_lists(new_support_inputs)
     new_query_inputs = list_of_dicts_to_dict_of_lists(new_query_inputs)
-    # print(f"c: {len(new_support_inputs['image'])}")
-    # print(f"d: {new_support_inputs['image'][0].shape}")
+    #print(f"c: {len(new_support_inputs['image'])}")
+    #print(f"d: {new_support_inputs['image'][0].shape}")
     new_support_inputs["image"] = torch.cat(new_support_inputs["image"], dim=0)
-    # print(f"e: {new_support_inputs['image'].shape}")
+    #print(f"e: {new_support_inputs['image'].shape}")
     new_support_inputs["crop_coordinates"] = torch.cat(
         new_support_inputs["crop_coordinates"], dim=0
     )
@@ -161,12 +113,13 @@ def meta_augment_task(
     new_query_inputs["crop_coordinates"] = torch.cat(
         new_query_inputs["crop_coordinates"], dim=0
     )
-    # new_inputs["image_id"] = torch.cat(new_inputs["image_id"], dim=0).reshape(-1,1)
-    new_support_labels = torch.tensor(new_support_labels)
-    new_query_labels = torch.tensor(new_query_labels)
-    # new_labels = labels.repeat_interleave(cardinality)
-    # print(f"f: {new_support_labels.shape}")
+    #new_inputs["image_id"] = torch.cat(new_inputs["image_id"], dim=0).reshape(-1,1)
+    new_support_labels=torch.tensor(new_support_labels)
+    new_query_labels=torch.tensor(new_query_labels)
+    #new_labels = labels.repeat_interleave(cardinality)
+    #print(f"f: {new_support_labels.shape}")
     return new_support_inputs, new_support_labels, new_query_inputs, new_query_labels
+
 
 
 class FewShotClassificationDatasetTFDS(Dataset):
@@ -381,11 +334,11 @@ class FewShotClassificationDatasetTFDS(Dataset):
         # This is done once for all classes such that query set is balanced
         if self.variable_num_queries_per_class:
             num_queries_per_class = rng.choice(
-                range(
-                    self.min_num_queries_per_class,
-                    self.num_queries_per_class,
+                    range(
+                        self.min_num_queries_per_class,
+                        self.num_queries_per_class,
+                    )
                 )
-            )
         else:
             num_queries_per_class = self.num_queries_per_class
 
@@ -507,27 +460,10 @@ class FewShotClassificationDatasetTFDS(Dataset):
         )
 
         if isinstance(support_set_inputs, Dict) and isinstance(query_set_inputs, Dict):
-            if (
-                "cardinality-type" in support_set_inputs
-                and "cardinality-type" in query_set_inputs
-            ):
-                if (
-                    support_set_inputs["cardinality-type"][0]
-                    == CardinalityType.one_to_many
-                    and query_set_inputs["cardinality-type"][0]
-                    == CardinalityType.one_to_many
-                ):
-                    (
-                        support_set_inputs,
-                        support_set_labels,
-                        query_set_inputs,
-                        query_set_labels,
-                    ) = meta_augment_task(
-                        support_inputs=support_set_inputs,
-                        support_labels=support_set_labels,
-                        query_inputs=query_set_inputs,
-                        query_labels=query_set_labels,
-                        num_query_views=1,
+            if "cardinality-type" in support_set_inputs and "cardinality-type" in query_set_inputs:
+                if support_set_inputs["cardinality-type"][0] == CardinalityType.one_to_many and query_set_inputs["cardinality-type"][0] == CardinalityType.one_to_many:
+                    support_set_inputs, support_set_labels, query_set_inputs, query_set_labels = meta_augment_task(
+                        support_inputs=support_set_inputs, support_labels=support_set_labels, query_inputs=query_set_inputs, query_labels=query_set_labels, num_query_views=1
                     )
 
         if not isinstance(support_set_inputs, (Dict, DictConfig)):
@@ -1235,6 +1171,7 @@ class FewShotClassificationMetaDatasetTFDS(Dataset):
                             class_to_num_available_samples[class_name],
                             available_support_set_size,
                             max_per_class_support_set_size,
+
                         )
                         - num_query_samples_per_class,
                     )
@@ -1353,6 +1290,7 @@ class FewShotClassificationMetaDatasetTFDS(Dataset):
             if isinstance(query_set_labels, list)
             else query_set_labels
         )
+
 
         log.info(
             f"Size of support set: {support_set_inputs.shape}, "
@@ -1669,7 +1607,6 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
                         self.min_num_samples_per_class,
                         self.num_samples_per_class,
                     )
-                )
             else:
                 num_samples_per_class = self.num_samples_per_class
 
@@ -1746,6 +1683,7 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
 
             data_labels = [data_labels[i] for i in shuffled_idx]
 
+
             assert len(data_labels) == num_samples_per_class + num_queries_per_class
 
             support_set_inputs.extend(data_inputs[:num_samples_per_class])
@@ -1815,422 +1753,4 @@ class MSCOCOFewShotClassificationDatasetTFDS(Dataset):
             image=DottedDict(support_set=support_set_labels, query_set=query_set_labels)
         )
 
-        return input_dict, label_dict
-
-
-class MultiViewFewShotClassificationDatasetTFDS(Dataset):
-    def __init__(
-        self,
-        dataset_name: str,
-        dataset_root: str,
-        split_name: str,
-        download: bool,
-        num_episodes: int,
-        min_num_classes_per_set: int,
-        min_num_samples_per_class: int,
-        min_num_queries_per_class: int,
-        num_classes_per_set: int,  # n_way
-        num_samples_per_class: int,  # n_shot
-        num_queries_per_class: int,
-        variable_num_samples_per_class: bool,
-        variable_num_queries_per_class: bool,
-        variable_num_classes_per_set: bool,
-        modality_config: Dict,
-        input_shape_dict: Dict,
-        input_target_annotation_keys: Dict,
-        subset_split_name_list: Optional[List[str]] = None,
-        split_percentage: Optional[Dict[str, float]] = None,
-        split_config: Optional[DictConfig] = None,
-        support_set_input_transform: Any = None,
-        query_set_input_transform: Any = None,
-        support_set_target_transform: Any = None,
-        query_set_target_transform: Any = None,
-        support_to_query_ratio: float = 0.75,
-        rescan_cache: bool = True,
-        label_extractor_fn: Optional[Any] = None,
-    ):
-        super(MultiViewFewShotClassificationDatasetTFDS, self).__init__()
-
-        self.dataset_name = dataset_name
-        self.dataset_root = dataset_root
-        self.input_target_annotation_keys = input_target_annotation_keys
-        self.input_shape_dict = input_shape_dict
-        self.modality_config = modality_config
-
-        self.num_episodes = num_episodes
-
-        if variable_num_samples_per_class:
-            assert min_num_samples_per_class < num_samples_per_class, (
-                f"min_num_samples_per_class {min_num_samples_per_class} "
-                f"must be less than "
-                f"num_samples_per_class {num_samples_per_class}"
-            )
-        if variable_num_classes_per_set:
-            assert min_num_classes_per_set < num_classes_per_set, (
-                f"min_num_classes_per_set {min_num_classes_per_set} "
-                f"must be less than "
-                f"num_classes_per_set {num_classes_per_set}"
-            )
-
-        self.min_num_classes_per_set = min_num_classes_per_set
-        self.min_num_samples_per_class = min_num_samples_per_class
-        self.min_num_queries_per_class = min_num_queries_per_class
-        self.num_classes_per_set = num_classes_per_set
-        self.num_samples_per_class = num_samples_per_class
-        self.num_queries_per_class = num_queries_per_class
-        self.variable_num_samples_per_class = variable_num_samples_per_class
-        self.variable_num_queries_per_class = variable_num_queries_per_class
-        self.variable_num_classes_per_set = variable_num_classes_per_set
-        self.split_config = split_config
-        self.print_info = True
-
-        self.support_set_input_transform = (
-            hydra.utils.instantiate(support_set_input_transform)
-            if isinstance(support_set_input_transform, Dict)
-            or isinstance(support_set_input_transform, DictConfig)
-            else support_set_input_transform
-        )
-        self.query_set_input_transform = (
-            hydra.utils.instantiate(query_set_input_transform)
-            if isinstance(query_set_input_transform, Dict)
-            or isinstance(query_set_input_transform, DictConfig)
-            else query_set_input_transform
-        )
-
-        self.support_set_target_transform = (
-            hydra.utils.instantiate(support_set_target_transform)
-            if isinstance(support_set_target_transform, Dict)
-            or isinstance(support_set_input_transform, DictConfig)
-            else support_set_target_transform
-        )
-
-        self.query_set_target_transform = (
-            hydra.utils.instantiate(query_set_target_transform)
-            if isinstance(query_set_target_transform, Dict)
-            or isinstance(query_set_target_transform, DictConfig)
-            else query_set_target_transform
-        )
-
-        self.split_name = split_name
-        self.split_percentage = split_percentage
-        self.subsets = []
-
-        if subset_split_name_list is None:
-            subset_split_name_list = ["train", "test"]
-
-        for subset_name in subset_split_name_list:
-
-            subset, subset_info = tfds.load(
-                self.dataset_name,
-                split=subset_name,
-                shuffle_files=False,
-                download=download,
-                as_supervised=False,
-                data_dir=self.dataset_root,
-                with_info=True,
-            )
-
-            log.info(f"Loading into memory {subset_name} info: {subset_info}")
-            subset_samples = []
-            with tqdm(total=len(subset)) as pbar:
-                for sample in subset:
-                    sample = {key: sample[key].numpy() for key in sample.keys()}
-                    subset_samples.append(sample)
-                    pbar.update(1)
-                self.subsets.append(subset_samples)
-
-            if self.print_info:
-                log.info(f"Loaded two subsets with info: {subset_info}")
-
-        self.class_to_address_dict = get_class_to_idx_dict(
-            self.subsets,
-            class_name_key=self.input_target_annotation_keys["target_annotations"],
-            label_extractor_fn=label_extractor_fn,
-        )
-
-        self.label_extractor_fn = label_extractor_fn
-
-        if self.split_config is None:
-            if split_name == FewShotSuperSplitSetOptions.TRAIN:
-                self.current_class_to_address_dict = {
-                    key: value
-                    for idx, (key, value) in enumerate(
-                        self.class_to_address_dict.items()
-                    )
-                    if idx < split_percentage[FewShotSuperSplitSetOptions.TRAIN]
-                }
-            elif split_name == FewShotSuperSplitSetOptions.VAL:
-                self.current_class_to_address_dict = {
-                    key: value
-                    for idx, (key, value) in enumerate(
-                        self.class_to_address_dict.items()
-                    )
-                    if split_percentage[FewShotSuperSplitSetOptions.TRAIN]
-                    < idx
-                    < split_percentage[FewShotSuperSplitSetOptions.TRAIN]
-                    + split_percentage[FewShotSuperSplitSetOptions.VAL]
-                }
-            elif split_name == FewShotSuperSplitSetOptions.TEST:
-                self.current_class_to_address_dict = {
-                    key: value
-                    for idx, (key, value) in enumerate(
-                        self.class_to_address_dict.items()
-                    )
-                    if split_percentage[FewShotSuperSplitSetOptions.TRAIN]
-                    + split_percentage[FewShotSuperSplitSetOptions.VAL]
-                    < idx
-                    < split_percentage[FewShotSuperSplitSetOptions.TRAIN]
-                    + split_percentage[FewShotSuperSplitSetOptions.VAL]
-                    + split_percentage[FewShotSuperSplitSetOptions.TEST]
-                }
-        else:
-            if self.print_info:
-                log.info(self.split_config)
-            self.current_class_to_address_dict = {
-                label_name: self.class_to_address_dict[label_name]
-                for label_name in self.split_config[split_name]
-            }
-
-        self.print_info = False
-
-    def __len__(self):
-        return self.num_episodes
-
-    def __getitem__(self, index):
-        rng = np.random.RandomState(index)
-
-        support_set_inputs = []
-        support_set_labels = []
-
-        query_set_inputs = []
-        query_set_labels = []
-
-        num_classes_per_set = (
-            rng.choice(range(self.min_num_classes_per_set, self.num_classes_per_set))
-            if self.variable_num_classes_per_set
-            else self.num_classes_per_set
-        )
-
-        available_class_labels = list(self.current_class_to_address_dict.keys())
-        select_classes_for_set = rng.choice(
-            available_class_labels,
-            size=min(num_classes_per_set, len(available_class_labels)),
-        )
-
-        label_idx = set(select_classes_for_set)
-        label_idx = list(label_idx)
-
-        # shuffle label idx
-        label_idx = rng.permutation(label_idx)
-
-        label_idx_to_local_label_idx = {
-            label_name: i for i, label_name in enumerate(label_idx)
-        }
-
-        # This is done once for all classes such that query set is balanced
-        if self.variable_num_queries_per_class:
-            num_queries_per_class = rng.choice(
-                range(
-                    self.min_num_queries_per_class,
-                    self.num_queries_per_class,
-                )
-            )
-        else:
-            num_queries_per_class = self.num_queries_per_class
-
-        for class_name in select_classes_for_set:
-            if self.variable_num_samples_per_class:
-                num_samples_per_class = rng.choice(
-                    range(
-                        self.min_num_samples_per_class,
-                        self.num_samples_per_class,
-                    )
-                )
-            else:
-                num_samples_per_class = self.num_samples_per_class
-
-            selected_samples_addresses_idx = rng.choice(
-                range(
-                    len(self.current_class_to_address_dict[class_name]),
-                ),
-                size=min(
-                    len(self.current_class_to_address_dict[class_name]),
-                    num_samples_per_class + num_queries_per_class,
-                ),
-                replace=False,
-            )
-
-            selected_samples_addresses = [
-                self.current_class_to_address_dict[class_name][sample_address_idx]
-                for sample_address_idx in selected_samples_addresses_idx
-            ]
-
-            data_inputs = [
-                self.subsets[subset_idx][idx][
-                    self.input_target_annotation_keys["inputs"]
-                ]
-                for (subset_idx, idx) in selected_samples_addresses
-            ]
-
-            data_labels = [
-                self.subsets[subset_idx][idx][
-                    self.input_target_annotation_keys["target_annotations"]
-                ]
-                for (subset_idx, idx) in selected_samples_addresses
-            ]
-
-            data_labels = [
-                label_idx_to_local_label_idx[self.label_extractor_fn(item)]
-                for item in data_labels
-            ]
-
-            shuffled_idx = rng.permutation(len(data_inputs))
-
-            data_inputs = [data_inputs[i] for i in shuffled_idx]
-
-            if isinstance(data_inputs[0], np.ndarray):
-                data_inputs = [
-                    torch.tensor(sample).permute(2, 0, 1) for sample in data_inputs
-                ]
-
-            data_labels = [data_labels[i] for i in shuffled_idx]
-
-            if len(data_inputs) > num_samples_per_class:
-                support_set_inputs.extend(data_inputs[:num_samples_per_class])
-                support_set_labels.extend(data_labels[:num_samples_per_class])
-
-                query_set_inputs.extend(data_inputs[num_samples_per_class:])
-                query_set_labels.extend(data_labels[num_samples_per_class:])
-            else:
-                support_set_inputs.extend(data_inputs[:-1])
-                support_set_labels.extend(data_labels[:-1])
-
-                query_set_inputs.extend(data_inputs[-1:])
-                query_set_labels.extend(data_labels[-1:])
-
-        if self.support_set_input_transform:
-            support_set_inputs = apply_input_transforms(
-                inputs=support_set_inputs,
-                transforms=self.support_set_input_transform,
-            )
-
-        if self.support_set_target_transform:
-            support_set_labels = apply_target_transforms(
-                targets=support_set_labels,
-                transforms=self.support_set_target_transform,
-            )
-
-        if self.query_set_input_transform:
-            query_set_inputs = apply_input_transforms(
-                inputs=query_set_inputs,
-                transforms=self.query_set_input_transform,
-            )
-
-        if self.query_set_target_transform:
-            query_set_labels = apply_target_transforms(
-                targets=query_set_labels,
-                transforms=self.query_set_target_transform,
-            )
-
-        support_set_inputs = (
-            torch.stack(support_set_inputs, dim=0)
-            if isinstance(support_set_inputs, list)
-            else support_set_inputs
-        )
-
-        support_set_labels = (
-            torch.tensor(support_set_labels)
-            if isinstance(support_set_labels, list)
-            else support_set_labels
-        )
-
-        query_set_inputs = (
-            torch.stack(query_set_inputs, dim=0)
-            if isinstance(query_set_inputs, list)
-            else query_set_inputs
-        )
-        query_set_labels = (
-            torch.tensor(query_set_labels)
-            if isinstance(query_set_labels, list)
-            else query_set_labels
-        )
-
-        if isinstance(support_set_inputs, Dict) and isinstance(query_set_inputs, Dict):
-            if (
-                "cardinality-type" in support_set_inputs
-                and "cardinality-type" in query_set_inputs
-            ):
-                if (
-                    support_set_inputs["cardinality-type"][0]
-                    == CardinalityType.one_to_many
-                    and query_set_inputs["cardinality-type"][0]
-                    == CardinalityType.one_to_many
-                ):
-                    (
-                        support_set_inputs,
-                        support_set_labels,
-                        query_set_inputs,
-                        query_set_labels,
-                    ) = meta_augment_task(
-                        support_inputs=support_set_inputs,
-                        support_labels=support_set_labels,
-                        query_inputs=query_set_inputs,
-                        query_labels=query_set_labels,
-                        num_query_views=1,
-                    )
-
-        if not isinstance(support_set_inputs, (Dict, DictConfig)):
-
-            input_dict = DottedDict(
-                image=DottedDict(
-                    support_set=support_set_inputs,
-                    query_set=query_set_inputs,
-                ),
-            )
-        else:
-
-            input_dict = DottedDict(
-                image=DottedDict(
-                    support_set=support_set_inputs["image"],
-                    query_set=query_set_inputs["image"],
-                    support_set_extras={
-                        key: value
-                        for key, value in support_set_inputs.items()
-                        if key != "image" and key != "cardinality-type"
-                    },
-                    query_set_extras={
-                        key: value
-                        for key, value in query_set_inputs.items()
-                        if key != "image" and key != "cardinality-type"
-                    },
-                ),
-            )
-
-        if not isinstance(support_set_labels, (Dict, DictConfig)):
-
-            label_dict = DottedDict(
-                image=DottedDict(
-                    support_set=support_set_labels,
-                    query_set=query_set_labels,
-                )
-            )
-
-        else:
-
-            label_dict = DottedDict(
-                image=DottedDict(
-                    support_set=support_set_labels["image"],
-                    query_set=query_set_labels["image"],
-                    support_set_extras={
-                        key: value
-                        for key, value in support_set_labels.items()
-                        if key != "image" and key != "cardinality-type"
-                    },
-                    query_set_extras={
-                        key: value
-                        for key, value in query_set_labels.items()
-                        if key != "image" and key != "cardinality-type"
-                    },
-                ),
-            )
         return input_dict, label_dict

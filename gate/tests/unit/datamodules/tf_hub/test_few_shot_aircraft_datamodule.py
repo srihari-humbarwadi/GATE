@@ -2,18 +2,12 @@ import multiprocessing
 
 import hydra.utils
 import pytest
-
 from gate.base.utils.loggers import get_logger
 from gate.configs.datamodule.base import DataLoaderConfig
 from gate.configs.datamodule.few_shot_classification import (
-    AircraftFewShotDatasetConfig,
-    FewShotDataModuleConfig,
-    FewShotTransformConfig,
-)
-from gate.configs.datasets.transforms import (
-    aircraft_query_set_transforms,
-    aircraft_support_set_transforms,
-)
+    AircraftFewShotDatasetConfig, FewShotDataModuleConfig, FewShotTransformConfig)
+from gate.configs.datasets.transforms import (aircraft_query_set_transforms,
+                                              aircraft_support_set_transforms)
 
 log = get_logger(__name__, set_default_handler=True)
 

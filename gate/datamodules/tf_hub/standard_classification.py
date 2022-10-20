@@ -1,11 +1,9 @@
 from typing import Any
 
 from gate.configs.datamodule.base import DataLoaderConfig
-from gate.configs.datasets.standard_classification import (
-    CIFAR10DatasetConfig,
-    CIFAR100DatasetConfig,
-    OmniglotDatasetConfig,
-)
+from gate.configs.datasets.standard_classification import (CIFAR10DatasetConfig,
+                                                           CIFAR100DatasetConfig,
+                                                           OmniglotDatasetConfig)
 from gate.datamodules.image_classification import PreSplitDataModule
 
 

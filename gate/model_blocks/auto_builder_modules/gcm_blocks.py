@@ -1,12 +1,11 @@
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Callable, Dict, Optional, Tuple
 
+import gate.base.utils.loggers as loggers
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from timm.models.resnet import BasicBlock
 from torch import Tensor
-
-import gate.base.utils.loggers as loggers
 
 log = loggers.get_logger(__name__)
 

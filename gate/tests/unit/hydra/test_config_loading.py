@@ -1,8 +1,4 @@
 import dotenv
-import hydra
-import pytest
-from omegaconf import OmegaConf
-
 from gate.base.utils.loggers import get_logger
 from gate.base.utils.rank_zero_ops import print_config
 
@@ -14,7 +10,7 @@ log = get_logger(__name__)
 
 log.info(f"Loaded dotenv variables: {dotenv_loaded_vars}")
 
-from gate.configs.config import Config, collect_config_store
+from gate.configs.config import collect_config_store
 
 log = get_logger(__name__, set_default_handler=True)
 

@@ -1,18 +1,8 @@
-import inspect
-
 from hydra.core.config_store import ConfigStore
 
-from .base import (
-    LearningRateMonitor,
-    LogConfigInformation,
-    LogGrads,
-    ModelSummaryConfig,
-    RichProgressBar,
-    UploadCheckpointsAsArtifact,
-    UploadCodeAsArtifact,
-    model_checkpoint_eval,
-    model_checkpoint_train,
-)
+from .base import (LearningRateMonitor, LogConfigInformation, LogGrads,
+                   ModelSummaryConfig, RichProgressBar, UploadCheckpointsAsArtifact,
+                   UploadCodeAsArtifact, model_checkpoint_eval, model_checkpoint_train)
 
 base_callbacks = dict(
     model_checkpoint_eval=model_checkpoint_eval,

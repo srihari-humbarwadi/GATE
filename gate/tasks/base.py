@@ -2,7 +2,6 @@ from collections import defaultdict
 from typing import Any, Dict
 
 import torch
-
 from gate.base.utils import loggers
 
 log = loggers.get_logger()

@@ -1,14 +1,11 @@
-from dataclasses import MISSING, dataclass
+from dataclasses import dataclass
 
 from gate.configs import get_module_import_path
 from gate.configs.learner.base import LearnerConfig
-from gate.configs.learner.learning_rate_scheduler_config import (
-    BiLevelLRSchedulerConfig,
-)
+from gate.configs.learner.learning_rate_scheduler_config import BiLevelLRSchedulerConfig
 from gate.configs.learner.optimizer_config import BiLevelOptimizerConfig
-from gate.learners.single_layer_fine_tuning_episodic import (
-    EpisodicLinearLayerFineTuningScheme,
-)
+from gate.learners.single_layer_fine_tuning_episodic import \
+    EpisodicLinearLayerFineTuningScheme
 
 
 @dataclass

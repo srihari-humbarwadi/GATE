@@ -1,7 +1,6 @@
 import pytest
 import torch
 from dotted_dict import DottedDict
-
 from gate.base.utils.loggers import get_logger
 from gate.configs.datamodule.base import ShapeConfig
 from gate.models.timm_hub import TimmImageModel
