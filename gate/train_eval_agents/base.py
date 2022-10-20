@@ -1,11 +1,6 @@
-from typing import Any, Dict, List
+from typing import Any
 
 import torch
-from dotted_dict import DottedDict
-from hydra.utils import instantiate
-from omegaconf import DictConfig
-from pytorch_lightning import LightningModule
-
 from gate.base.callbacks.wandb_callbacks import get_wandb_logger
 from gate.base.utils.loggers import get_logger
 from gate.configs.learner.linear_layer_fine_tuning import LearnerConfig
@@ -14,6 +9,9 @@ from gate.datamodules.base import DataModule
 from gate.learners.base import LearnerModule
 from gate.models.base import ModelModule
 from gate.tasks.base import TaskModule
+from hydra.utils import instantiate
+from omegaconf import DictConfig
+from pytorch_lightning import LightningModule
 
 log = get_logger(__name__, set_default_handler=False)
 
@@ -92,13 +90,13 @@ class TrainingEvaluationAgent(LightningModule):
         )
 
     def forward(self, batch):
-        return self.learner.step(batch, batch_idx=0, phase_name="inference")
+        return self.learner.step(batch=batch, batch_idx=0, phase_name="inference")
 
     def training_step(self, batch, batch_idx):
-        task_batch = batch
+        task_batch = batch  # TODO: add support for the task module to actually do stuff
         opt_loss, computed_task_metrics_dict = self.learner.training_step(
-            task_batch,
-            batch_idx,
+            batch=task_batch,
+            batch_idx=batch_idx,
             task_metrics_dict=self.task.task_metrics_dict,
             top_level_pl_module=self,
         )
@@ -108,8 +106,8 @@ class TrainingEvaluationAgent(LightningModule):
     def validation_step(self, batch, batch_idx):
         task_batch = batch
         opt_loss, computed_task_metrics_dict = self.learner.validation_step(
-            task_batch,
-            batch_idx,
+            batch=task_batch,
+            batch_idx=batch_idx,
             task_metrics_dict=self.task.task_metrics_dict,
             top_level_pl_module=self,
         )
@@ -118,8 +116,8 @@ class TrainingEvaluationAgent(LightningModule):
     def test_step(self, batch, batch_idx):
         task_batch = batch
         opt_loss, computed_task_metrics_dict = self.learner.test_step(
-            task_batch,
-            batch_idx,
+            batch=task_batch,
+            batch_idx=batch_idx,
             task_metrics_dict=self.task.task_metrics_dict,
             top_level_pl_module=self,
         )
