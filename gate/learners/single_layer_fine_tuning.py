@@ -1,9 +1,7 @@
-from typing import Any, Dict, Tuple, Union
-
-import torch
-from dotted_dict import DottedDict
+from typing import Any, Dict, Union
 
 import gate.base.utils.loggers as loggers
+import torch
 from gate.configs.datamodule.base import ShapeConfig
 from gate.configs.task.image_classification import TaskConfig
 from gate.learners.base import LearnerModule
@@ -37,9 +35,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self,
         model: torch.nn.Module,
         task_config: TaskConfig,
-        modality_config: Union[DottedDict, Dict],
-        input_shape_dict: Union[ShapeConfig, Dict, DottedDict],
-        output_shape_dict: Union[ShapeConfig, Dict, DottedDict],
+        modality_config: Union[Dict],
+        input_shape_dict: Union[ShapeConfig, Dict],
+        output_shape_dict: Union[ShapeConfig, Dict],
     ):
         self.input_shape_dict = (
             input_shape_dict.__dict__
@@ -53,11 +51,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
             else output_shape_dict
         )
 
-        self.modality_config = (
-            modality_config.__dict__
-            if isinstance(modality_config, DottedDict)
-            else modality_config
-        )
+        self.modality_config = modality_config
 
         self.model = model
         self.task_config = task_config
@@ -69,38 +63,6 @@ class LinearLayerFineTuningScheme(LearnerModule):
                     [2] + list(self.input_shape_dict[modality_name]["shape"].values())
                 )
 
-                if modality_name == "image":
-                    self.input_layer_dict[
-                        f"{modality_name}_input_adaptor"
-                    ] = torch.nn.InstanceNorm2d(
-                        num_features=input_dummy_x.shape[1],
-                        affine=True,
-                        track_running_stats=True,
-                    )
-
-                    input_dummy_x = self.input_layer_dict[
-                        f"{modality_name}_input_adaptor"
-                    ](input_dummy_x)
-                elif modality_name == "audio":
-                    self.input_layer_dict[
-                        f"{modality_name}_input_adaptor"
-                    ] = torch.nn.InstanceNorm1d(
-                        num_features=input_dummy_x.shape[1],
-                        affine=True,
-                        track_running_stats=True,
-                    )
-
-                    input_dummy_x = self.input_layer_dict[
-                        f"{modality_name}_input_adaptor"
-                    ](input_dummy_x)
-                elif modality_name == "video":
-                    b, s, c, w, h = input_dummy_x.shape
-                    input_dummy_x = input_dummy_x.view(b * s, c, w, h)
-                    input_dummy_x = self.input_layer_dict[
-                        f"{modality_name}_input_adaptor"
-                    ](input_dummy_x)
-                    input_dummy_x = input_dummy_x.view(b, s, c, w, h)
-
                 model_features = self.model.forward({modality_name: input_dummy_x})[
                     modality_name
                 ]
@@ -108,10 +70,6 @@ class LinearLayerFineTuningScheme(LearnerModule):
                 model_features_flatten = model_features.view(
                     (model_features.shape[0], -1)
                 )
-                # log.info(
-                #     f"Output shape of model features {model_features_flatten.shape} "
-                #     f"{self.output_shape_dict}"
-                # )
 
                 self.output_layer_dict[modality_name] = torch.nn.Linear(
                     model_features_flatten.shape[1],
@@ -183,9 +141,8 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self,
         batch,
         batch_idx,
-        task_metrics_dict,
-        learner_metrics_dict,
-        phase_name,
+        task_metrics_dict: Dict = None,
+        phase_name: str = "undefined",
     ):
         computed_task_metrics_dict = {}
         opt_loss_list = []
@@ -204,7 +161,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
                     target_dict[output_name],
                 )
 
-        for metric_key, metric_function in learner_metrics_dict.items():
+        for metric_key, metric_function in self.learner_metrics_dict.items():
             for output_name, output_value in output_dict.items():
                 computed_task_metrics_dict[
                     f"{phase_name}/{metric_key}"
@@ -227,10 +184,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
     ):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
-            batch,
-            batch_idx,
-            task_metrics_dict,
-            self.learner_metrics_dict,
+            batch=batch,
+            batch_idx=batch_idx,
+            task_metrics_dict=task_metrics_dict,
             phase_name="training",
         )
 
@@ -243,15 +199,10 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
     ):
 
-        # for key, value in batch[0].items():
-        #     if isinstance(value, torch.Tensor):
-        #         log.info(f"{key} {value.shape}")
-
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
-            batch,
-            batch_idx,
-            task_metrics_dict,
-            self.learner_metrics_dict,
+            batch=batch,
+            batch_idx=batch_idx,
+            task_metrics_dict=task_metrics_dict,
             phase_name="validation",
         )
 
@@ -261,10 +212,9 @@ class LinearLayerFineTuningScheme(LearnerModule):
 
     def test_step(self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
-            batch,
-            batch_idx,
-            task_metrics_dict,
-            self.learner_metrics_dict,
+            batch=batch,
+            batch_idx=batch_idx,
+            task_metrics_dict=task_metrics_dict,
             phase_name="test",
         )
 
