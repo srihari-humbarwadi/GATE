@@ -1,13 +1,19 @@
 import multiprocessing
 from dataclasses import MISSING, dataclass
+
 # ------------------------------------------------------------------------------
 # General configs
 # from gate.datasets.data_utils import collate_fn_replace_corrupted
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 # ------------------------------------------------------------------------------
 # data loader configs
-from gate.configs.string_variables import BATCH_SIZE
+from gate.configs import get_module_import_path
+from gate.configs.string_variables import (
+    ADDITIONAL_INPUT_TRANSFORMS,
+    ADDITIONAL_TARGET_TRANSFORMS,
+    BATCH_SIZE,
+)
 
 # ------------------------------------------------------------------------------
 # Config rules:
@@ -42,7 +48,7 @@ class DataLoaderConfig:
     train_batch_size: int = BATCH_SIZE
     val_batch_size: int = BATCH_SIZE
     test_batch_size: int = BATCH_SIZE
-    num_workers: int = int(multiprocessing.cpu_count() / 4)
+    num_workers: int = int(multiprocessing.cpu_count())
     pin_memory: bool = True
     train_drop_last: bool = False
     eval_drop_last: bool = False

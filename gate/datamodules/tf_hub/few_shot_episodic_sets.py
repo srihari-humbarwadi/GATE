@@ -1,11 +1,15 @@
 from typing import Optional
 
 import hydra.utils
-from gate.configs.datamodule.base import DataLoaderConfig
-from gate.configs.datamodule.few_shot_classification import (FewShotDatasetConfig,
-                                                             FewShotTransformConfig)
-from gate.datamodules.base import DataModule
+import torch.utils.data
 from torch.utils.data import DataLoader
+
+from gate.configs.datamodule.base import DataLoaderConfig
+from gate.configs.datamodule.few_shot_classification import (
+    FewShotDatasetConfig,
+    FewShotTransformConfig,
+)
+from gate.datamodules.base import DataModule
 
 
 class FewShotDataModule(DataModule):

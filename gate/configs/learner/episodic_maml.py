@@ -1,10 +1,14 @@
-from dataclasses import dataclass
+from dataclasses import MISSING, dataclass
 
 from gate.configs import get_module_import_path
 from gate.configs.learner.base import LearnerConfig
-from gate.configs.learner.learning_rate_scheduler_config import BiLevelLRSchedulerConfig
-from gate.configs.learner.optimizer_config import (AdamOptimizerConfig,
-                                                   BiLevelOptimizerConfig)
+from gate.configs.learner.learning_rate_scheduler_config import (
+    BiLevelLRSchedulerConfig,
+)
+from gate.configs.learner.optimizer_config import (
+    BiLevelOptimizerConfig,
+    AdamOptimizerConfig,
+)
 from gate.learners.maml_episodic import EpisodicMAML
 
 
@@ -22,6 +26,7 @@ class EpisodicMAMLSingleLinearLayerConfig(LearnerConfig):
     use_weight_norm: bool = False
     temperature: float = 10.0
     manual_optimization: bool = True
+    include_coordinate_information: bool = False
 
 
 @dataclass
@@ -38,3 +43,4 @@ class EpisodicMAMLFullModelConfig(LearnerConfig):
     use_weight_norm: bool = False
     temperature: float = 10.0
     manual_optimization: bool = True
+    include_coordinate_information: bool = False

@@ -1,8 +1,9 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict, Tuple, Union
 
-import gate.base.utils.loggers as loggers
 import torch
 from dotted_dict import DottedDict
+
+import gate.base.utils.loggers as loggers
 from gate.configs.datamodule.base import ShapeConfig
 from gate.configs.task.image_classification import TaskConfig
 from gate.learners.base import LearnerModule
@@ -183,6 +184,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
         batch,
         batch_idx,
         task_metrics_dict,
+        learner_metrics_dict,
         phase_name,
     ):
         computed_task_metrics_dict = {}
@@ -202,7 +204,7 @@ class LinearLayerFineTuningScheme(LearnerModule):
                     target_dict[output_name],
                 )
 
-        for metric_key, metric_function in self.learner_metrics_dict.items():
+        for metric_key, metric_function in learner_metrics_dict.items():
             for output_name, output_value in output_dict.items():
                 computed_task_metrics_dict[
                     f"{phase_name}/{metric_key}"
@@ -225,9 +227,10 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
     ):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
-            batch=batch,
-            batch_idx=batch_idx,
-            task_metrics_dict=task_metrics_dict,
+            batch,
+            batch_idx,
+            task_metrics_dict,
+            self.learner_metrics_dict,
             phase_name="training",
         )
 
@@ -240,10 +243,15 @@ class LinearLayerFineTuningScheme(LearnerModule):
         self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None
     ):
 
+        # for key, value in batch[0].items():
+        #     if isinstance(value, torch.Tensor):
+        #         log.info(f"{key} {value.shape}")
+
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
-            batch=batch,
-            batch_idx=batch_idx,
-            task_metrics_dict=task_metrics_dict,
+            batch,
+            batch_idx,
+            task_metrics_dict,
+            self.learner_metrics_dict,
             phase_name="validation",
         )
 
@@ -253,9 +261,10 @@ class LinearLayerFineTuningScheme(LearnerModule):
 
     def test_step(self, batch, batch_idx, task_metrics_dict, top_level_pl_module=None):
         output_dict, computed_task_metrics_dict, opt_loss = self.step(
-            batch=batch,
-            batch_idx=batch_idx,
-            task_metrics_dict=task_metrics_dict,
+            batch,
+            batch_idx,
+            task_metrics_dict,
+            self.learner_metrics_dict,
             phase_name="test",
         )
 

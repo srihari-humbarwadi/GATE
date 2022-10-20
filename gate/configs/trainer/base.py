@@ -1,8 +1,12 @@
 from dataclasses import dataclass
 
-from gate.configs import get_module_import_path
-from gate.configs.string_variables import CURRENT_EXPERIMENT_DIR, NUM_TRAIN_SAMPLES
 from pytorch_lightning import Trainer
+
+from gate.configs import get_module_import_path
+from gate.configs.string_variables import (
+    CURRENT_EXPERIMENT_DIR,
+    NUM_TRAIN_SAMPLES,
+)
 
 
 @dataclass

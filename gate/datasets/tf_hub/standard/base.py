@@ -1,12 +1,13 @@
 import pathlib
-from typing import Any, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import hydra
 import tensorflow_datasets as tfds
 import torch
-from gate.base.utils.loggers import get_logger
 from omegaconf import DictConfig
 from torch.utils.data import Dataset
+
+from gate.base.utils.loggers import get_logger
 
 log = get_logger(__name__, set_default_handler=False)
 

@@ -2,12 +2,15 @@ from typing import Any, Dict, Optional, Union
 
 import hydra.utils
 import torch.utils.data
-from gate.configs.datamodule.base import DataLoaderConfig
-from gate.configs.datasets.standard_classification import (CIFAR10DatasetConfig,
-                                                           CIFAR100DatasetConfig,
-                                                           PreSplitDatasetConfig)
-from gate.datamodules.base import DataModule
 from torch.utils.data import DataLoader
+
+from gate.configs.datamodule.base import DataLoaderConfig
+from gate.configs.datasets.standard_classification import (
+    CIFAR10DatasetConfig,
+    CIFAR100DatasetConfig,
+    PreSplitDatasetConfig,
+)
+from gate.datamodules.base import DataModule
 
 
 class TwoSplitDataModule(DataModule):

@@ -1,10 +1,19 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
+
+import torch
+import torch.nn.functional as F
+from dotted_dict import DottedDict
 
 import gate.base.utils.loggers as loggers
-import torch
+from gate.configs.datamodule.base import ShapeConfig
+from gate.configs.task.image_classification import TaskConfig
 from gate.learners.protonet_gcm_architecture import PrototypicalNetworkGCMHead
-from gate.learners.utils import (get_cosine_distances, get_matching_accuracy,
-                                 matching_logits, matching_loss)
+from gate.learners.utils import (
+    get_cosine_distances,
+    matching_logits,
+    matching_loss,
+    get_matching_accuracy,
+)
 
 log = loggers.get_logger(__name__)
 

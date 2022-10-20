@@ -7,12 +7,20 @@ import rich
 from omegaconf import DictConfig, OmegaConf
 from rich.traceback import install
 from rich.tree import Tree
+import tensorflow as tf
 
-from gate.base.utils.tf_babysitting import configure_tf_memory_growth
+gpus = tf.config.list_physical_devices("GPU")
 
-install()
-
-configure_tf_memory_growth()
+if gpus:
+    try:
+        # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.list_logical_devices("GPU")
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        # Memory growth must be set before GPUs have been initialized
+        print(e)
 
 from gate.base.utils.loggers import get_logger
 from gate.base.utils.rank_zero_ops import extras
@@ -21,8 +29,10 @@ from gate.base.utils.rank_zero_ops import extras
 # recursively searches for `.env` in all folders starting from work dir
 
 dotenv.load_dotenv(override=True, verbose=True)
+install(show_locals=False, word_wrap=True, width=350)
 log = get_logger(__name__)
 
+from gate.configs.config import collect_config_store
 from gate.configs.config import collect_config_store
 
 config_store = collect_config_store()

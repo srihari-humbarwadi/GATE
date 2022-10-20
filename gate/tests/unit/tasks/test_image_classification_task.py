@@ -1,4 +1,5 @@
 import pytest
+
 from gate.base.utils.loggers import get_logger
 from gate.tasks.standard_classification import ImageClassificationTaskModule
 

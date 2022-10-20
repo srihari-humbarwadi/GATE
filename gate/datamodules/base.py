@@ -1,11 +1,14 @@
 from typing import Optional, Union
 
-from gate.configs.datamodule.base import DataLoaderConfig
-from gate.configs.datasets.standard_classification import (CIFAR10DatasetConfig,
-                                                           CIFAR100DatasetConfig,
-                                                           DatasetConfig)
 from pytorch_lightning import LightningDataModule
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
+
+from gate.configs.datamodule.base import DataLoaderConfig
+from gate.configs.datasets.standard_classification import (
+    CIFAR10DatasetConfig,
+    CIFAR100DatasetConfig,
+    DatasetConfig,
+)
 
 
 class DataModule(LightningDataModule):

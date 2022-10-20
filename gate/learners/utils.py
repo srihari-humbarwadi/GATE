@@ -2,6 +2,7 @@ import math
 
 import torch
 import torch.nn.functional as F
+
 from gate.base.utils.loggers import get_logger
 
 log = get_logger(__name__, set_default_handler=False)

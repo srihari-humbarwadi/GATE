@@ -4,6 +4,7 @@ import pathlib
 import pytest
 import torch
 import torchvision.transforms as transforms
+
 from gate.base.utils.loggers import get_logger
 from gate.datasets.tf_hub.standard.omniglot import OmniglotClassificationDataset
 

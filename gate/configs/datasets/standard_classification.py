@@ -2,8 +2,10 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from gate.configs import get_module_import_path
-from gate.datasets.tf_hub.standard.cifar import (CIFAR10ClassificationDataset,
-                                                 CIFAR100ClassificationDataset)
+from gate.datasets.tf_hub.standard.cifar import (
+    CIFAR10ClassificationDataset,
+    CIFAR100ClassificationDataset,
+)
 from gate.datasets.tf_hub.standard.omniglot import OmniglotClassificationDataset
 
 

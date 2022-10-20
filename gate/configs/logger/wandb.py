@@ -3,9 +3,10 @@ import os
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from pytorch_lightning.loggers import WandbLogger
+
 from gate.configs import get_module_import_path
 from gate.configs.string_variables import CURRENT_EXPERIMENT_DIR
-from pytorch_lightning.loggers import WandbLogger
 
 
 @dataclass

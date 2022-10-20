@@ -3,11 +3,13 @@ from typing import Any, Dict, Union
 import hydra
 import torch
 import torch.nn as nn
+from dotted_dict import DottedDict
+from omegaconf import DictConfig
+
 from gate.base.utils.loggers import get_logger
 from gate.configs.datamodule.base import ShapeConfig
 from gate.configs.task.image_classification import TaskConfig
 from gate.learners.utils import learning_scheduler_smart_autofill
-from omegaconf import DictConfig
 
 log = get_logger(__name__)
 

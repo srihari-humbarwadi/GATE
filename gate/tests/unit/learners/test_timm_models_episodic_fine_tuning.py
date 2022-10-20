@@ -2,13 +2,19 @@ import hydra.utils
 import pytest
 import torch
 from dotted_dict import DottedDict
+from omegaconf import DictConfig
+
 from gate.base.utils.loggers import get_logger
-from gate.configs.learner import (CosineAnnealingLRConfig,
-                                  EpisodicFullModelFineTuningSchemeConfig)
-from gate.configs.learner.learning_rate_scheduler_config import BiLevelLRSchedulerConfig
+from gate.configs.learner import (
+    CosineAnnealingLRConfig,
+    EpisodicFullModelFineTuningSchemeConfig,
+    EpisodicPrototypicalNetworkConfig,
+)
+from gate.configs.learner.learning_rate_scheduler_config import (
+    BiLevelLRSchedulerConfig,
+)
 from gate.configs.task.image_classification import ImageClassificationTaskConfig
 from gate.models.timm_hub import TimmImageModel
-from omegaconf import DictConfig
 
 log = get_logger(__name__, set_default_handler=True)
 

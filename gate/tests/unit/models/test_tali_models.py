@@ -1,6 +1,7 @@
 import pytest
 import torch
 from dotted_dict import DottedDict
+
 from gate.base.utils.loggers import get_logger
 from gate.models.tali import TALIModusPrime
 

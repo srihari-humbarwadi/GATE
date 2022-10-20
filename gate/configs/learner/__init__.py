@@ -2,23 +2,32 @@ from hydra.core.config_store import ConfigStore
 
 from .episodic_linear_layer_fine_tuning import (
     EpisodicFullModelFineTuningSchemeConfig,
-    EpisodicSingleLinearLayerFineTuningSchemeConfig)
-from .episodic_maml import (EpisodicMAMLFullModelConfig,
-                            EpisodicMAMLSingleLinearLayerConfig)
-from .gcm_network import (ConditionalGenerativeContrastiveModellingConfig,
-                          ConditionalGenerativeContrastiveModellingConvHeadConfig,
-                          ConditionalGenerativeContrastiveModellingMLPHeadConfig,
-                          ConditionalGenerativeContrastiveModellingResNetHeadConfig,
-                          MatchingNetworkGCMHeadConfig,
-                          PrototypicalNetworkGCMHeadConfig)
-from .learning_rate_scheduler_config import (CosineAnnealingLRConfig,
-                                             CosineAnnealingLRWarmRestartsConfig,
-                                             ReduceLROnPlateauConfig)
-from .linear_layer_fine_tuning import (FullModelFineTuningSchemeConfig,
-                                       SingleLinearLayerFineTuningSchemeConfig)
-from .matching_network import EpisodicMatchingNetworkConfig
+    EpisodicSingleLinearLayerFineTuningSchemeConfig,
+)
+from .gcm_network import (
+    ConditionalGenerativeContrastiveModellingConfig,
+    ConditionalGenerativeContrastiveModellingConvHeadConfig,
+    ConditionalGenerativeContrastiveModellingMLPHeadConfig,
+    ConditionalGenerativeContrastiveModellingResNetHeadConfig,
+    PrototypicalNetworkGCMHeadConfig,
+    MatchingNetworkGCMHeadConfig,
+)
+from .learning_rate_scheduler_config import (
+    CosineAnnealingLRConfig,
+    CosineAnnealingLRWarmRestartsConfig,
+    ReduceLROnPlateauConfig,
+)
+from .linear_layer_fine_tuning import (
+    FullModelFineTuningSchemeConfig,
+    SingleLinearLayerFineTuningSchemeConfig,
+)
 from .optimizer_config import AdamOptimizerConfig, BiLevelOptimizerConfig
 from .prototypical_network import EpisodicPrototypicalNetworkConfig
+from .matching_network import EpisodicMatchingNetworkConfig
+from .episodic_maml import (
+    EpisodicMAMLSingleLinearLayerConfig,
+    EpisodicMAMLFullModelConfig,
+)
 
 LEARNING_RATE_SCHEDULER_CONFIGS = "learner/learning_rate_scheduler"
 LEARNER_CONFIGS = "learner"

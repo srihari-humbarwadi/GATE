@@ -2,14 +2,18 @@ import multiprocessing
 
 import hydra.utils
 import pytest
+
 from gate.base.utils.loggers import get_logger
 from gate.configs.datamodule.base import DataLoaderConfig
 from gate.configs.datamodule.few_shot_classification import (
-    FewShotDataModuleConfig, FewShotTransformConfig,
-    GermanTrafficSignsFewShotDatasetConfig)
+    FewShotDataModuleConfig,
+    FewShotTransformConfig,
+    GermanTrafficSignsFewShotDatasetConfig,
+)
 from gate.configs.datasets.transforms import (
     german_traffic_signs_query_set_transforms,
-    german_traffic_signs_support_set_transforms)
+    german_traffic_signs_support_set_transforms,
+)
 
 log = get_logger(__name__, set_default_handler=True)
 

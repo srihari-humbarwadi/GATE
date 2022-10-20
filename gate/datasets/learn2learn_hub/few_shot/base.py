@@ -1,11 +1,27 @@
+import multiprocessing
 import pathlib
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from typing import Any, Callable, Dict, Optional
 
 import h5py
 import hydra
+import torch
+from PIL.Image import Image
+from omegaconf import DictConfig
+from torchvision.transforms import transforms
+from tqdm import tqdm
+
+from gate.base.utils.loggers import get_logger
 from gate.datasets.data_utils import get_class_to_idx_dict, store_dict_as_hdf5
 from gate.datasets.tf_hub.few_shot.base import FewShotClassificationDatasetTFDS
-from omegaconf import DictConfig
+
+logger = get_logger(__name__)
+
+
+def data_load(item):
+    image, label = item
+
+    return transforms.ToTensor()(image).to(torch.uint8), label
 
 
 class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
@@ -104,17 +120,33 @@ class FewShotClassificationDatsetL2L(FewShotClassificationDatasetTFDS):
         self.split_name = split_name
 
         dataset_config = {"_target_": dataset_module_path}
+        split_names_mapper = {"train": "train", "val": "validation", "test": "test"}
 
         dataset = hydra.utils.instantiate(
             config=dataset_config,
             root=self.dataset_root,
-            mode="all",
+            mode=split_names_mapper[self.split_name],
             transform=None,
             target_transform=None,
             download=download,
         )
 
-        self.subsets = [dataset]
+        dataset_new = []
+
+        logger.info(
+            f"Loading the {split_name} set of the {dataset_name} dataset into memory 💿"
+        )
+        with tqdm(total=len(dataset)) as pbar:
+            with ThreadPoolExecutor(
+                max_workers=multiprocessing.cpu_count()
+            ) as executor:
+                for i, (image, label) in enumerate(executor.map(data_load, dataset)):
+                    dataset_new.append((image, label))
+                    pbar.update(1)
+
+        self.subsets = [dataset_new]
+
+        # self.subsets = [dataset]
 
         self.class_to_address_dict = get_class_to_idx_dict(
             self.subsets,

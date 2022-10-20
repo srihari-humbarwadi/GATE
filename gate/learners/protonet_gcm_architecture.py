@@ -1,14 +1,15 @@
-from typing import Any, Dict, Union
+from typing import Any, Callable, Dict, Tuple, Union
 
-import gate.base.utils.loggers as loggers
 import torch
 import torch.nn.functional as F
 from dotted_dict import DottedDict
+from hydra.utils import instantiate
+
+import gate.base.utils.loggers as loggers
 from gate.configs.datamodule.base import ShapeConfig
 from gate.configs.task.image_classification import TaskConfig
 from gate.learners.protonet import PrototypicalNetworkEpisodicTuningScheme
 from gate.learners.utils import get_accuracy, get_prototypes, prototypical_loss
-from hydra.utils import instantiate
 
 log = loggers.get_logger(__name__)
 

@@ -5,9 +5,10 @@ from typing import Callable, Iterator, List, Optional
 
 import h5py
 import torch.utils.data
-from gate.base.utils.loggers import get_logger
 from numpy import random
 from torch.utils.data import Subset
+
+from gate.base.utils.loggers import get_logger
 
 log = get_logger(
     __name__,

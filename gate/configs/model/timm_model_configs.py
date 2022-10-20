@@ -1,5 +1,5 @@
 from dataclasses import MISSING, dataclass
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from gate.configs import get_module_import_path
 from gate.models.timm_hub import TimmImageModel, TimmImageModelConfigurableDepth
@@ -57,6 +57,14 @@ TimmImageResNet18PoolWithRemovedLayersConfig = TimmImageModelWithRemovedLayersCo
     input_shape_dict=input_size_dict_224_image,
     list_of_layer_prefix_to_remove=["layer4", "fc", "global_pool"],
     global_pool=True,
+)
+
+TimmImageResNet18FewShotLearning = TimmImageModelWithRemovedLayersConfig(
+    model_name_to_download="resnet18",
+    pretrained=True,
+    input_shape_dict=input_size_dict_224_image,
+    list_of_layer_prefix_to_remove=["layer3", "layer4", "fc", "global_pool"],
+    global_pool=False,
 )
 
 TimmImageResNet34Config = TimmImageModelConfig(

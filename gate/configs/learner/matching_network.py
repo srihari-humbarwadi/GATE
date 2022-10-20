@@ -3,9 +3,13 @@ from dataclasses import dataclass
 from gate.configs import get_module_import_path
 from gate.configs.learner.base import LearnerConfig
 from gate.configs.learner.learning_rate_scheduler_config import (
-    CosineAnnealingLRConfig, LRSchedulerConfig)
-from gate.configs.learner.optimizer_config import (AdamOptimizerConfig,
-                                                   BaseOptimizerConfig)
+    CosineAnnealingLRConfig,
+    LRSchedulerConfig,
+)
+from gate.configs.learner.optimizer_config import (
+    AdamOptimizerConfig,
+    BaseOptimizerConfig,
+)
 from gate.learners.matchingnet import MatchingNetworkEpisodicTuningScheme
 
 
