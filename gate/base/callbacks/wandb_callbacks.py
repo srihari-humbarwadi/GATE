@@ -66,8 +66,8 @@ class LogConfigInformation(Callback):
         https://wandb.ai/wandb/wandb-lightning/reports/Image-Classification-using-PyTorch-Lightning--VmlldzoyODk1NzY
     """
 
-    def __init__(self, exp_config: Optional[Dict] = None):
-        super().__init__()
+
+    def __init__(self, exp_config=None):
         self.done = False
 
         if exp_config is None:
@@ -76,7 +76,7 @@ class LogConfigInformation(Callback):
         self.exp_config = exp_config
 
     @rank_zero_only
-    def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
+    def on_batch_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         if not self.done:
             logger = get_wandb_logger(trainer=trainer)
 
@@ -84,7 +84,7 @@ class LogConfigInformation(Callback):
 
             hparams = {
                 "trainer": trainer_hparams,
-                "config": self.exp_config,
+                "config": self.exp_config.__dict__,
             }
 
             logger.log_hyperparams(hparams)

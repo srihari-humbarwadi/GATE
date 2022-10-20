@@ -10,13 +10,17 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, Trainer, seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
-from wandb.util import generate_id
+from rich.traceback import install as install_traceback
+from rich.pretty import install as install_pretty
 
 from gate.base.utils.loggers import get_logger
 from gate.datamodules.base import DataModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 
 log = get_logger(__name__)
+
+install_traceback()
+install_pretty()
 
 
 def checkpoint_setup(config):
@@ -96,20 +100,21 @@ def train_eval(config: DictConfig):
         for _, cb_conf in config.callbacks.items():
             if "_target_" in cb_conf:
                 if "LogConfigInformation" in cb_conf["_target_"]:
-                    log.info(f"Instantiating callback <{cb_conf._target_}>")
+                    log.info(
+                        f"Instantiating config collection callback <{cb_conf._target_}>"
+                    )
                     callbacks.append(
                         instantiate(
-                            cb_conf,
+                            config=cb_conf,
                             exp_config=OmegaConf.to_container(config, resolve=True),
                             _recursive_=False,
                         )
                     )
+
                 else:
                     log.info(f"Instantiating callback <{cb_conf._target_}>")
                     callbacks.append(instantiate(cb_conf))
 
-    os.environ["WANDB_RESUME"] = "allow"
-    os.environ["WANDB_RUN_ID"] = generate_id()
     # --------------------------------------------------------------------------------
     # Instantiate Experiment Logger
     # --------------------------------------------------------------------------------
