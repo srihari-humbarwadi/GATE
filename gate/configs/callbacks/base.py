@@ -59,7 +59,8 @@ class UploadCodeAsArtifact:
 @dataclass
 class LogConfigInformation:
     _target_: str = get_module_import_path(LogConfigInformation)
-    config: Optional[Dict] = None
+    exp_config: Optional[Dict] = None
+
 
 
 model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(
