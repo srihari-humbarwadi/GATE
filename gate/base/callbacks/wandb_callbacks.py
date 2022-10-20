@@ -79,8 +79,9 @@ class LogConfigInformation(Callback):
 
             hparams = {
                 "trainer": trainer_hparams,
+                "config": self.exp_config,
             }
 
             logger.log_hyperparams(hparams)
-            logger.log_hyperparams(self.exp_config)
+
             self.done = True
