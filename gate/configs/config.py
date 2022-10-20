@@ -1,27 +1,23 @@
-import inspect
 import os
 from dataclasses import MISSING, dataclass, field
 from typing import Any, List, Optional
-
-from hydra.core.config_store import ConfigStore
-from omegaconf import OmegaConf
 
 from gate.base.utils.loggers import get_logger
 from gate.configs.callbacks import add_lightning_callback_configs
 from gate.configs.datamodule import add_datamodule_configs
 from gate.configs.datasets import add_transform_configs
 from gate.configs.hydra import add_hydra_configs
-from gate.configs.learner import (
-    add_learner_configs,
-    add_learning_scheduler_configs,
-    add_optimizer_configs,
-)
+from gate.configs.learner import (add_learner_configs, add_learning_scheduler_configs,
+                                  add_optimizer_configs)
 from gate.configs.logger import add_logger_configs
 from gate.configs.mode import add_mode_configs
 from gate.configs.model import add_model_configs
 from gate.configs.task import add_task_configs
 from gate.configs.train_eval_agent import add_train_eval_agent_configs
 from gate.configs.trainer import add_trainer_configs
+from omegaconf import OmegaConf
+
+from hydra.core.config_store import ConfigStore
 
 log = get_logger(__name__)
 
@@ -29,11 +25,11 @@ defaults = [
     {"callbacks": "wandb"},
     {"logger": "wandb"},
     {"model": "timm-image-resnet18"},
-    {"learner": "EpisodicPrototypicalNetwork"},
-    {"datamodule": "OmniglotFewShotClassification"},
-    {"task": "VariableClassClassification"},
+    {"learner": "FullModelFineTuning"},
+    {"datamodule": "CIFAR100StandardClassification"},
+    {"task": "Classification100"},
     {"train_eval_agent": "base"},
-    {"trainer": "base"},
+    {"trainer": "cpu"},
     {"mode": "base"},
     {"additional_input_transforms": "base"},
     {"additional_target_transforms": "base"},
@@ -53,6 +49,7 @@ OmegaConf.register_new_resolver(
 
 @dataclass
 class Config:
+    _self_: Any = MISSING
     callbacks: Any = MISSING
     logger: Any = MISSING
     model: Any = MISSING

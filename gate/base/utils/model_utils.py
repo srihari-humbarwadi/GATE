@@ -55,12 +55,3 @@ def resize_custom(x_image, target_image_shape, interpolation="bilinear", debug=F
             )
 
     return x_image
-
-
-# import matplotlib.pyplot as plt
-#
-# x = torch.randn(16, 3, 512, 512) * 255.0
-# x = resize_custom(x, (3, 128, 1024))
-# x_grid = make_grid(x, nrow=4, padding=0, normalize=False)
-# plt.imshow(x_grid.permute(1, 2, 0).cpu().numpy())
-# plt.show()

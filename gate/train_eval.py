@@ -2,27 +2,21 @@ import os
 import pathlib
 from typing import List, Optional
 
-import hydra
-
 import pytorch_lightning
 import torch
 import wandb
+from hydra_zen import instantiate
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, Trainer, seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.tuner.tuning import Tuner
-from rich.traceback import install
 from wandb.util import generate_id
 
 from gate.base.utils.loggers import get_logger
-from gate.configs import get_module_import_path
-from gate.configs.callbacks import LogConfigInformation
 from gate.datamodules.base import DataModule
 from gate.train_eval_agents.base import TrainingEvaluationAgent
 
 log = get_logger(__name__)
-
-install(show_locals=False, word_wrap=True, width=350)
 
 
 def checkpoint_setup(config):
@@ -70,9 +64,7 @@ def train_eval(config: DictConfig):
     # Instantiate Lightning DataModule for task
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
     # log information regarding data module to be instantiated -- particularly the class name that is stored in _target_
-    datamodule: DataModule = hydra.utils.instantiate(
-        config.datamodule, _recursive_=False
-    )
+    datamodule: DataModule = instantiate(config.datamodule, _recursive_=False)
     # List in comments all possible datamodules/datamodule configs
     datamodule.setup(stage="fit")
     # datamodule_pretty_dict_tree = generate_config_tree(
@@ -86,7 +78,7 @@ def train_eval(config: DictConfig):
     # Instantiate Lightning TrainingEvaluationAgent for task
     log.info(f"Instantiating model <{config.model._target_}>")
 
-    train_eval_agent: TrainingEvaluationAgent = hydra.utils.instantiate(
+    train_eval_agent: TrainingEvaluationAgent = instantiate(
         config.train_eval_agent, datamodule=datamodule, _recursive_=False
     )
     # --------------------------------------------------------------------------------
@@ -103,25 +95,18 @@ def train_eval(config: DictConfig):
     if "callbacks" in config:
         for _, cb_conf in config.callbacks.items():
             if "_target_" in cb_conf:
-                if (
-                    cb_conf["_target_"].split(".")[-1]
-                    == get_module_import_path(LogConfigInformation).split(".")[-1]
-                ):
-                    log.info(
-                        f"Instantiating config collection callback <{cb_conf._target_}>"
-                    )
-                    cb_conf["config_dict"] = OmegaConf.to_container(
-                        config, resolve=True
-                    )
+                if "LogConfigInformation" in cb_conf["_target_"]:
+                    log.info(f"Instantiating callback <{cb_conf._target_}>")
                     callbacks.append(
-                        hydra.utils.instantiate(
+                        instantiate(
                             cb_conf,
+                            exp_config=OmegaConf.to_container(config, resolve=True),
                             _recursive_=False,
                         )
                     )
                 else:
                     log.info(f"Instantiating callback <{cb_conf._target_}>")
-                    callbacks.append(hydra.utils.instantiate(cb_conf))
+                    callbacks.append(instantiate(cb_conf))
 
     os.environ["WANDB_RESUME"] = "allow"
     os.environ["WANDB_RUN_ID"] = generate_id()
@@ -134,13 +119,13 @@ def train_eval(config: DictConfig):
         for _, lg_conf in config.logger.items():
             if "_target_" in lg_conf:
                 log.info(f"Instantiating logger <{lg_conf._target_}>")
-                logger.append(hydra.utils.instantiate(lg_conf))
+                logger.append(instantiate(lg_conf))
 
     # --------------------------------------------------------------------------------
     # Instantiate Lightning Trainer
     # --------------------------------------------------------------------------------
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
-    trainer: Trainer = hydra.utils.instantiate(
+    trainer: Trainer = instantiate(
         config.trainer,
         callbacks=callbacks,
         logger=logger,

@@ -2,21 +2,12 @@ from dataclasses import MISSING, dataclass
 from datetime import timedelta
 from typing import Dict, Optional
 
-from pytorch_lightning.callbacks import (
-    LearningRateMonitor,
-    ModelCheckpoint,
-    RichModelSummary,
-    TQDMProgressBar,
-)
-
-from gate.base.callbacks.wandb_callbacks import (
-    LogConfigInformation,
-    LogGrads,
-    PrintUploadCheckpointsAsArtifact,
-    UploadCodeAsArtifact,
-)
+from gate.base.callbacks.wandb_callbacks import (LogConfigInformation,
+                                                 UploadCodeAsArtifact)
 from gate.configs import get_module_import_path
 from gate.configs.string_variables import CHECKPOINT_DIR
+from pytorch_lightning.callbacks import (LearningRateMonitor, ModelCheckpoint,
+                                         RichModelSummary, TQDMProgressBar)
 
 
 @dataclass
@@ -66,20 +57,9 @@ class UploadCodeAsArtifact:
 
 
 @dataclass
-class UploadCheckpointsAsArtifact:
-    _target_: str = get_module_import_path(PrintUploadCheckpointsAsArtifact)
-
-
-@dataclass
-class LogGrads:
-    _target_: str = get_module_import_path(LogGrads)
-    refresh_rate: int = 100
-
-
-@dataclass
 class LogConfigInformation:
     _target_: str = get_module_import_path(LogConfigInformation)
-    config_dict: Optional[Dict] = None
+    config: Optional[Dict] = None
 
 
 model_checkpoint_eval: ModelCheckpointingConfig = ModelCheckpointingConfig(
