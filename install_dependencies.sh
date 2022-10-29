@@ -28,5 +28,6 @@ echo yes | pip install dotted_dict
 echo yes | pip install git+https://github.com/openai/CLIP.git@main
 echo yes | pip install git+https://github.com/AntreasAntoniou/TALI.git@main
 echo yes | pip install learn2learn
+echo yes | pip install hydra_zen
 
 echo yes | pip install -e .
