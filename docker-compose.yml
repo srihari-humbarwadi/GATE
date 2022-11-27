@@ -5,6 +5,8 @@ services:
     build: 
       dockerfile: Dockerfile.cpu
       context: .
+      args:
+        BRANCH: main
     image: gate:dev
     volumes:
       - ./:/src:rw
