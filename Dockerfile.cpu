@@ -1,22 +1,35 @@
 FROM gcr.io/deeplearning-platform-release/pytorch-cpu:latest
 
+WORKDIR /app
+
 RUN curl -f https://packages.cloud.google.com/apt/doc/apt-key.gpg \
     | apt-key add -
+
 RUN apt-get update
+RUN apt-get install git libgl1-mesa-glx ffmpeg libsm6 libxext6 -y
 
 RUN conda init bash
 RUN conda create -n gate python=3.10 -y
 RUN echo "conda activate gate" >> ~/.bashrc
+ENV PATH /opt/conda/envs/gate/bin:$PATH
 
-RUN git clone https://github.com/srihari-humbarwadi/GATE
+RUN /bin/bash -c "source activate gate \
+    && conda install nvidia-ml pytorch torchvision torchaudio cpuonly -c pytorch -c conda-forge"
 
-SHELL ["conda", "run", "-n", "gate", "/bin/bash", "-c"]
+COPY ./requirements.txt ./requirements.txt
 
-RUN conda install -c conda-forge mamba \
-    && mamba install pytorch torchvision torchaudio cpuonly -c pytorch -c conda-forge
+RUN /bin/bash -c "source activate gate \
+    && pip install -r requirements.txt"
 
-RUN cd GATE && bash install_dependencies.sh
+RUN /bin/bash -c "source activate gate \ 
+    && pip install git+https://github.com/openai/CLIP.git@main"
 
-RUN apt-get install libgl1-mesa-glx ffmpeg libsm6 libxext6 -y
+RUN /bin/bash -c "source activate gate \ 
+    &&  pip install git+https://github.com/AntreasAntoniou/TALI.git@main"
 
-WORKDIR /app/src_rw
+COPY ./ /app/
+
+RUN /bin/bash -c "source activate gate \ 
+    && pip install ."
+
+ENTRYPOINT [ "/bin/bash" ]
