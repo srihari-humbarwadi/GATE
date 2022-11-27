@@ -1,0 +1,12 @@
+version: '3.6'
+
+services:
+  gate:
+    build: 
+      dockerfile: Dockerfile.cpu
+      context: .
+    image: gate:dev
+    volumes:
+      - ./:/src:rw
+      - /home/${USER}/gate:/home/gate
+  
