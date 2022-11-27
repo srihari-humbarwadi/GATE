@@ -20,7 +20,6 @@ setup(
         "gate.base",
         "gate.base.callbacks",
         "gate.base.utils",
-        "gate.base.vendor",
         "gate.configs",
         "gate",
     ],

@@ -17,7 +17,6 @@ class BaseTrainer:
     accelerator: str = "cpu"
     enable_checkpointing: bool = True
     default_root_dir: str = CURRENT_EXPERIMENT_DIR
-    progress_bar_refresh_rate: int = 1
     enable_progress_bar: bool = True
     val_check_interval: int = NUM_STEPS_VAL_CHECK_INTERVAL
     max_steps: int = NUM_TRAIN_SAMPLES
